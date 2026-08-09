@@ -874,7 +874,7 @@ const seedDemoCourses = async () => {
   const reviewCount = await prisma.review.count({ where: { isDeleted: false } });
   const studentCount = await prisma.student.count({ where: { isDeleted: false } });
   console.log(
-    `Demo data ready: ${DEMO_COURSES.length} courses, ${DEMO_INSTRUCTORS.length} instructors, ${DEMO_STUDENTS.length} students, ${reviewCount} reviews.`,
+    `Demo data ready: ${DEMO_COURSES.length} courses, ${DEMO_INSTRUCTORS.length} instructors, ${studentCount} students, ${reviewCount} reviews.`,
   );
 };
 

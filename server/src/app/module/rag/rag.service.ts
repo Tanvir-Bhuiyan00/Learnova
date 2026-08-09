@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { prisma } from "../../lib/prisma";
 import { EmbeddingService } from "./embedding.service";
 import { IndexingService } from "./indexing.service";

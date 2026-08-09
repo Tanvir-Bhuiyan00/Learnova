@@ -14,9 +14,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ILoginPayload, loginZodSchema } from "@/zod/auth.validation";
+import { fadeInUp, staggerContainer } from "@/lib/motion";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -55,14 +57,22 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
     },
   });
   return (
+    <motion.div
+      variants={staggerContainer}
+      initial="hidden"
+      animate="show"
+    >
     <Card className="w-full max-w-md mx-auto shadow-md">
+      <motion.div variants={fadeInUp}>
       <CardHeader className="text-center">
         <CardTitle className="font-heading text-3xl font-black tracking-tight">Welcome Back!</CardTitle>
         <CardDescription>
           Please enter your credentials to log in.
         </CardDescription>
       </CardHeader>
+      </motion.div>
 
+      <motion.div variants={fadeInUp}>
       <CardContent>
         <form
           method="POST"
@@ -191,6 +201,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
           Sign in with Google
         </Button>
       </CardContent>
+      </motion.div>
 
       <CardFooter className="justify-center border-t pt-4">
         <p className="text-sm text-muted-foreground">
@@ -204,6 +215,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
         </p>
       </CardFooter>
     </Card>
+    </motion.div>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   enrollmentSearchableFields,
 } from "./enrollment.constant";
 import { stripe } from "../../config/stripe.config";
+import { assertCouponValid, decrementCouponUsage, incrementCouponUsage } from "../../utils/coupon";
 
 const checkoutCart = async (user: IRequestUser) => {
   const student = await prisma.student.findUnique({
@@ -35,6 +36,10 @@ const checkoutCart = async (user: IRequestUser) => {
 
   if (!cart || cart.items.length === 0) {
     throw new AppError(status.BAD_REQUEST, "Cart is empty");
+  }
+
+  if (cart.coupon) {
+    assertCouponValid(cart.coupon);
   }
 
   for (const item of cart.items) {
@@ -101,6 +106,10 @@ const checkoutCart = async (user: IRequestUser) => {
           where: { id: cart.id },
           data: { couponId: null },
         });
+
+        if (cart.coupon) {
+          await incrementCouponUsage(tx, cart.couponId, cart.coupon.maxUsage);
+        }
       }
 
       return created;
@@ -172,6 +181,10 @@ const checkoutCart = async (user: IRequestUser) => {
         where: { id: cart.id },
         data: { couponId: null },
       });
+
+      if (cart.coupon) {
+        await incrementCouponUsage(tx, cart.couponId, cart.coupon.maxUsage);
+      }
     }
 
     return { enrollments: [], paymentUrl: session.url };
@@ -286,6 +299,16 @@ const getSingleEnrollment = async (
     throw new AppError(status.NOT_FOUND, "Enrollment not found");
   }
 
+  if (
+    enrollment.payment &&
+    enrollment.payment.status !== PaymentStatus.SUCCEEDED
+  ) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Enrollment requires a successful payment",
+    );
+  }
+
   return enrollment;
 };
 
@@ -335,22 +358,28 @@ const getAllEnrollments = async (query: IQueryParams) => {
 const cancelUnpaidEnrollments = async () => {
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
 
-  const unpaidPayments = await prisma.payment.findMany({
+  const stalePayments = await prisma.payment.findMany({
     where: {
-      status: PaymentStatus.PENDING,
+      status: {
+        in: [PaymentStatus.PENDING, PaymentStatus.FAILED],
+      },
       createdAt: { lte: thirtyMinutesAgo },
     },
     include: { enrollment: true },
   });
 
-  if (unpaidPayments.length === 0) return;
+  if (stalePayments.length === 0) return;
 
-  const enrollmentIds = unpaidPayments
+  const enrollmentIds = stalePayments
     .map((p) => p.enrollment?.id)
     .filter(Boolean) as string[];
-  const paymentIds = unpaidPayments.map((p) => p.id);
+  const paymentIds = stalePayments.map((p) => p.id);
 
   await prisma.$transaction(async (tx) => {
+    const couponIds = stalePayments
+      .map((p) => p.couponId)
+      .filter((id): id is string => Boolean(id));
+
     await tx.payment.deleteMany({
       where: { id: { in: paymentIds } },
     });
@@ -359,6 +388,10 @@ const cancelUnpaidEnrollments = async () => {
       where: { id: { in: enrollmentIds } },
       data: { isDeleted: true, deletedAt: new Date() },
     });
+
+    for (const couponId of couponIds) {
+      await decrementCouponUsage(tx, couponId);
+    }
   });
 };
 

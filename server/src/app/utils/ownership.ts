@@ -1,4 +1,5 @@
 import status from "http-status";
+import { PaymentStatus } from "../../generated/prisma/enums";
 import AppError from "../errorHelpers/AppError";
 import { IRequestUser } from "../interfaces/requestUser.interface";
 import { prisma } from "../lib/prisma";
@@ -148,4 +149,42 @@ export const assertInstructorSelf = async (
       "You can only update your own instructor profile",
     );
   }
+};
+
+export const canAccessFullCourseContent = async (
+  user: IRequestUser,
+  courseId: string,
+) => {
+  if (isAdminOrSuperAdmin(user)) return true;
+
+  const instructor = await getInstructorProfile(user.userId);
+
+  if (instructor) {
+    const owned = await prisma.course.findFirst({
+      where: { id: courseId, instructorId: instructor.id, isDeleted: false },
+      select: { id: true },
+    });
+
+    if (owned) return true;
+  }
+
+  const student = await prisma.student.findUnique({
+    where: { userId: user.userId },
+  });
+
+  if (student) {
+    const enrollment = await prisma.enrollment.findFirst({
+      where: {
+        studentId: student.id,
+        courseId,
+        isDeleted: false,
+        payment: { status: PaymentStatus.SUCCEEDED },
+      },
+      select: { id: true },
+    });
+
+    if (enrollment) return true;
+  }
+
+  return false;
 };

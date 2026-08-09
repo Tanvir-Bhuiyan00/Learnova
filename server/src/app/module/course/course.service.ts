@@ -11,6 +11,7 @@ import {
   assertCourseOwnership,
   assertLessonOwnership,
   assertModuleOwnership,
+  canAccessFullCourseContent,
 } from "../../utils/ownership";
 import {
   ICreateCoursePayload,
@@ -77,6 +78,21 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
   return course;
 };
 
+const LESSON_METADATA_SELECT = {
+  id: true,
+  title: true,
+  description: true,
+  videoDuration: true,
+  order: true,
+  isFree: true,
+} as const;
+
+const FULL_LESSON_SELECT = {
+  ...LESSON_METADATA_SELECT,
+  videoUrl: true,
+  content: true,
+} as const;
+
 const getAllCourses = async (query: IQueryParams) => {
   const queryBuilder = new QueryBuilder<
     Course,
@@ -101,9 +117,18 @@ const getAllCourses = async (query: IQueryParams) => {
     })
     .dynamicInclude({
       modules: {
-        include: { lessons: true },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          order: true,
+          lessons: {
+            where: { isDeleted: false },
+            orderBy: { order: "asc" },
+            select: LESSON_METADATA_SELECT,
+          },
+        },
       },
-      enrollments: true,
       reviews: true,
     })
     .paginate()
@@ -129,6 +154,7 @@ const getCourseById = async (id: string) => {
           lessons: {
             where: { isDeleted: false },
             orderBy: { order: "asc" },
+            select: LESSON_METADATA_SELECT,
           },
         },
       },
@@ -238,7 +264,10 @@ const createModule = async (
   return module;
 };
 
-const getModulesByCourse = async (courseId: string) => {
+const getModulesByCourse = async (
+  courseId: string,
+  user: IRequestUser,
+) => {
   const course = await prisma.course.findUnique({
     where: { id: courseId, isDeleted: false },
   });
@@ -247,6 +276,8 @@ const getModulesByCourse = async (courseId: string) => {
     throw new AppError(status.NOT_FOUND, "Course not found");
   }
 
+  const fullAccess = await canAccessFullCourseContent(user, courseId);
+
   const modules = await prisma.module.findMany({
     where: { courseId, isDeleted: false },
     orderBy: { order: "asc" },
@@ -254,6 +285,7 @@ const getModulesByCourse = async (courseId: string) => {
       lessons: {
         where: { isDeleted: false },
         orderBy: { order: "asc" },
+        select: fullAccess ? FULL_LESSON_SELECT : LESSON_METADATA_SELECT,
       },
     },
   });
@@ -371,7 +403,10 @@ const createLesson = async (
   return lesson;
 };
 
-const getLessonsByModule = async (moduleId: string) => {
+const getLessonsByModule = async (
+  moduleId: string,
+  user: IRequestUser,
+) => {
   const module = await prisma.module.findUnique({
     where: { id: moduleId, isDeleted: false },
   });
@@ -380,9 +415,12 @@ const getLessonsByModule = async (moduleId: string) => {
     throw new AppError(status.NOT_FOUND, "Module not found");
   }
 
+  const fullAccess = await canAccessFullCourseContent(user, module.courseId);
+
   const lessons = await prisma.lesson.findMany({
     where: { moduleId, isDeleted: false },
     orderBy: { order: "asc" },
+    select: fullAccess ? FULL_LESSON_SELECT : LESSON_METADATA_SELECT,
   });
 
   return lessons;

@@ -42,7 +42,16 @@ router.post(
   validateRequest(createModuleZodSchema),
   CourseController.createModule,
 );
-router.get("/:courseId/modules", CourseController.getModulesByCourse);
+router.get(
+  "/:courseId/modules",
+  checkAuth(
+    UserRole.STUDENT,
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  ),
+  CourseController.getModulesByCourse,
+);
 router.patch(
   "/:courseId/modules/:id",
   checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -63,6 +72,12 @@ router.post(
 );
 router.get(
   "/:courseId/modules/:moduleId/lessons",
+  checkAuth(
+    UserRole.STUDENT,
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  ),
   CourseController.getLessonsByModule,
 );
 router.patch(

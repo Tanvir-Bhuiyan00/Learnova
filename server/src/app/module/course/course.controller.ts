@@ -92,7 +92,7 @@ const createModule = catchAsync(async (req: Request, res: Response) => {
 const getModulesByCourse = catchAsync(async (req: Request, res: Response) => {
   const { courseId } = req.params;
 
-  const result = await CourseService.getModulesByCourse(courseId as string);
+  const result = await CourseService.getModulesByCourse(courseId as string, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -146,7 +146,7 @@ const createLesson = catchAsync(async (req: Request, res: Response) => {
 const getLessonsByModule = catchAsync(async (req: Request, res: Response) => {
   const { moduleId } = req.params;
 
-  const result = await CourseService.getLessonsByModule(moduleId as string);
+  const result = await CourseService.getLessonsByModule(moduleId as string, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

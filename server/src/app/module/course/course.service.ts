@@ -6,6 +6,12 @@ import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { courseFilterableFields, courseSearchableFields } from "./course.constant";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
+import {
+  assertCourseOwnership,
+  assertLessonOwnership,
+  assertModuleOwnership,
+} from "../../utils/ownership";
 import {
   ICreateCoursePayload,
   ICreateLessonPayload,
@@ -132,7 +138,13 @@ const getCourseById = async (id: string) => {
   return course;
 };
 
-const updateCourse = async (id: string, payload: IUpdateCoursePayload) => {
+const updateCourse = async (
+  id: string,
+  payload: IUpdateCoursePayload,
+  user: IRequestUser,
+) => {
+  await assertCourseOwnership(user, id);
+
   const isCourseExist = await prisma.course.findUnique({
     where: { id },
   });
@@ -186,7 +198,13 @@ const deleteCourse = async (id: string) => {
   return course;
 };
 
-const createModule = async (courseId: string, payload: ICreateModulePayload) => {
+const createModule = async (
+  courseId: string,
+  payload: ICreateModulePayload,
+  user: IRequestUser,
+) => {
+  await assertCourseOwnership(user, courseId);
+
   const course = await prisma.course.findUnique({
     where: { id: courseId, isDeleted: false },
   });
@@ -243,7 +261,13 @@ const getModulesByCourse = async (courseId: string) => {
   return modules;
 };
 
-const updateModule = async (id: string, payload: IUpdateModulePayload) => {
+const updateModule = async (
+  id: string,
+  payload: IUpdateModulePayload,
+  user: IRequestUser,
+) => {
+  await assertModuleOwnership(user, id);
+
   const isModuleExist = await prisma.module.findUnique({
     where: { id },
   });
@@ -278,7 +302,9 @@ const updateModule = async (id: string, payload: IUpdateModulePayload) => {
   return module;
 };
 
-const deleteModule = async (id: string) => {
+const deleteModule = async (id: string, user: IRequestUser) => {
+  await assertModuleOwnership(user, id);
+
   const isModuleExist = await prisma.module.findUnique({
     where: { id },
   });
@@ -298,7 +324,13 @@ const deleteModule = async (id: string) => {
   return module;
 };
 
-const createLesson = async (moduleId: string, payload: ICreateLessonPayload) => {
+const createLesson = async (
+  moduleId: string,
+  payload: ICreateLessonPayload,
+  user: IRequestUser,
+) => {
+  await assertModuleOwnership(user, moduleId);
+
   const module = await prisma.module.findUnique({
     where: { id: moduleId, isDeleted: false },
   });
@@ -356,7 +388,13 @@ const getLessonsByModule = async (moduleId: string) => {
   return lessons;
 };
 
-const updateLesson = async (id: string, payload: IUpdateLessonPayload) => {
+const updateLesson = async (
+  id: string,
+  payload: IUpdateLessonPayload,
+  user: IRequestUser,
+) => {
+  await assertLessonOwnership(user, id);
+
   const isLessonExist = await prisma.lesson.findUnique({
     where: { id },
   });
@@ -391,7 +429,9 @@ const updateLesson = async (id: string, payload: IUpdateLessonPayload) => {
   return lesson;
 };
 
-const deleteLesson = async (id: string) => {
+const deleteLesson = async (id: string, user: IRequestUser) => {
+  await assertLessonOwnership(user, id);
+
   const isLessonExist = await prisma.lesson.findUnique({
     where: { id },
   });

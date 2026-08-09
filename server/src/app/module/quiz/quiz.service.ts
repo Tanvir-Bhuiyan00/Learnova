@@ -4,6 +4,11 @@ import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
 import {
+  assertCourseOwnership,
+  assertQuestionOwnership,
+  assertQuizOwnership,
+} from "../../utils/ownership";
+import {
   IAddQuestionPayload,
   ICreateQuizPayload,
   ISubmitAttemptPayload,
@@ -16,25 +21,14 @@ const createQuiz = async (
   payload: ICreateQuizPayload,
   user: IRequestUser,
 ) => {
+  await assertCourseOwnership(user, courseId);
+
   const course = await prisma.course.findUnique({
     where: { id: courseId, isDeleted: false },
   });
 
   if (!course) {
     throw new AppError(status.NOT_FOUND, "Course not found");
-  }
-
-  if (user.role === "INSTRUCTOR" && course.instructorId !== user.userId) {
-    const instructor = await prisma.instructor.findUnique({
-      where: { userId: user.userId },
-    });
-
-    if (!instructor || course.instructorId !== instructor.id) {
-      throw new AppError(
-        status.FORBIDDEN,
-        "You can only create quizzes for your own courses",
-      );
-    }
   }
 
   const quiz = await prisma.quiz.create({
@@ -223,7 +217,13 @@ const getQuizForTaking = async (quizId: string, user: IRequestUser) => {
   };
 };
 
-const updateQuiz = async (id: string, payload: IUpdateQuizPayload) => {
+const updateQuiz = async (
+  id: string,
+  payload: IUpdateQuizPayload,
+  user: IRequestUser,
+) => {
+  await assertQuizOwnership(user, id);
+
   const isQuizExist = await prisma.quiz.findUnique({
     where: { id },
   });
@@ -240,7 +240,9 @@ const updateQuiz = async (id: string, payload: IUpdateQuizPayload) => {
   return quiz;
 };
 
-const deleteQuiz = async (id: string) => {
+const deleteQuiz = async (id: string, user: IRequestUser) => {
+  await assertQuizOwnership(user, id);
+
   const isQuizExist = await prisma.quiz.findUnique({
     where: { id },
   });
@@ -260,7 +262,13 @@ const deleteQuiz = async (id: string) => {
   return quiz;
 };
 
-const addQuestion = async (quizId: string, payload: IAddQuestionPayload) => {
+const addQuestion = async (
+  quizId: string,
+  payload: IAddQuestionPayload,
+  user: IRequestUser,
+) => {
+  await assertQuizOwnership(user, quizId);
+
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId, isDeleted: false },
   });
@@ -299,7 +307,10 @@ const addQuestion = async (quizId: string, payload: IAddQuestionPayload) => {
 const updateQuestion = async (
   id: string,
   payload: IUpdateQuestionPayload,
+  user: IRequestUser,
 ) => {
+  await assertQuestionOwnership(user, id);
+
   const isQuestionExist = await prisma.quizQuestion.findUnique({
     where: { id },
   });
@@ -344,7 +355,9 @@ const updateQuestion = async (
   return question;
 };
 
-const deleteQuestion = async (id: string) => {
+const deleteQuestion = async (id: string, user: IRequestUser) => {
+  await assertQuestionOwnership(user, id);
+
   const isQuestionExist = await prisma.quizQuestion.findUnique({
     where: { id },
   });

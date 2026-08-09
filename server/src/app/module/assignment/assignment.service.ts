@@ -3,6 +3,10 @@ import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
 import {
+  assertAssignmentOwnership,
+  assertCourseOwnership,
+} from "../../utils/ownership";
+import {
   ICreateAssignmentPayload,
   IGradeSubmissionPayload,
   IUpdateAssignmentPayload,
@@ -12,9 +16,7 @@ const createAssignment = async (
   user: IRequestUser,
   payload: ICreateAssignmentPayload,
 ) => {
-  await prisma.instructor.findUniqueOrThrow({
-    where: { userId: user.userId },
-  });
+  await assertCourseOwnership(user, payload.courseId);
 
   const result = await prisma.assignment.create({
     data: {
@@ -69,9 +71,7 @@ const updateAssignment = async (
   assignmentId: string,
   payload: IUpdateAssignmentPayload,
 ) => {
-  await prisma.instructor.findUniqueOrThrow({
-    where: { userId: user.userId },
-  });
+  await assertAssignmentOwnership(user, assignmentId);
 
   const updateData: Record<string, unknown> = { ...payload };
   if (payload.dueDate) {
@@ -87,9 +87,7 @@ const updateAssignment = async (
 };
 
 const deleteAssignment = async (user: IRequestUser, assignmentId: string) => {
-  await prisma.instructor.findUniqueOrThrow({
-    where: { userId: user.userId },
-  });
+  await assertAssignmentOwnership(user, assignmentId);
 
   const result = await prisma.assignment.update({
     where: { id: assignmentId },
@@ -153,9 +151,7 @@ const getSubmissions = async (
   user: IRequestUser,
   assignmentId: string,
 ) => {
-  await prisma.instructor.findUniqueOrThrow({
-    where: { userId: user.userId },
-  });
+  await assertAssignmentOwnership(user, assignmentId);
 
   const submissions = await prisma.assignmentSubmission.findMany({
     where: { assignmentId, isDeleted: false },
@@ -171,14 +167,12 @@ const gradeSubmission = async (
   submissionId: string,
   payload: IGradeSubmissionPayload,
 ) => {
-  await prisma.instructor.findUniqueOrThrow({
-    where: { userId: user.userId },
-  });
-
   const submission = await prisma.assignmentSubmission.findUniqueOrThrow({
     where: { id: submissionId },
     include: { assignment: true },
   });
+
+  await assertAssignmentOwnership(user, submission.assignmentId);
 
   if (payload.marks > submission.assignment.totalMarks) {
     throw new AppError(

@@ -10,6 +10,8 @@ import {
   instructorSearchableFields,
 } from "./instructor.constant";
 import { IUpdateInstructorPayload } from "./instructor.interface";
+import { IRequestUser } from "../../interfaces/requestUser.interface";
+import { assertInstructorSelf } from "../../utils/ownership";
 
 const getAllInstructors = async (query: IQueryParams) => {
   const queryBuilder = new QueryBuilder<
@@ -54,7 +56,13 @@ const getInstructorById = async (id: string) => {
   return instructor;
 };
 
-const updateInstructor = async (id: string, payload: IUpdateInstructorPayload) => {
+const updateInstructor = async (
+  id: string,
+  payload: IUpdateInstructorPayload,
+  user: IRequestUser,
+) => {
+  await assertInstructorSelf(user, id);
+
   const isInstructorExist = await prisma.instructor.findUnique({
     where: { id },
   });

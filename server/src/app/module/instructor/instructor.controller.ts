@@ -36,7 +36,7 @@ const updateInstructor = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
 
-  const updatedInstructor = await InstructorService.updateInstructor(id as string, payload);
+  const updatedInstructor = await InstructorService.updateInstructor(id as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

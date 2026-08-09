@@ -54,7 +54,7 @@ const getQuizForTaking = catchAsync(async (req: Request, res: Response) => {
 
 const updateQuiz = catchAsync(async (req: Request, res: Response) => {
   const quizId = req.params.quizId as string;
-  const result = await QuizService.updateQuiz(quizId, req.body);
+  const result = await QuizService.updateQuiz(quizId, req.body, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -66,7 +66,7 @@ const updateQuiz = catchAsync(async (req: Request, res: Response) => {
 
 const deleteQuiz = catchAsync(async (req: Request, res: Response) => {
   const quizId = req.params.quizId as string;
-  const result = await QuizService.deleteQuiz(quizId);
+  const result = await QuizService.deleteQuiz(quizId, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -78,7 +78,7 @@ const deleteQuiz = catchAsync(async (req: Request, res: Response) => {
 
 const addQuestion = catchAsync(async (req: Request, res: Response) => {
   const quizId = req.params.quizId as string;
-  const result = await QuizService.addQuestion(quizId, req.body);
+  const result = await QuizService.addQuestion(quizId, req.body, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -90,7 +90,7 @@ const addQuestion = catchAsync(async (req: Request, res: Response) => {
 
 const updateQuestion = catchAsync(async (req: Request, res: Response) => {
   const questionId = req.params.questionId as string;
-  const result = await QuizService.updateQuestion(questionId, req.body);
+  const result = await QuizService.updateQuestion(questionId, req.body, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -102,7 +102,7 @@ const updateQuestion = catchAsync(async (req: Request, res: Response) => {
 
 const deleteQuestion = catchAsync(async (req: Request, res: Response) => {
   const questionId = req.params.questionId as string;
-  const result = await QuizService.deleteQuestion(questionId);
+  const result = await QuizService.deleteQuestion(questionId, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

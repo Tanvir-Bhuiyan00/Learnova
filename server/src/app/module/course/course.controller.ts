@@ -52,7 +52,7 @@ const updateCourse = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
 
-  const result = await CourseService.updateCourse(id as string, payload);
+  const result = await CourseService.updateCourse(id as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -79,7 +79,7 @@ const createModule = catchAsync(async (req: Request, res: Response) => {
   const { courseId } = req.params;
   const payload = req.body;
 
-  const result = await CourseService.createModule(courseId as string, payload);
+  const result = await CourseService.createModule(courseId as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -106,7 +106,7 @@ const updateModule = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
 
-  const result = await CourseService.updateModule(id as string, payload);
+  const result = await CourseService.updateModule(id as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -119,7 +119,7 @@ const updateModule = catchAsync(async (req: Request, res: Response) => {
 const deleteModule = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const result = await CourseService.deleteModule(id as string);
+  const result = await CourseService.deleteModule(id as string, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -133,7 +133,7 @@ const createLesson = catchAsync(async (req: Request, res: Response) => {
   const { moduleId } = req.params;
   const payload = req.body;
 
-  const result = await CourseService.createLesson(moduleId as string, payload);
+  const result = await CourseService.createLesson(moduleId as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -160,7 +160,7 @@ const updateLesson = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = req.body;
 
-  const result = await CourseService.updateLesson(id as string, payload);
+  const result = await CourseService.updateLesson(id as string, payload, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -173,7 +173,7 @@ const updateLesson = catchAsync(async (req: Request, res: Response) => {
 const deleteLesson = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const result = await CourseService.deleteLesson(id as string);
+  const result = await CourseService.deleteLesson(id as string, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

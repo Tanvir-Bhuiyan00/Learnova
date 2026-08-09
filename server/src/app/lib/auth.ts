@@ -90,15 +90,19 @@ export const auth = betterAuth({
           });
 
           if (user && !user.emailVerified) {
-            sendEmail({
-              to: email,
-              subject: "Verify your email",
-              templateName: "otp",
-              templateData: {
-                name: user.name,
-                otp,
-              },
-            });
+            try {
+              await sendEmail({
+                to: email,
+                subject: "Verify your email",
+                templateName: "otp",
+                templateData: {
+                  name: user.name,
+                  otp,
+                },
+              });
+            } catch (error) {
+              console.error("Failed to send verification OTP email:", error);
+            }
           }
         } else if (type === "forget-password") {
           const user = await prisma.user.findUnique({
@@ -108,15 +112,19 @@ export const auth = betterAuth({
           });
 
           if (user) {
-            sendEmail({
-              to: email,
-              subject: "Password Reset OTP",
-              templateName: "otp",
-              templateData: {
-                name: user.name,
-                otp,
-              },
-            });
+            try {
+              await sendEmail({
+                to: email,
+                subject: "Password Reset OTP",
+                templateName: "otp",
+                templateData: {
+                  name: user.name,
+                  otp,
+                },
+              });
+            } catch (error) {
+              console.error("Failed to send password reset OTP email:", error);
+            }
           }
         }
       },

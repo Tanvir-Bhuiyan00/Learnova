@@ -51,26 +51,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV !== "production") {
-  cron.schedule("*/25 * * * *", async () => {
-    try {
-      console.log("Running cron job to cancel unpaid enrollments...");
-      await EnrollmentService.cancelUnpaidEnrollments();
-    } catch (error: any) {
-      console.error(
-        "Error occurred while canceling unpaid enrollments:",
-        error.message,
-      );
-    }
-  });
-}
+cron.schedule("*/25 * * * *", async () => {
+  try {
+    console.log("Running cron job to cancel unpaid enrollments...");
+    await EnrollmentService.cancelUnpaidEnrollments();
+  } catch (error: any) {
+    console.error(
+      "Error occurred while canceling unpaid enrollments:",
+      error.message,
+    );
+  }
+});
 
 app.get(
   "/api/v1/cron/cancel-unpaid-enrollments",
   catchAsync(async (req, res) => {
-    if (
-      req.headers["authorization"] !== `Bearer ${process.env.CRON_SECRET}`
-    ) {
+    if (req.headers["authorization"] !== `Bearer ${envVars.CRON_SECRET}`) {
       return sendResponse(res, {
         success: false,
         httpStatusCode: 401,

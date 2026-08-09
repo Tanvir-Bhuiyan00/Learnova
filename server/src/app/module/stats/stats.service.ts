@@ -3,6 +3,7 @@ import { PaymentStatus, UserRole } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
+import { getCached, setCached } from "../../utils/cache";
 import type {
   IDashboardStats,
   IEnrollmentTrendPoint,
@@ -17,17 +18,32 @@ import type {
 const getDashboardStatsData = async (
   user: IRequestUser,
 ): Promise<IDashboardStats> => {
+  const cacheKey = `stats:${user.role}:${user.userId}`;
+  const cached = getCached<IDashboardStats>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  let result: IDashboardStats;
+
   switch (user.role) {
     case UserRole.SUPER_ADMIN:
     case UserRole.ADMIN:
-      return getAdminDashboardStats();
+      result = await getAdminDashboardStats();
+      break;
     case UserRole.INSTRUCTOR:
-      return getInstructorDashboardStats(user);
+      result = await getInstructorDashboardStats(user);
+      break;
     case UserRole.STUDENT:
-      return getStudentDashboardStats(user);
+      result = await getStudentDashboardStats(user);
+      break;
     default:
       throw new AppError(status.BAD_REQUEST, "Invalid user role");
   }
+
+  setCached(cacheKey, result, 30);
+
+  return result;
 };
 
 const getAdminDashboardStats = async (): Promise<ISuperAdminDashboardStats> => {
@@ -104,26 +120,39 @@ const getAdminDashboardStats = async (): Promise<ISuperAdminDashboardStats> => {
       getUserSignupTrend(),
     ]);
 
-  const topCourses: ITopCourse[] = await Promise.all(
-    topCoursesRaw.map(async (course) => {
-      const revenueAgg = await prisma.payment.aggregate({
-        _sum: { amount: true },
-        where: {
-          enrollment: { courseId: course.id },
-          status: PaymentStatus.SUCCEEDED,
-        },
-      });
-      return {
-        id: course.id,
-        title: course.title,
-        thumbnail: course.thumbnail,
-        instructorName: course.instructor.name,
-        enrollmentCount: course._count.enrollments,
-        averageRating: course.averageRating,
-        revenue: revenueAgg._sum.amount || 0,
-      };
-    }),
-  );
+  const topCourseIds = topCoursesRaw.map((course) => course.id);
+  const paymentsForTopCourses =
+    topCourseIds.length > 0
+      ? await prisma.payment.findMany({
+          where: {
+            status: PaymentStatus.SUCCEEDED,
+            enrollment: { courseId: { in: topCourseIds } },
+          },
+          select: {
+            amount: true,
+            enrollment: { select: { courseId: true } },
+          },
+        })
+      : [];
+
+  const revenueByCourseId = new Map<string, number>();
+  for (const payment of paymentsForTopCourses) {
+    const courseId = payment.enrollment.courseId;
+    revenueByCourseId.set(
+      courseId,
+      (revenueByCourseId.get(courseId) ?? 0) + payment.amount,
+    );
+  }
+
+  const topCourses: ITopCourse[] = topCoursesRaw.map((course) => ({
+    id: course.id,
+    title: course.title,
+    thumbnail: course.thumbnail,
+    instructorName: course.instructor.name,
+    enrollmentCount: course._count.enrollments,
+    averageRating: course.averageRating,
+    revenue: revenueByCourseId.get(course.id) || 0,
+  }));
 
   const completionRate =
     totalEnrollments > 0

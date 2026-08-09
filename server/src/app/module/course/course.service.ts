@@ -2,9 +2,10 @@ import status from "http-status";
 import { Course, Prisma } from "../../../generated/prisma/client";
 import { CourseStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
-import { IQueryParams } from "../../interfaces/query.interface";
+import { IQueryParams, IQueryResult } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { getCached, invalidateCacheByPrefix, setCached } from "../../utils/cache";
 import { courseFilterableFields, courseSearchableFields } from "./course.constant";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import {
@@ -75,6 +76,8 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
     },
   });
 
+  invalidateCacheByPrefix("course:list:");
+
   return course;
 };
 
@@ -94,6 +97,18 @@ const FULL_LESSON_SELECT = {
 } as const;
 
 const getAllCourses = async (query: IQueryParams) => {
+  // Cache catalog reads (30s TTL). Interactive searches and admin
+  // management views stay uncached so results are always fresh.
+  const isCacheable = !query.searchTerm;
+
+  if (isCacheable) {
+    const cacheKey = `course:list:${JSON.stringify(query)}`;
+    const cached = getCached<IQueryResult<Course>>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+  }
+
   const queryBuilder = new QueryBuilder<
     Course,
     Prisma.CourseWhereInput,
@@ -135,6 +150,10 @@ const getAllCourses = async (query: IQueryParams) => {
     .sort()
     .fields()
     .execute();
+
+  if (isCacheable) {
+    setCached(`course:list:${JSON.stringify(query)}`, result, 30);
+  }
 
   return result;
 };
@@ -200,6 +219,8 @@ const updateCourse = async (
     },
   });
 
+  invalidateCacheByPrefix("course:list:");
+
   return course;
 };
 
@@ -220,6 +241,8 @@ const deleteCourse = async (id: string) => {
       status: CourseStatus.ARCHIVED,
     },
   });
+
+  invalidateCacheByPrefix("course:list:");
 
   return course;
 };

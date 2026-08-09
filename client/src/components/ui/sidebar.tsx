@@ -258,6 +258,15 @@ function SidebarTrigger({
 }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar()
 
+  type ButtonOnClick = NonNullable<
+    React.ComponentProps<typeof Button>["onClick"]
+  >
+  type ButtonOnClickEvent = ButtonOnClick extends (
+    event: infer E,
+  ) => void
+    ? E
+    : never
+
   return (
     <Button
       data-sidebar="trigger"
@@ -265,7 +274,7 @@ function SidebarTrigger({
       variant="ghost"
       size="icon-sm"
       className={cn(className)}
-      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+      onClick={(event: ButtonOnClickEvent) => {
         onClick?.(event)
         toggleSidebar()
       }}

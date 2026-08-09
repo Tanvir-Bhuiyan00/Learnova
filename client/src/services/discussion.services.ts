@@ -7,7 +7,6 @@ import {
   IUpdateDiscussionPayload,
   IDiscussionReply,
   ICreateReplyPayload,
-  IUpdateReplyPayload,
 } from "@/types/discussion.types";
 
 export const getDiscussions = async (courseId?: string) => {

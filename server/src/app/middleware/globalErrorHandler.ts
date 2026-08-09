@@ -19,6 +19,8 @@ export const globalErrorHandler = async (
   err: any,
   req: Request,
   res: Response,
+  // `next` is required by Express's error-handling middleware signature.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction,
 ) => {
   if (envVars.NODE_ENV === "development") {

@@ -60,9 +60,11 @@ const PaymentHistoryPage = () => {
               </div>
               <Badge
                 variant={
-                  p.status === "COMPLETED" || p.status === "PAID"
+                  p.status === "SUCCEEDED"
                     ? "default"
-                    : "secondary"
+                    : p.status === "FAILED"
+                      ? "destructive"
+                      : "secondary"
                 }
                 className="rounded-full"
               >

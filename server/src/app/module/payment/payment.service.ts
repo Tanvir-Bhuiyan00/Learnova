@@ -49,7 +49,7 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
 
       const isPaid = session.payment_status === "paid";
 
-      const result = await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx) => {
         const updatedPayments = [];
 
         for (const enrollment of enrollments) {

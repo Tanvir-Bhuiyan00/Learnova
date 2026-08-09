@@ -4,7 +4,6 @@ import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
 import type {
-  IChartDataPoint,
   IDashboardStats,
   IEnrollmentTrendPoint,
   IInstructorDashboardStats,

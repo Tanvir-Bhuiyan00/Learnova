@@ -1,5 +1,5 @@
 import status from "http-status";
-import { Course, Lesson, Module, Prisma } from "../../../generated/prisma/client";
+import { Course, Prisma } from "../../../generated/prisma/client";
 import { CourseStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IQueryParams } from "../../interfaces/query.interface";

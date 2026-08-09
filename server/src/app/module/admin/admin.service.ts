@@ -199,7 +199,8 @@ const changeUserRole = async (
 
   const { userId, role } = payload;
 
-  const userToChangeRole = await prisma.user.findUniqueOrThrow({
+  // Throws if the target user does not exist.
+  await prisma.user.findUniqueOrThrow({
     where: { id: userId },
   });
 

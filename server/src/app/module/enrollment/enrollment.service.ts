@@ -97,6 +97,11 @@ const checkoutCart = async (user: IRequestUser) => {
           },
         });
 
+        await tx.course.update({
+          where: { id: item.courseId },
+          data: { totalStudents: { increment: 1 } },
+        });
+
         created.push(enrollment);
       }
 
@@ -145,12 +150,17 @@ const checkoutCart = async (user: IRequestUser) => {
       });
 
       enrollmentIds.push(enrollment.id);
+
+      await tx.course.update({
+        where: { id: item.courseId },
+        data: { totalStudents: { increment: 1 } },
+      });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: cart.items.map((item) => {
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        mode: "payment",
+        line_items: cart.items.map((item) => {
         const price = item.course.discountPrice ?? item.course.price;
         const itemDiscount = cart.coupon
           ? calculateItemDiscount(price, subtotal, discount)
@@ -388,6 +398,17 @@ const cancelUnpaidEnrollments = async () => {
       where: { id: { in: enrollmentIds } },
       data: { isDeleted: true, deletedAt: new Date() },
     });
+
+    const staleCourseIds = stalePayments
+      .map((p) => p.enrollment?.courseId)
+      .filter(Boolean) as string[];
+
+    for (const courseId of new Set(staleCourseIds)) {
+      await tx.course.update({
+        where: { id: courseId },
+        data: { totalStudents: { decrement: 1 } },
+      });
+    }
 
     for (const couponId of couponIds) {
       await decrementCouponUsage(tx, couponId);

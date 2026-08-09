@@ -1,9 +1,25 @@
 import status from "http-status";
 import { PaymentStatus } from "../../../generated/prisma/enums";
+import { Prisma } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
 import { ICreateReviewPayload, IUpdateReviewPayload } from "./review.interface";
+
+const recalculateCourseRating = async (
+  tx: Prisma.TransactionClient,
+  courseId: string,
+) => {
+  const averageRating = await tx.review.aggregate({
+    where: { courseId },
+    _avg: { rating: true },
+  });
+
+  await tx.course.update({
+    where: { id: courseId },
+    data: { averageRating: averageRating._avg.rating ?? 0 },
+  });
+};
 
 const giveReview = async (
   user: IRequestUser,
@@ -81,6 +97,8 @@ const giveReview = async (
         },
       });
     }
+
+    await recalculateCourseRating(tx, payload.courseId);
 
     return review;
   });
@@ -167,6 +185,8 @@ const updateReview = async (
       });
     }
 
+    await recalculateCourseRating(tx, reviewData.courseId);
+
     return updatedReview;
   });
 
@@ -202,6 +222,8 @@ const deleteReview = async (user: IRequestUser, reviewId: string) => {
         data: { averageRating: averageRating._avg.rating as number },
       });
     }
+
+    await recalculateCourseRating(tx, deletedReview.courseId);
 
     return deletedReview;
   });

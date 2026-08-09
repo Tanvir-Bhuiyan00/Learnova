@@ -8,11 +8,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getQuizById,
   getQuizForTake,
+  startAttempt,
   submitAttempt,
 } from "@/services/quiz.services";
 import { IQuizQuestion } from "@/types/quiz.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, Flag } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -27,8 +29,12 @@ interface QuizTakeData {
 }
 
 const TakeQuizPage = ({ params }: Props) => {
+  const searchParams = useSearchParams();
   const [courseId, setCourseId] = useState("");
   const [quizId, setQuizId] = useState("");
+  const [attemptId, setAttemptId] = useState<string | null>(
+    searchParams.get("attemptId"),
+  );
   useEffect(() => {
     params.then((p) => {
       setCourseId(p.courseId);
@@ -77,9 +83,34 @@ const TakeQuizPage = ({ params }: Props) => {
 
   const answeredCount = Object.keys(answers).length;
 
+  const [starting, setStarting] = useState(!searchParams.get("attemptId"));
+
+  useEffect(() => {
+    if (!quizId || attemptId) return;
+    let cancelled = false;
+    startAttempt(quizId)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setAttemptId(res.data.id);
+        } else {
+          toast.error(res.message || "Failed to start quiz");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Failed to start quiz");
+      })
+      .finally(() => {
+        if (!cancelled) setStarting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [quizId, attemptId]);
+
   const submitMutation = useMutation({
     mutationFn: () =>
-      submitAttempt(quizId, {
+      submitAttempt(attemptId!, {
         answers: Object.entries(answers).map(
           ([questionId, selectedAnswer]) => ({ questionId, selectedAnswer }),
         ),
@@ -207,9 +238,13 @@ const TakeQuizPage = ({ params }: Props) => {
             <Button
               className="rounded-full px-8"
               onClick={() => submitMutation.mutate()}
-              disabled={submitMutation.isPending}
+              disabled={submitMutation.isPending || starting || !attemptId}
             >
-              {submitMutation.isPending ? "Submitting..." : "Submit answers"}
+              {submitMutation.isPending
+                ? "Submitting..."
+                : starting
+                  ? "Starting..."
+                  : "Submit answers"}
             </Button>
           </div>
         </div>

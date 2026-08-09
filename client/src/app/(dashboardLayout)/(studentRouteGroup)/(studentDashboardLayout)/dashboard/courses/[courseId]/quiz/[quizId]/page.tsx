@@ -46,7 +46,9 @@ const QuizDetailPage = ({ params }: Props) => {
     mutationFn: () => startAttempt(quizId),
     onSuccess: (res) => {
       if (res.success) {
-        router.push(`/dashboard/courses/${courseId}/quiz/${quizId}/take`);
+        router.push(
+          `/dashboard/courses/${courseId}/quiz/${quizId}/take?attemptId=${res.data.id}`,
+        );
       } else {
         toast.error(res.message || "Failed to start quiz");
       }

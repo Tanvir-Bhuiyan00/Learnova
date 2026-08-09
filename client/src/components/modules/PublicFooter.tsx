@@ -129,13 +129,6 @@ const PublicFooter = () => {
           </div>
         </div>
       </div>
-
-      <div
-        aria-hidden
-        className="pointer-events-none select-none whitespace-nowrap font-heading text-[14rem] font-black leading-none tracking-tighter text-white/[0.04] sm:text-[22rem]"
-      >
-        Learnova
-      </div>
     </footer>
   );
 };

@@ -25,6 +25,14 @@ async function tryRefreshToken(
     return; // avoid multiple refresh attempts in the same request lifecycle
   }
 
+  // Setting cookies is only allowed in Server Actions / Route Handlers.
+  // During RSC renders cookies() is read-only; the proxy middleware already
+  // refreshes tokens on navigation, so skip refresh here to avoid the
+  // "Cookies can only be modified in a Server Action or Route Handler" error.
+  if (!requestHeader.has("next-action")) {
+    return;
+  }
+
   try {
     await getNewTokensWithRefreshToken(refreshToken);
   } catch (error: any) {

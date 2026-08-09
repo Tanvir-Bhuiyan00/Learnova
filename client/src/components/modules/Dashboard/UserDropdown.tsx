@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,17 +29,19 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align={"end"} className="w-56">
-        <DropdownMenuLabel>
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{userInfo.name}</p>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium">{userInfo.name}</p>
 
-            <p className="text-xs text-muted-foreground">{userInfo.email}</p>
+              <p className="text-xs text-muted-foreground">{userInfo.email}</p>
 
-            <p className="text-xs font-medium capitalize text-ink-deep">
-              {userInfo.role.toLowerCase().replace("_", " ")}
-            </p>
-          </div>
-        </DropdownMenuLabel>
+              <p className="text-xs font-medium capitalize text-ink-deep">
+                {userInfo.role.toLowerCase().replace("_", " ")}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 

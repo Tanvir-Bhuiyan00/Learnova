@@ -598,6 +598,10 @@ const getOrCreateInstructor = async (instructorData: (typeof DEMO_INSTRUCTORS)[n
   });
 
   if (existing) {
+    await prisma.user.update({
+      where: { id: existing.userId },
+      data: { emailVerified: true },
+    });
     return existing;
   }
 
@@ -610,6 +614,11 @@ const getOrCreateInstructor = async (instructorData: (typeof DEMO_INSTRUCTORS)[n
       needPasswordChange: false,
       rememberMe: false,
     },
+  });
+
+  await prisma.user.update({
+    where: { id: data.user.id },
+    data: { emailVerified: true },
   });
 
   const instructor = await prisma.instructor.create({
@@ -635,6 +644,10 @@ const getOrCreateStudent = async (studentData: (typeof DEMO_STUDENTS)[number]) =
   });
 
   if (existing) {
+    await prisma.user.update({
+      where: { id: existing.userId },
+      data: { emailVerified: true },
+    });
     return existing;
   }
 
@@ -647,6 +660,11 @@ const getOrCreateStudent = async (studentData: (typeof DEMO_STUDENTS)[number]) =
       needPasswordChange: false,
       rememberMe: false,
     },
+  });
+
+  await prisma.user.update({
+    where: { id: data.user.id },
+    data: { emailVerified: true },
   });
 
   const student = await prisma.student.create({

@@ -19,6 +19,15 @@ const AdminDashboardContent = () => {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+          Overview
+        </h1>
+        <p className="mt-1 text-sm text-mute-text">
+          A snapshot of your platform at a glance.
+        </p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Users"

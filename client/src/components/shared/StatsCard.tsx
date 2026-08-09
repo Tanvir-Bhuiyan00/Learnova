@@ -19,20 +19,27 @@ const StatsCard = ({
   className,
 }: StatsCardProps) => {
   return (
-    <Card className={cn("hover:shadow-md transition-shadow", className)}>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-          {createElement(getIconComponent(iconName), { className: "w-6 h-6" })}
+    <Card
+      className={cn(
+        "ring-1 ring-border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary-pale hover:ring-primary/40",
+        className,
+      )}
+    >
+      <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
+        <CardTitle className="text-sm font-medium text-body-text">
+          {title}
+        </CardTitle>
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-pale text-ink-deep">
+          {createElement(getIconComponent(iconName), { className: "size-5" })}
         </div>
       </CardHeader>
 
       <CardContent className="space-y-1">
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-heading text-3xl font-extrabold text-ink">
+          {value}
+        </div>
         {description && (
-          <p className="text-xs font-medium text-muted-foreground">
-            {description}
-          </p>
+          <p className="text-xs font-medium text-mute-text">{description}</p>
         )}
       </CardContent>
     </Card>

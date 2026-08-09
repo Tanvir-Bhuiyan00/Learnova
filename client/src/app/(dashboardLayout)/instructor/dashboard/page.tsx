@@ -1,11 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import StatsCard from "@/components/shared/StatsCard";
 import { getDashboardData } from "@/services/dashboard.services";
 import { IInstructorDashboardStats } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, DollarSign, Star, Users } from "lucide-react";
 
 const InstructorDashboardPage = () => {
   const { data, isLoading } = useQuery({
@@ -17,56 +16,53 @@ const InstructorDashboardPage = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-48" />
-        <div className="grid gap-4 md:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-3xl" />
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Instructor Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+          Instructor overview
+        </h1>
+        <p className="mt-1 text-sm text-mute-text">
+          Track your courses, students, and earnings.
+        </p>
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-            <BookOpen className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats?.totalCourses ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats?.totalStudents ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
-            <Star className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{stats?.averageRating?.toFixed(1) ?? "0.0"}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <DollarSign className="size-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">${stats?.totalRevenue?.toFixed(2) ?? "0.00"}</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          title="Total Courses"
+          value={stats?.totalCourses ?? 0}
+          iconName="BookOpen"
+          description="Courses you have published"
+        />
+        <StatsCard
+          title="Total Students"
+          value={stats?.totalStudents ?? 0}
+          iconName="Users"
+          description="Students across your courses"
+        />
+        <StatsCard
+          title="Avg Rating"
+          value={stats?.averageRating?.toFixed(1) ?? "0.0"}
+          iconName="Star"
+          description="Average course rating"
+        />
+        <StatsCard
+          title="Revenue"
+          value={`$${stats?.totalRevenue?.toFixed(2) ?? "0.00"}`}
+          iconName="DollarSign"
+          description="Total earnings"
+        />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ const EnrollmentsManagementPage = () => (
   <AdminListPage
     title="Enrollments Management"
     queryKey={["admin-enrollments"]}
-    queryFn={() => getAllEnrollments()}
+    queryFn={(page) => getAllEnrollments(`page=${page}&limit=10`)}
     columns={[
       { key: "id", label: "ID", render: (e: any) => e.id.slice(0, 8) + "..." },
       { key: "studentId", label: "Student ID", render: (e: any) => e.studentId.slice(0, 8) + "..." },

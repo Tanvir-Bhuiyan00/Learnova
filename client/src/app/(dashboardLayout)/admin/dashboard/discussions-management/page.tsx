@@ -8,7 +8,7 @@ const DiscussionsManagementPage = () => (
   <AdminListPage
     title="Discussions Management"
     queryKey={["admin-discussions"]}
-    queryFn={() => getDiscussions()}
+    queryFn={(page) => getDiscussions(undefined, `page=${page}&limit=10`)}
     columns={[
       { key: "title", label: "Title", render: (d: any) => d.title },
       { key: "resolved", label: "Status", render: (d: any) => d.isResolved ? <Badge>Resolved</Badge> : <Badge variant="secondary">Open</Badge> },

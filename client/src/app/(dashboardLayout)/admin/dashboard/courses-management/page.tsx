@@ -29,7 +29,7 @@ const CoursesManagementPage = () => {
     <AdminListPage
       title="Courses Management"
       queryKey={["admin-courses"]}
-      queryFn={() => getCourses()}
+      queryFn={(page) => getCourses(`page=${page}&limit=10`)}
       onDelete={(id) => deleteMutation.mutate(id)}
       columns={[
         { key: "title", label: "Title", render: (c: any) => c.title },

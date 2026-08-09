@@ -8,7 +8,7 @@ const ReviewsManagementPage = () => (
   <AdminListPage
     title="Reviews Management"
     queryKey={["admin-reviews"]}
-    queryFn={() => getReviews()}
+    queryFn={(page) => getReviews(`page=${page}&limit=10`)}
     columns={[
       { key: "rating", label: "Rating", render: (r: any) => (
         <div className="flex items-center gap-1">

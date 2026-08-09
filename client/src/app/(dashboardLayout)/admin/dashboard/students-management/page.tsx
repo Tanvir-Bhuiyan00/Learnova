@@ -8,7 +8,7 @@ const StudentsManagementPage = () => (
   <AdminListPage
     title="Students Management"
     queryKey={["admin-students"]}
-    queryFn={() => getStudents()}
+    queryFn={(page) => getStudents(`page=${page}&limit=10`)}
     columns={[
       { key: "name", label: "Name", render: (s: any) => s.name },
       { key: "email", label: "Email", render: (s: any) => s.email },

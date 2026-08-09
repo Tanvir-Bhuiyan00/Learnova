@@ -27,6 +27,7 @@ const levelOptions = [
 const CoursesList = () => {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [categoryId, setCategoryId] = useState("all");
   const [level, setLevel] = useState("all");
   const [page, setPage] = useState(1);
@@ -35,13 +36,36 @@ const CoursesList = () => {
     const q = searchParams.get("q");
     if (q) {
       setSearch(q);
+      setDebouncedSearch(q);
       setPage(1);
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, categoryId, level]);
+
+  const buildQueryString = () => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("limit", String(PAGE_SIZE));
+    params.set("status", "PUBLISHED");
+    if (debouncedSearch.trim()) params.set("searchTerm", debouncedSearch.trim());
+    if (categoryId !== "all") params.set("categoryId", categoryId);
+    if (level !== "all") params.set("level", level);
+    return params.toString();
+  };
+
   const { data: coursesData, isLoading: coursesLoading } = useQuery({
-    queryKey: ["courses"],
-    queryFn: () => getCourses(),
+    queryKey: ["courses", debouncedSearch, categoryId, level, page],
+    queryFn: () => getCourses(buildQueryString()),
   });
 
   const { data: categoriesData } = useQuery({
@@ -50,34 +74,22 @@ const CoursesList = () => {
   });
 
   const courses: ICourse[] = coursesData?.data ?? [];
+  const total = coursesData?.meta?.total ?? courses.length;
   const categories: ICategory[] = categoriesData?.data ?? [];
 
-  const filtered = courses.filter((c) => {
-    if (c.status !== "PUBLISHED") return false;
-    if (
-      search &&
-      !c.title.toLowerCase().includes(search.toLowerCase())
-    ) {
-      return false;
-    }
-    if (categoryId !== "all" && c.categoryId !== categoryId) return false;
-    if (level !== "all" && c.level !== level) return false;
-    return true;
-  });
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const totalPages = Math.max(
+    1,
+    coursesData?.meta?.totalPages ?? Math.ceil(courses.length / PAGE_SIZE),
+  );
   const safePage = Math.min(page, totalPages);
-  const paged = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, categoryId, level]);
+  const paged = courses.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const hasActiveFilters =
     search.trim() !== "" || categoryId !== "all" || level !== "all";
 
   const clearFilters = () => {
     setSearch("");
+    setDebouncedSearch("");
     setCategoryId("all");
     setLevel("all");
   };
@@ -201,8 +213,8 @@ const CoursesList = () => {
             <div className="mb-6 flex items-center justify-between">
               <p className="text-sm text-body-text">
                 Showing{" "}
-                <span className="font-semibold text-ink">{filtered.length}</span>{" "}
-                {filtered.length === 1 ? "course" : "courses"}
+                <span className="font-semibold text-ink">{total}</span>{" "}
+                {total === 1 ? "course" : "courses"}
               </p>
               {hasActiveFilters && (
                 <p className="text-sm text-mute-text">Filters active</p>

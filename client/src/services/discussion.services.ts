@@ -9,11 +9,16 @@ import {
   ICreateReplyPayload,
 } from "@/types/discussion.types";
 
-export const getDiscussions = async (courseId?: string) => {
+export const getDiscussions = async (
+  courseId?: string,
+  queryString?: string,
+) => {
   try {
-    const queryString = courseId ? `?courseId=${courseId}` : "";
+    const query = new URLSearchParams(queryString ?? "");
+    if (courseId) query.set("courseId", courseId);
+    const qs = query.toString();
     const discussions = await httpClient.get<IDiscussion[]>(
-      `/discussions${queryString}`,
+      `/discussions${qs ? `?${qs}` : ""}`,
     );
     return discussions;
   } catch (error) {

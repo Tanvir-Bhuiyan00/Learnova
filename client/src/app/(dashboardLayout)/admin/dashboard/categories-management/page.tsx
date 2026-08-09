@@ -20,7 +20,7 @@ const CategoriesManagementPage = () => {
     <AdminListPage
       title="Categories Management"
       queryKey={["admin-categories"]}
-      queryFn={() => getCategories()}
+      queryFn={(page) => getCategories(`page=${page}&limit=10`)}
       onDelete={(id) => deleteMutation.mutate(id)}
       columns={[
         { key: "title", label: "Title", render: (c: any) => c.title },

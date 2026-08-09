@@ -15,7 +15,7 @@ const PaymentsManagementPage = () => (
   <AdminListPage
     title="Payments Management"
     queryKey={["admin-payments"]}
-    queryFn={() => getAllPayments()}
+    queryFn={(page) => getAllPayments(`page=${page}&limit=10`)}
     columns={[
       { key: "id", label: "ID", render: (p: any) => p.id.slice(0, 8) + "..." },
       { key: "amount", label: "Amount", render: (p: any) => `${p.currency} ${p.amount.toFixed(2)}` },

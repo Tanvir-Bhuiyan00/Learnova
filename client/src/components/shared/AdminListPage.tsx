@@ -9,6 +9,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { PaginationMeta } from "@/types/api.types";
 
 const PAGE_SIZE = 10;
 
@@ -22,7 +23,9 @@ interface AdminListPageProps<T> {
   title: string;
   description?: string;
   queryKey: string[];
-  queryFn: () => Promise<{ data?: T[] }>;
+  queryFn: (
+    page: number,
+  ) => Promise<{ data?: T[]; meta?: PaginationMeta }>;
   columns: Column<T>[];
   onDelete?: (id: string) => void;
   idKey?: keyof T;
@@ -32,10 +35,17 @@ export function AdminListPage<T>({
   title, description, queryKey, queryFn, columns, onDelete, idKey = "id" as keyof T,
 }: AdminListPageProps<T>) {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useQuery({ queryKey, queryFn });
-  const allItems: T[] = (data as { data?: T[] })?.data ?? [];
-  const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
-  const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const { data, isLoading } = useQuery({
+    queryKey: [...queryKey, page],
+    queryFn: () => queryFn(page),
+  });
+  const allItems: T[] = data?.data ?? [];
+  const totalPages = Math.max(
+    1,
+    data?.meta?.totalPages ?? Math.ceil(allItems.length / PAGE_SIZE),
+  );
+  const safePage = Math.min(page, totalPages);
+  const items = allItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -84,7 +94,7 @@ export function AdminListPage<T>({
             </TableBody>
           </Table>
           <div className="border-t border-canvas-soft px-4 py-3">
-            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination currentPage={safePage} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </div>
       )}

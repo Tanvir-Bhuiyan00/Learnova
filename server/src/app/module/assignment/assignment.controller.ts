@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { AssignmentService } from "./assignment.service";
@@ -19,13 +20,16 @@ const createAssignment = catchAsync(async (req: Request, res: Response) => {
 
 const getAllAssignments = catchAsync(async (req: Request, res: Response) => {
   const courseId = req.query.courseId as string | undefined;
-  const result = await AssignmentService.getAllAssignments(courseId);
+  const query: IQueryParams = { ...(req.query as IQueryParams) };
+  if (!query.limit) query.limit = "50";
+  const result = await AssignmentService.getAllAssignments(query, courseId);
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,
     success: true,
     message: "Assignments retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

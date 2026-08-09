@@ -3,7 +3,9 @@ import { PaymentStatus } from "../../../generated/prisma/enums";
 import { Prisma } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 import { ICreateReviewPayload, IUpdateReviewPayload } from "./review.interface";
 
 const recalculateCourseRating = async (
@@ -106,16 +108,21 @@ const giveReview = async (
   return result;
 };
 
-const getAllReviews = async () => {
-  const reviews = await prisma.review.findMany({
-    include: {
+const getAllReviews = async (query: IQueryParams) => {
+  const queryBuilder = new QueryBuilder(prisma.review, query);
+
+  const result = await queryBuilder
+    .where({ isDeleted: false } as any)
+    .include({
       student: true,
       course: true,
       instructor: true,
-    },
-  });
+    } as any)
+    .paginate()
+    .sort()
+    .execute();
 
-  return reviews;
+  return result;
 };
 
 const myReviews = async (user: IRequestUser) => {

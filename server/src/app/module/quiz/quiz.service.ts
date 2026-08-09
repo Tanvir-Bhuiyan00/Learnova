@@ -85,21 +85,24 @@ const getQuizzesByCourse = async (courseId: string, user: IRequestUser) => {
     });
 
     if (student) {
-      const quizzesWithAttempts = await Promise.all(
-        quizzes.map(async (quiz) => {
-          const attemptCount = await prisma.quizAttempt.count({
-            where: {
-              quizId: quiz.id,
-              studentId: student.id,
-              isDeleted: false,
-            },
-          });
+      const attemptCounts = await prisma.quizAttempt.groupBy({
+        by: ["quizId"],
+        where: {
+          quizId: { in: quizzes.map((q) => q.id) },
+          studentId: student.id,
+          isDeleted: false,
+        },
+        _count: { id: true },
+      });
 
-          return { ...quiz, myAttemptCount: attemptCount };
-        }),
+      const countMap = new Map(
+        attemptCounts.map((a) => [a.quizId, a._count.id]),
       );
 
-      return quizzesWithAttempts;
+      return quizzes.map((quiz) => ({
+        ...quiz,
+        myAttemptCount: countMap.get(quiz.id) ?? 0,
+      }));
     }
   }
 

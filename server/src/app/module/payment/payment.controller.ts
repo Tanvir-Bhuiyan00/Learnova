@@ -55,13 +55,16 @@ const handleStripeWebhookEvent = catchAsync(
 );
 
 const getMyPayments = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentService.getMyPayments(req.user);
+  const query: IQueryParams = { ...(req.query as IQueryParams) };
+  if (!query.limit) query.limit = "50";
+  const result = await PaymentService.getMyPayments(req.user, query);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
     message: "Payments retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

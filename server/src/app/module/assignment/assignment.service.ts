@@ -1,7 +1,9 @@
 import httpStatus from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
   assertAssignmentOwnership,
   assertCourseOwnership,
@@ -32,22 +34,25 @@ const createAssignment = async (
   return result;
 };
 
-const getAllAssignments = async (courseId?: string) => {
-  const where: Record<string, unknown> = { isDeleted: false };
+const getAllAssignments = async (
+  query: IQueryParams,
+  courseId?: string,
+) => {
+  const queryBuilder = new QueryBuilder(prisma.assignment, query);
 
-  if (courseId) {
-    where.courseId = courseId;
-  }
-
-  const assignments = await prisma.assignment.findMany({
-    where: where as any,
-    include: {
+  const result = await queryBuilder
+    .where({
+      isDeleted: false,
+      ...(courseId ? { courseId } : {}),
+    } as any)
+    .include({
       _count: { select: { submissions: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+    } as any)
+    .paginate()
+    .sort()
+    .execute();
 
-  return assignments;
+  return result;
 };
 
 const getAssignmentById = async (assignmentId: string) => {

@@ -151,14 +151,16 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
   return { message: `Webhook Event ${event.id} processed successfully` };
 };
 
-const getMyPayments = async (user: IRequestUser) => {
+const getMyPayments = async (user: IRequestUser, query: IQueryParams) => {
   const student = await prisma.student.findUniqueOrThrow({
     where: { userId: user.userId },
   });
 
-  return await prisma.payment.findMany({
-    where: { studentId: student.id, isDeleted: false },
-    include: {
+  const queryBuilder = new QueryBuilder(prisma.payment, query);
+
+  const result = await queryBuilder
+    .where({ studentId: student.id, isDeleted: false } as any)
+    .include({
       enrollment: {
         include: {
           course: {
@@ -170,9 +172,12 @@ const getMyPayments = async (user: IRequestUser) => {
           },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+    } as any)
+    .paginate()
+    .sort()
+    .execute();
+
+  return result;
 };
 
 const getAllPayments = async (query: IQueryParams) => {

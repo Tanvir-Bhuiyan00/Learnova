@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import httpStatus from "http-status";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import { DiscussionService } from "./discussion.service";
@@ -19,13 +20,16 @@ const createDiscussion = catchAsync(async (req: Request, res: Response) => {
 
 const getAllDiscussions = catchAsync(async (req: Request, res: Response) => {
   const courseId = req.query.courseId as string | undefined;
-  const result = await DiscussionService.getAllDiscussions(courseId);
+  const query: IQueryParams = { ...(req.query as IQueryParams) };
+  if (!query.limit) query.limit = "50";
+  const result = await DiscussionService.getAllDiscussions(query, courseId);
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,
     success: true,
     message: "Discussions retrieved successfully",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   });
 });
 

@@ -1,7 +1,9 @@
 import httpStatus from "http-status";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
+import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
+import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
   ICreateDiscussionPayload,
   ICreateReplyPayload,
@@ -33,23 +35,29 @@ const createDiscussion = async (
   return result;
 };
 
-const getAllDiscussions = async (courseId?: string) => {
-  const where: Record<string, unknown> = { isDeleted: false };
+const getAllDiscussions = async (
+  query: IQueryParams,
+  courseId?: string,
+) => {
+  const queryBuilder = new QueryBuilder(prisma.discussion, query);
 
-  if (courseId) {
-    where.courseId = courseId;
-  }
-
-  const discussions = await prisma.discussion.findMany({
-    where: where as any,
-    include: {
+  const builder = queryBuilder
+    .where({
+      isDeleted: false,
+      ...(courseId ? { courseId } : {}),
+    } as any)
+    .include({
       student: true,
       _count: { select: { replies: { where: { isDeleted: false } } } },
-    },
-    orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-  });
+    } as any)
+    .paginate()
+    .sort();
 
-  return discussions;
+  builder.getQuery().orderBy = [{ isPinned: "desc" }, { createdAt: "desc" }];
+
+  const result = await builder.execute();
+
+  return result;
 };
 
 const getDiscussionById = async (discussionId: string) => {

@@ -36,6 +36,11 @@ interface EnvConfig {
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
   };
+  RAG: {
+    OPENROUTER_API_KEY: string;
+    OPENROUTER_LLM_MODEL: string;
+  };
+  REDIS_URL: string;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
   CRON_SECRET: string;
@@ -117,6 +122,12 @@ const loadEnvVariables = (): EnvConfig => {
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
       STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
     },
+    RAG: {
+      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || "",
+      OPENROUTER_LLM_MODEL:
+        process.env.OPENROUTER_LLM_MODEL || "openai/gpt-4o-mini",
+    },
+    REDIS_URL: process.env.REDIS_URL || "",
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
     CRON_SECRET: process.env.CRON_SECRET as string,

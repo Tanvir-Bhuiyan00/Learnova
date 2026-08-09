@@ -23,6 +23,33 @@ import {
   IUpdateModulePayload,
 } from "./course.interface";
 
+const reindexCourseAsync = (courseId: string) => {
+  import("../rag/rag.service")
+    .then(({ RAGService }) => RAGService.reindexCourse(courseId))
+    .catch((error) => console.warn("[RAG] course reindex failed:", error));
+};
+
+const reindexCourseByLessonAsync = (lessonId: string) => {
+  prisma.lesson
+    .findUnique({
+      where: { id: lessonId },
+      select: { module: { select: { courseId: true } } },
+    })
+    .then((lesson) => {
+      if (lesson?.module.courseId) {
+        reindexCourseAsync(lesson.module.courseId);
+      }
+    })
+    .catch((error) => console.warn("[RAG] course reindex failed:", error));
+};
+
+const removeCourseSourceAsync = (courseId: string) => {
+  import("../rag/rag.service")
+    .then(({ RAGService }) => RAGService.removeSource("COURSE", courseId))
+    .catch((error) => console.warn("[RAG] course remove failed:", error));
+};
+
+
 const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
   const instructor = await prisma.instructor.findUnique({
     where: { userId },
@@ -77,6 +104,8 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
   });
 
   invalidateCacheByPrefix("course:list:");
+
+  reindexCourseAsync(course.id);
 
   return course;
 };
@@ -221,6 +250,8 @@ const updateCourse = async (
 
   invalidateCacheByPrefix("course:list:");
 
+  reindexCourseAsync(id);
+
   return course;
 };
 
@@ -243,6 +274,8 @@ const deleteCourse = async (id: string) => {
   });
 
   invalidateCacheByPrefix("course:list:");
+
+  removeCourseSourceAsync(id);
 
   return course;
 };
@@ -283,6 +316,8 @@ const createModule = async (
       courseId,
     },
   });
+
+  reindexCourseAsync(courseId);
 
   return module;
 };
@@ -354,6 +389,8 @@ const updateModule = async (
     data: payload,
   });
 
+  reindexCourseAsync(isModuleExist.courseId);
+
   return module;
 };
 
@@ -375,6 +412,8 @@ const deleteModule = async (id: string, user: IRequestUser) => {
       deletedAt: new Date(),
     },
   });
+
+  reindexCourseAsync(isModuleExist.courseId);
 
   return module;
 };
@@ -422,6 +461,8 @@ const createLesson = async (
       module: true,
     },
   });
+
+  reindexCourseAsync(lesson.module.courseId);
 
   return lesson;
 };
@@ -487,6 +528,8 @@ const updateLesson = async (
     data: payload,
   });
 
+  reindexCourseByLessonAsync(id);
+
   return lesson;
 };
 
@@ -508,6 +551,8 @@ const deleteLesson = async (id: string, user: IRequestUser) => {
       deletedAt: new Date(),
     },
   });
+
+  reindexCourseByLessonAsync(id);
 
   return lesson;
 };

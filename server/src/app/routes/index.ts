@@ -15,6 +15,7 @@ import {
   CourseQuizRoutes,
   QuizRoutes,
 } from "../module/quiz/quiz.route";
+import { RagRoutes } from "../module/rag/rag.route";
 import { ReviewRoutes } from "../module/review/review.route";
 import { StatsRoutes } from "../module/stats/stats.route";
 import { StudentRoutes } from "../module/student/student.route";
@@ -42,5 +43,6 @@ router.use("/wishlists", WishlistRoutes);
 router.use("/discussions", DiscussionRoutes);
 router.use("/assignments", AssignmentRoutes);
 router.use("/certificates", CertificateRoutes);
+router.use("/rag", RagRoutes);
 
 export const IndexRoutes = router;

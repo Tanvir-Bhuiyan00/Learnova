@@ -76,6 +76,10 @@ const updateInstructor = async (
     data: payload,
   });
 
+  import("../rag/rag.service")
+    .then(({ RAGService }) => RAGService.reindexInstructor(id))
+    .catch((error) => console.warn("[RAG] instructor reindex failed:", error));
+
   return updatedInstructor;
 };
 

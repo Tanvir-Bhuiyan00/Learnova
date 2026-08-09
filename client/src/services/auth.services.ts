@@ -51,6 +51,12 @@ export async function fetchNewTokens(
   }
 }
 
+const isCookieReadOnlyError = (error: unknown): boolean =>
+  error instanceof Error &&
+  error.message.includes(
+    "Cookies can only be modified in a Server Action or Route Handler",
+  );
+
 export async function getNewTokensWithRefreshToken(
   refreshToken: string,
 ): Promise<boolean> {
@@ -80,7 +86,12 @@ export async function getNewTokensWithRefreshToken(
 
     return true;
   } catch (error) {
-    console.error("Error refreshing token:", error);
+    // Next.js renders the redirect target of a Server Action inside the action
+    // POST where cookies() is read-only. The middleware already refreshed the
+    // tokens on that request, so this is expected in that path - skip the noise.
+    if (!isCookieReadOnlyError(error)) {
+      console.error("Error refreshing token:", error);
+    }
     return false;
   }
 }

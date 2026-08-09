@@ -24,7 +24,7 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
   if (totalPages > 1) pages.push(totalPages);
 
   return (
-    <div className="flex items-center justify-center gap-1 py-4">
+    <div className="flex flex-wrap items-center justify-center gap-1 py-4">
       <Button variant="outline" size="icon" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>
         <ChevronLeft className="size-4" />
       </Button>

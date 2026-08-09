@@ -44,7 +44,7 @@ const DashboardNavbarContent = ({
           </Button>
         </SheetTrigger>
 
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="p-0">
           <DashboardMobileSidebar
             userInfo={userInfo}
             dashboardHome={dashboardHome}

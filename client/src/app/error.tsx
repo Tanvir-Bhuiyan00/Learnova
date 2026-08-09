@@ -50,14 +50,14 @@ export default function Error({
             </Alert>
           )}
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={() => reset()} className="flex-1">
-              <RefreshCw className="mr-2 h-4 w-4" />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={() => reset()} className="flex-1 gap-2 rounded-full">
+              <RefreshCw className="size-4" />
               Try Again
             </Button>
-            <Button variant="outline" asChild className="flex-1">
+            <Button variant="outline" asChild className="flex-1 rounded-full">
               <Link href="/">
-                <Home className="mr-2 h-4 w-4" />
+                <Home className="mr-2 size-4" />
                 Go Home
               </Link>
             </Button>

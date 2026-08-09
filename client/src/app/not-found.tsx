@@ -13,22 +13,22 @@ export default function NotFound() {
           title="Page Not Found"
           description="The page you're looking for doesn't exist or has been moved. Please check the URL or navigate back to safety."
         >
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6">
-            <Button asChild>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Button asChild className="gap-2 rounded-full">
               <Link href="/">
-                <Home className="mr-2 h-4 w-4" />
+                <Home className="size-4" />
                 Go Home
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="rounded-full">
               <Link href="/courses">
-                <BookOpen className="mr-2 h-4 w-4" />
+                <BookOpen className="mr-2 size-4" />
                 Browse Courses
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="rounded-full">
               <Link href="/categories">
-                <FolderOpen className="mr-2 h-4 w-4" />
+                <FolderOpen className="mr-2 size-4" />
                 View Categories
               </Link>
             </Button>

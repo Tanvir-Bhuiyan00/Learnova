@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getInstructorById } from "@/services/instructor.services";
 import { IInstructorDetails } from "@/types/instructor.types";

@@ -38,25 +38,29 @@ const UsersManagementPage = () => {
   const items = tab === "students" ? students : instructors;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Users Management</h1>
-        <p className="text-sm text-muted-foreground">Manage students and instructors</p>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+          Users management
+        </h1>
+        <p className="mt-1 text-sm text-mute-text">
+          Manage students and instructors
+        </p>
       </div>
 
-      <div className="flex gap-2">
+      <div className="inline-flex gap-1 rounded-full bg-canvas-soft p-1">
         <button
           onClick={() => setTab("students")}
-          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "students" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+          className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+            tab === "students" ? "bg-ink text-white shadow-sm" : "text-body-text hover:text-ink"
           }`}
         >
           Students
         </button>
         <button
           onClick={() => setTab("instructors")}
-          className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-            tab === "instructors" ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"
+          className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+            tab === "instructors" ? "bg-ink text-white shadow-sm" : "text-body-text hover:text-ink"
           }`}
         >
           Instructors
@@ -66,9 +70,9 @@ const UsersManagementPage = () => {
       {isLoading ? (
         <div className="space-y-3"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
           <Table>
-            <TableHeader>
+            <TableHeader className="[&_tr]:bg-canvas-soft/70">
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
@@ -79,10 +83,10 @@ const UsersManagementPage = () => {
             <TableBody>
               {items.map((item: any) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="font-medium text-ink">{item.name}</TableCell>
                   <TableCell>{item.email}</TableCell>
                   {tab === "instructors" && <TableCell>{item.qualification || "—"}</TableCell>}
-                  <TableCell>{item.isDeleted ? <Badge variant="destructive">Deleted</Badge> : <Badge>Active</Badge>}</TableCell>
+                  <TableCell>{item.isDeleted ? <Badge variant="destructive" className="rounded-full">Deleted</Badge> : <Badge className="rounded-full">Active</Badge>}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

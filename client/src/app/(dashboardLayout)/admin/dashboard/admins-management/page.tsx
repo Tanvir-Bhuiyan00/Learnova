@@ -22,18 +22,25 @@ const AdminsManagementPage = () => {
   const items: any[] = data?.data ?? [];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Admins Management</h1>
-        <p className="text-sm text-muted-foreground">Manage administrators</p>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+          Admins management
+        </h1>
+        <p className="mt-1 text-sm text-mute-text">
+          Manage administrators
+        </p>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></div>
+        <div className="space-y-3">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
           <Table>
-            <TableHeader>
+            <TableHeader className="[&_tr]:bg-canvas-soft/70">
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
@@ -44,10 +51,16 @@ const AdminsManagementPage = () => {
             <TableBody>
               {items.map((item: any) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="font-medium text-ink">{item.name}</TableCell>
                   <TableCell>{item.email}</TableCell>
                   <TableCell>{item.designation || "—"}</TableCell>
-                  <TableCell>{item.isDeleted ? <Badge variant="destructive">Deleted</Badge> : <Badge>Active</Badge>}</TableCell>
+                  <TableCell>
+                    {item.isDeleted ? (
+                      <Badge variant="destructive" className="rounded-full">Deleted</Badge>
+                    ) : (
+                      <Badge className="rounded-full">Active</Badge>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

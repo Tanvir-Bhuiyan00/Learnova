@@ -13,17 +13,24 @@ if (!BASE_API_URL) {
 
 export async function fetchNewTokens(
   refreshToken: string,
+  sessionToken?: string,
 ): Promise<{
   accessToken?: string;
   refreshToken?: string;
   token?: string;
 } | null> {
   try {
+    const cookieParts = [`refreshToken=${refreshToken}`];
+
+    if (sessionToken) {
+      cookieParts.push(`better-auth.session_token=${sessionToken}`);
+    }
+
     const res = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `refreshToken=${refreshToken}`,
+        Cookie: cookieParts.join("; "),
       },
     });
 
@@ -48,7 +55,10 @@ export async function getNewTokensWithRefreshToken(
   refreshToken: string,
 ): Promise<boolean> {
   try {
-    const tokens = await fetchNewTokens(refreshToken);
+    const cookieStore = await cookies();
+    const sessionToken = cookieStore.get("better-auth.session_token")?.value;
+
+    const tokens = await fetchNewTokens(refreshToken, sessionToken);
 
     if (!tokens) {
       return false;

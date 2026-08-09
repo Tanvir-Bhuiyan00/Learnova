@@ -92,7 +92,10 @@ export async function proxy(request: NextRequest) {
       ((await isTokenExpired(accessToken)) ||
         (await isTokenExpiringSoon(accessToken)))
     ) {
-      const refreshedTokens = await fetchNewTokens(refreshToken);
+      const sessionToken = request.cookies.get(
+        "better-auth.session_token",
+      )?.value;
+      const refreshedTokens = await fetchNewTokens(refreshToken, sessionToken);
 
       if (refreshedTokens) {
         const newRequestHeaders = new Headers(request.headers);

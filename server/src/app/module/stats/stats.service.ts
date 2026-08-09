@@ -332,17 +332,17 @@ const getRevenueByMonth = async (
 ): Promise<IRevenueDataPoint[]> => {
   const conditions: string[] = [
     "p.status = 'SUCCEEDED'",
-    "p.is_deleted = false",
+    'p."isDeleted" = false',
   ];
 
   if (courseIds && courseIds.length > 0) {
     const ids = courseIds.map((id) => `'${id}'`).join(",");
-    conditions.push(`e.course_id IN (${ids})`);
+    conditions.push(`e."courseId" IN (${ids})`);
   }
 
   const joinClause = courseIds && courseIds.length > 0
-    ? "LEFT JOIN enrollments e ON e.id = p.enrollment_id"
-    : "LEFT JOIN enrollments e ON e.id = p.enrollment_id";
+    ? 'LEFT JOIN enrollments e ON e.id = p."enrollmentId"'
+    : 'LEFT JOIN enrollments e ON e.id = p."enrollmentId"';
 
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
@@ -350,12 +350,12 @@ const getRevenueByMonth = async (
   const rows: { month: Date; revenue: number }[] = await prisma.$queryRawUnsafe(
     `
     SELECT
-      DATE_TRUNC('month', p.created_at) AS month,
+      DATE_TRUNC('month', p."createdAt") AS month,
       COALESCE(SUM(p.amount), 0) AS revenue
     FROM payments p
     ${joinClause}
     WHERE ${conditions.join(" AND ")}
-      AND p.created_at >= $1
+      AND p."createdAt" >= $1
     GROUP BY month
     ORDER BY month ASC
     `,
@@ -377,11 +377,11 @@ const getRevenueByMonth = async (
 const getEnrollmentTrend = async (
   courseIds?: string[],
 ): Promise<IEnrollmentTrendPoint[]> => {
-  const conditions: string[] = ["e.is_deleted = false"];
+  const conditions: string[] = ['e."isDeleted" = false'];
 
   if (courseIds && courseIds.length > 0) {
     const ids = courseIds.map((id) => `'${id}'`).join(",");
-    conditions.push(`e.course_id IN (${ids})`);
+    conditions.push(`e."courseId" IN (${ids})`);
   }
 
   const twelveMonthsAgo = new Date();
@@ -390,11 +390,11 @@ const getEnrollmentTrend = async (
   const rows: { month: Date; count: number }[] = await prisma.$queryRawUnsafe(
     `
     SELECT
-      DATE_TRUNC('month', e.created_at) AS month,
+      DATE_TRUNC('month', e."createdAt") AS month,
       CAST(COUNT(*) AS INTEGER) AS count
     FROM enrollments e
     WHERE ${conditions.join(" AND ")}
-      AND e.created_at >= $1
+      AND e."createdAt" >= $1
     GROUP BY month
     ORDER BY month ASC
     `,
@@ -420,11 +420,11 @@ const getUserSignupTrend = async (): Promise<IUserSignupTrendPoint[]> => {
   const rows: { month: Date; count: number }[] = await prisma.$queryRawUnsafe(
     `
     SELECT
-      DATE_TRUNC('month', created_at) AS month,
+      DATE_TRUNC('month', "createdAt") AS month,
       CAST(COUNT(*) AS INTEGER) AS count
     FROM users
-    WHERE is_deleted = false
-      AND created_at >= $1
+    WHERE "isDeleted" = false
+      AND "createdAt" >= $1
     GROUP BY month
     ORDER BY month ASC
     `,

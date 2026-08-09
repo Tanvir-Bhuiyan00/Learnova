@@ -6,24 +6,51 @@ import {
   UserRole,
 } from "./lib/authUtils";
 
-import { isTokenExpiringSoon } from "./lib/tokenUtils";
+import { isTokenExpired, isTokenExpiringSoon } from "./lib/tokenUtils";
 import {
-  getNewTokensWithRefreshToken,
+  fetchNewTokens,
   getUserInfo,
 } from "./services/auth.services";
 import { jwtUtils } from "./lib/jwtUtils";
 
-async function refreshTokenMiddleware(refreshToken: string): Promise<boolean> {
-  try {
-    const refresh = await getNewTokensWithRefreshToken(refreshToken);
-    if (!refresh) {
-      return false;
-    }
-    return true;
-  } catch (error) {
-    console.error("Error refreshing token in middleware:", error);
-    return false;
+function setCookieOnResponse(
+  response: NextResponse,
+  name: string,
+  value: string,
+  maxAgeInSeconds: number,
+) {
+  response.cookies.set(name, value, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    maxAge: maxAgeInSeconds,
+  });
+}
+
+function maxAgeFromToken(token: string): number {
+  const decoded = jwtUtils.decodedToken(token);
+  if (decoded?.exp) {
+    return Math.max(0, decoded.exp - Math.floor(Date.now() / 1000));
   }
+  return 0;
+}
+
+function updateCookieHeader(
+  cookieHeader: string | null,
+  name: string,
+  value: string,
+): string {
+  const cookies = (cookieHeader ?? "")
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .filter(Boolean);
+
+  const otherCookies = cookies.filter(
+    (cookie) => cookie.split("=")[0] !== name,
+  );
+
+  return [...otherCookies, `${name}=${value}`].join("; ");
 }
 
 export async function proxy(request: NextRequest) {
@@ -57,38 +84,89 @@ export async function proxy(request: NextRequest) {
 
     const isAuth = isAuthRoute(pathname);
 
-    //proactively refresh token if refresh token exists and access token is expired or about to expire
+    //refresh token when it is expired or about to expire, then persist the new
+    //tokens on the response so subsequent requests carry them
     if (
-      isValidAccessToken &&
+      accessToken &&
       refreshToken &&
-      (await isTokenExpiringSoon(accessToken))
+      ((await isTokenExpired(accessToken)) ||
+        (await isTokenExpiringSoon(accessToken)))
     ) {
-      const requestHeaders = new Headers(request.headers);
+      const refreshedTokens = await fetchNewTokens(refreshToken);
 
-      const response = NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
+      if (refreshedTokens) {
+        const newRequestHeaders = new Headers(request.headers);
 
-      try {
-        const refreshed = await refreshTokenMiddleware(refreshToken);
-
-        if (refreshed) {
-          requestHeaders.set("x-token-refreshed", "1");
+        if (refreshedTokens.accessToken) {
+          newRequestHeaders.set(
+            "Cookie",
+            updateCookieHeader(
+              newRequestHeaders.get("Cookie"),
+              "accessToken",
+              refreshedTokens.accessToken,
+            ),
+          );
         }
 
-        return NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
-          headers: response.headers,
-        });
-      } catch (error) {
-        console.error("Error refreshing token:", error);
-      }
+        if (refreshedTokens.refreshToken) {
+          newRequestHeaders.set(
+            "Cookie",
+            updateCookieHeader(
+              newRequestHeaders.get("Cookie"),
+              "refreshToken",
+              refreshedTokens.refreshToken,
+            ),
+          );
+        }
 
-      return response;
+        if (refreshedTokens.token) {
+          newRequestHeaders.set(
+            "Cookie",
+            updateCookieHeader(
+              newRequestHeaders.get("Cookie"),
+              "better-auth.session_token",
+              refreshedTokens.token,
+            ),
+          );
+        }
+
+        newRequestHeaders.set("x-token-refreshed", "1");
+
+        const response = NextResponse.next({
+          request: {
+            headers: newRequestHeaders,
+          },
+        });
+
+        if (refreshedTokens.accessToken) {
+          setCookieOnResponse(
+            response,
+            "accessToken",
+            refreshedTokens.accessToken,
+            maxAgeFromToken(refreshedTokens.accessToken),
+          );
+        }
+
+        if (refreshedTokens.refreshToken) {
+          setCookieOnResponse(
+            response,
+            "refreshToken",
+            refreshedTokens.refreshToken,
+            maxAgeFromToken(refreshedTokens.refreshToken),
+          );
+        }
+
+        if (refreshedTokens.token) {
+          setCookieOnResponse(
+            response,
+            "better-auth.session_token",
+            refreshedTokens.token,
+            24 * 60 * 60,
+          );
+        }
+
+        return response;
+      }
     }
 
     // Rule - 1 : User is logged in (has access token) and trying to access auth route -> redirect to dashboard.

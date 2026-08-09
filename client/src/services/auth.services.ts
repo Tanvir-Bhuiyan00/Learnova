@@ -11,9 +11,13 @@ if (!BASE_API_URL) {
   throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
 }
 
-export async function getNewTokensWithRefreshToken(
+export async function fetchNewTokens(
   refreshToken: string,
-): Promise<boolean> {
+): Promise<{
+  accessToken?: string;
+  refreshToken?: string;
+  token?: string;
+} | null> {
   try {
     const res = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
       method: "POST",
@@ -24,12 +28,33 @@ export async function getNewTokensWithRefreshToken(
     });
 
     if (!res.ok) {
-      return false;
+      return null;
     }
 
     const { data } = await res.json();
 
-    const { accessToken, refreshToken: newRefreshToken, token } = data;
+    return {
+      accessToken: data?.accessToken,
+      refreshToken: data?.refreshToken,
+      token: data?.token,
+    };
+  } catch (error) {
+    console.error("Error refreshing token:", error);
+    return null;
+  }
+}
+
+export async function getNewTokensWithRefreshToken(
+  refreshToken: string,
+): Promise<boolean> {
+  try {
+    const tokens = await fetchNewTokens(refreshToken);
+
+    if (!tokens) {
+      return false;
+    }
+
+    const { accessToken, refreshToken: newRefreshToken, token } = tokens;
 
     if (accessToken) {
       await setTokenInCookies("accessToken", accessToken);

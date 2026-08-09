@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PublicFooter from "@/components/modules/PublicFooter";
 import PublicHeader from "@/components/modules/PublicHeader";
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function CommonLayout({
     <>
       <PublicHeader />
       <main>{children}</main>
+      <PublicFooter />
     </>
   );
 }

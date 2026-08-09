@@ -1,0 +1,46 @@
+model Discussion {
+    id String @id @default(uuid(7))
+
+    title      String    @db.VarChar(200)
+    content    String    @db.Text
+    isPinned   Boolean   @default(false)
+    isResolved Boolean   @default(false)
+    isDeleted  Boolean   @default(false)
+    deletedAt  DateTime?
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+
+    courseId  String
+    course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id])
+
+    replies DiscussionReply[]
+
+    @@index([courseId], name: "idx_discussion_courseId")
+    @@index([isResolved], name: "idx_discussion_isResolved")
+    @@map("discussions")
+}
+
+model DiscussionReply {
+    id String @id @default(uuid(7))
+
+    content   String    @db.Text
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    discussionId String
+    discussion   Discussion        @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+    studentId    String?
+    student      Student?          @relation(fields: [studentId], references: [id])
+    instructorId String?
+    instructor   Instructor?       @relation(fields: [instructorId], references: [id])
+    parentId     String?
+    parent       DiscussionReply?  @relation("ReplyReplies", fields: [parentId], references: [id])
+    replies      DiscussionReply[] @relation("ReplyReplies")
+
+    @@index([discussionId], name: "idx_discussion_reply_discussionId")
+    @@map("discussion_replies")
+}

@@ -1,0 +1,91 @@
+model Course {
+    id String @id @default(uuid(7))
+
+    title         String       @db.VarChar(200)
+    description   String?      @db.Text
+    thumbnail     String?      @db.VarChar(500)
+    price         Float        @default(0.0)
+    discountPrice Float?
+    currency      String       @default("BDT") @db.VarChar(3)
+    level         CourseLevel  @default(BEGINNER)
+    language      String       @default("English") @db.VarChar(50)
+    totalDuration Int?
+    totalLessons  Int          @default(0)
+    totalStudents Int          @default(0)
+    averageRating Float        @default(0.0)
+    status        CourseStatus @default(DRAFT)
+    isDeleted     Boolean      @default(false)
+    deletedAt     DateTime?
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+
+    categoryId   String
+    category     Category   @relation(fields: [categoryId], references: [id])
+    instructorId String
+    instructor   Instructor @relation(fields: [instructorId], references: [id])
+
+    modules       Module[]
+    enrollments   Enrollment[]
+    quizzes       Quiz[]
+    assignments   Assignment[]
+    certificates  Certificate[]
+    reviews       Review[]
+    wishlistItems WishlistItem[]
+    cartItems     CartItem[]
+    discussions   Discussion[]
+    coupons       Coupon[]
+
+    @@index([status], name: "idx_course_status")
+    @@index([isDeleted], name: "idx_course_isDeleted")
+    @@index([categoryId], name: "idx_course_categoryId")
+    @@index([instructorId], name: "idx_course_instructorId")
+    @@map("courses")
+}
+
+model Module {
+    id String @id @default(uuid(7))
+
+    title       String  @db.VarChar(200)
+    description String? @db.Text
+    order       Int
+
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    courseId String
+    course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+    lessons Lesson[]
+
+    @@unique([courseId, order])
+    @@index([courseId], name: "idx_module_courseId")
+    @@map("modules")
+}
+
+model Lesson {
+    id String @id @default(uuid(7))
+
+    title         String  @db.VarChar(200)
+    description   String? @db.Text
+    videoUrl      String? @db.VarChar(500)
+    videoDuration Int?
+    content       String? @db.Text
+    order         Int
+    isFree        Boolean @default(false)
+
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    moduleId String
+    module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+    lessonProgress LessonProgress[]
+
+    @@unique([moduleId, order])
+    @@index([moduleId], name: "idx_lesson_moduleId")
+    @@map("lessons")
+}

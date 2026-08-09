@@ -1,0 +1,86 @@
+model Quiz {
+    id String @id @default(uuid(7))
+
+    title        String       @db.VarChar(200)
+    description  String?      @db.Text
+    passingScore Float        @default(80.0)
+    maxAttempts  Int          @default(1)
+    timeLimit    Int?
+    category     QuizCategory @default(MCQ)
+    isDeleted    Boolean      @default(false)
+    deletedAt    DateTime?
+    createdAt    DateTime     @default(now())
+    updatedAt    DateTime     @updatedAt
+
+    courseId String
+    course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+    questions QuizQuestion[]
+    attempts  QuizAttempt[]
+
+    @@index([courseId], name: "idx_quiz_courseId")
+    @@index([isDeleted], name: "idx_quiz_isDeleted")
+    @@map("quizzes")
+}
+
+model QuizQuestion {
+    id String @id @default(uuid(7))
+
+    question      String       @db.Text
+    questionType  QuestionType @default(MULTIPLE_CHOICE)
+    options       Json
+    correctAnswer String       @db.Text
+    order         Int
+    isDeleted     Boolean      @default(false)
+    deletedAt     DateTime?
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+
+    quizId String
+    quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+    answers QuizAnswer[]
+
+    @@unique([quizId, order])
+    @@map("quiz_questions")
+}
+
+model QuizAttempt {
+    id String @id @default(uuid(7))
+
+    score       Float?
+    isPassed    Boolean   @default(false)
+    isDeleted   Boolean   @default(false)
+    deletedAt   DateTime?
+    startedAt   DateTime  @default(now())
+    completedAt DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id])
+    quizId    String
+    quiz      Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+    answers QuizAnswer[]
+
+    @@index([studentId, quizId])
+    @@map("quiz_attempts")
+}
+
+model QuizAnswer {
+    id String @id @default(uuid(7))
+
+    selectedAnswer String   @db.Text
+    isCorrect      Boolean  @default(false)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    attemptId  String
+    attempt    QuizAttempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+    questionId String
+    question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+    @@unique([attemptId, questionId])
+    @@map("quiz_answers")
+}

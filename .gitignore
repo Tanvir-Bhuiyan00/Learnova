@@ -1,1 +1,67 @@
 .opencode
+
+# =========================
+# Server
+# =========================
+
+server/node_modules/
+server/.env
+server/.env.*
+!server/.env.example
+
+server/dist/
+server/.vscode/
+
+server/src/generated/
+
+server/AGENTS.md
+server/POSTMAN_GUIDE.md
+
+
+# =========================
+# Client
+# =========================
+
+client/node_modules/
+
+client/.pnp
+client/.pnp.*
+client/.yarn/*
+!client/.yarn/patches
+!client/.yarn/plugins
+!client/.yarn/releases
+!client/.yarn/versions
+
+# Testing
+client/coverage/
+client/src/**/__tests__/
+client/vitest.config.ts
+
+# Next.js
+client/.next/
+client/out/
+
+# Production
+client/build/
+
+# Misc
+client/.DS_Store
+client/*.pem
+
+# Debug
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.pnpm-debug.log*
+
+# Environment files
+client/.env*
+client/.env.local
+
+# TypeScript
+client/*.tsbuildinfo
+client/next-env.d.ts
+
+# Project-specific
+client/CLAUDE.md
+client/.claude/

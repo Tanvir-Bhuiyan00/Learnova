@@ -1,0 +1,31 @@
+model Student {
+    id String @id @default(uuid(7))
+
+    name          String
+    email         String    @unique
+    profilePhoto  String?
+    contactNumber String?
+    address       String?
+    isDeleted     Boolean   @default(false)
+    deletedAt     DateTime?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    enrollments           Enrollment[]
+    quizAttempts          QuizAttempt[]
+    assignmentSubmissions AssignmentSubmission[]
+    reviews               Review[]
+    wishlistItems         WishlistItem[]
+    payments              Payment[]
+    cart                  Cart?
+    certificates          Certificate[]
+    discussions           Discussion[]
+    discussionReplies     DiscussionReply[]
+
+    @@index([email], name: "idx_student_email")
+    @@index([isDeleted], name: "idx_student_isDeleted")
+    @@map("students")
+}

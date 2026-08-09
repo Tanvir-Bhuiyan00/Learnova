@@ -1,0 +1,20 @@
+model Certificate {
+    id String @id @default(uuid(7))
+
+    certificateUrl String    @db.VarChar(500)
+    issuedAt       DateTime  @default(now())
+    isDeleted      Boolean   @default(false)
+    deletedAt      DateTime?
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+
+    studentId    String
+    student      Student    @relation(fields: [studentId], references: [id])
+    courseId     String
+    course       Course     @relation(fields: [courseId], references: [id])
+    enrollmentId String     @unique
+    enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+
+    @@unique([studentId, courseId])
+    @@map("certificates")
+}

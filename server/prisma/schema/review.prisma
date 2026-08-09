@@ -1,0 +1,22 @@
+model Review {
+    id String @id @default(uuid(7))
+
+    rating    Int
+    comment   String?   @db.Text
+    isDeleted Boolean   @default(false)
+    deletedAt DateTime?
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+
+    studentId    String
+    student      Student     @relation(fields: [studentId], references: [id])
+    courseId     String
+    course       Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    instructorId String?
+    instructor   Instructor? @relation(fields: [instructorId], references: [id])
+
+    @@unique([studentId, courseId])
+    @@index([courseId], name: "idx_review_courseId")
+    @@index([instructorId], name: "idx_review_instructorId")
+    @@map("reviews")
+}

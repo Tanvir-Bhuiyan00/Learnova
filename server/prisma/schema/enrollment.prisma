@@ -1,0 +1,42 @@
+model Enrollment {
+    id String @id @default(uuid(7))
+
+    progress    Float     @default(0.0)
+    isCompleted Boolean   @default(false)
+    completedAt DateTime?
+    isDeleted   Boolean   @default(false)
+    deletedAt   DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    studentId String
+    student   Student @relation(fields: [studentId], references: [id])
+    courseId  String
+    course    Course  @relation(fields: [courseId], references: [id])
+
+    lessonProgress LessonProgress[]
+    certificate    Certificate?
+    payment        Payment?
+
+    @@unique([studentId, courseId])
+    @@index([studentId], name: "idx_enrollment_studentId")
+    @@index([courseId], name: "idx_enrollment_courseId")
+    @@map("enrollments")
+}
+
+model LessonProgress {
+    id String @id @default(uuid(7))
+
+    isCompleted Boolean   @default(false)
+    completedAt DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    enrollmentId String
+    enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+    lessonId     String
+    lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+    @@unique([enrollmentId, lessonId])
+    @@map("lesson_progress")
+}

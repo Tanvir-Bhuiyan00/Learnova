@@ -1,0 +1,65 @@
+enum UserRole {
+    SUPER_ADMIN
+    ADMIN
+    INSTRUCTOR
+    STUDENT
+
+    @@map("user_role")
+}
+
+enum UserStatus {
+    ACTIVE
+    BLOCKED
+    DELETED
+
+    @@map("user_status")
+}
+
+enum CourseLevel {
+    BEGINNER
+    INTERMEDIATE
+    ADVANCED
+    ALL_LEVELS
+
+    @@map("course_level")
+}
+
+enum DiscountType {
+    PERCENTAGE
+    FIXED
+
+    @@map("discount_type")
+}
+
+enum PaymentStatus {
+    PENDING
+    SUCCEEDED
+    FAILED
+    REFUNDED
+
+    @@map("payment_status")
+}
+
+enum QuestionType {
+    MULTIPLE_CHOICE
+    TRUE_FALSE
+    SHORT_ANSWER
+
+    @@map("question_type")
+}
+
+enum CourseStatus {
+    DRAFT
+    PUBLISHED
+    ARCHIVED
+
+    @@map("course_status")
+}
+
+enum QuizCategory {
+    MCQ
+    TRUE_FALSE
+    SHORT_QUESTION
+
+    @@map("quiz_category")
+}

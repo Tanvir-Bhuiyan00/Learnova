@@ -1,0 +1,51 @@
+model Payment {
+    id String @id @default(uuid(7))
+
+    amount                Float         @default(0.0)
+    currency              String        @default("BDT") @db.VarChar(3)
+    stripePaymentIntentId String?       @db.VarChar(255)
+    stripeEventId         String?
+    paymentGatewayData    Json?
+    invoiceUrl            String?       @db.VarChar(500)
+    status                PaymentStatus @default(PENDING)
+    isDeleted             Boolean       @default(false)
+    deletedAt             DateTime?
+    createdAt             DateTime      @default(now())
+    updatedAt             DateTime      @updatedAt
+
+    studentId    String
+    student      Student    @relation(fields: [studentId], references: [id])
+    enrollmentId String     @unique
+    enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+    couponId     String?
+    coupon       Coupon?    @relation(fields: [couponId], references: [id])
+
+    @@index([studentId], name: "idx_payment_studentId")
+    @@index([status], name: "idx_payment_status")
+    @@map("payments")
+}
+
+model Coupon {
+    id String @id @default(uuid(7))
+
+    code          String       @unique @db.VarChar(50)
+    discountType  DiscountType
+    discountValue Float
+    maxUsage      Int?
+    usedCount     Int          @default(0)
+    minPurchase   Float?
+    expiresAt     DateTime?
+    isActive      Boolean      @default(true)
+    isDeleted     Boolean      @default(false)
+    deletedAt     DateTime?
+    createdAt     DateTime     @default(now())
+    updatedAt     DateTime     @updatedAt
+
+    carts    Cart[]
+    courses  Course[]
+    payments Payment[]
+
+    @@index([code], name: "idx_coupon_code")
+    @@index([isActive], name: "idx_coupon_isActive")
+    @@map("coupons")
+}

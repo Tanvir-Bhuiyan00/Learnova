@@ -1,0 +1,44 @@
+model Assignment {
+    id String @id @default(uuid(7))
+
+    title        String    @db.VarChar(200)
+    description  String?   @db.Text
+    instructions String?   @db.Text
+    dueDate      DateTime?
+    totalMarks   Float
+    isDeleted    Boolean   @default(false)
+    deletedAt    DateTime?
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+
+    courseId String
+    course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+    submissions AssignmentSubmission[]
+
+    @@index([courseId], name: "idx_assignment_courseId")
+    @@map("assignments")
+}
+
+model AssignmentSubmission {
+    id String @id @default(uuid(7))
+
+    fileUrl     String?   @db.VarChar(500)
+    content     String?   @db.Text
+    marks       Float?
+    feedback    String?   @db.Text
+    submittedAt DateTime  @default(now())
+    gradedAt    DateTime?
+    isDeleted   Boolean   @default(false)
+    deletedAt   DateTime?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    assignmentId String
+    assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+    studentId    String
+    student      Student    @relation(fields: [studentId], references: [id])
+
+    @@unique([assignmentId, studentId])
+    @@map("assignment_submissions")
+}

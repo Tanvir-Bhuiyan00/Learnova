@@ -73,15 +73,22 @@ const EnrollmentBarChart = ({ data }: EnrollmentBarChartProps) => {
       <CardContent>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={formattedData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis tickLine={false} axisLine={false} dataKey="month" />
-            <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
-            <Tooltip />
-            <Legend />
+            <CartesianGrid stroke="#e8ebe6" strokeDasharray="3 3" vertical={false} />
+            <XAxis tickLine={false} axisLine={false} dataKey="month" tick={{ fill: "#868685", fontSize: 12 }} />
+            <YAxis tickLine={false} axisLine={false} allowDecimals={false} tick={{ fill: "#868685", fontSize: 12 }} />
+            <Tooltip
+              cursor={{ fill: "#e8ebe6", opacity: 0.5 }}
+              contentStyle={{
+                borderRadius: 16,
+                border: "1px solid #e8ebe6",
+                boxShadow: "0 10px 30px rgba(14,15,12,0.08)",
+              }}
+            />
+            <Legend wrapperStyle={{ fontSize: 13 }} />
             <Bar
               dataKey="revenue"
-              fill="oklch(0.646 0.222 41.116)"
-              radius={[4, 4, 0, 0]}
+              fill="#9fe870"
+              radius={[8, 8, 0, 0]}
               maxBarSize={60}
             />
           </BarChart>

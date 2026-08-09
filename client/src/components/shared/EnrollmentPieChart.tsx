@@ -22,11 +22,11 @@ interface EnrollmentPieChartProps {
 }
 
 const CHART_COLORS = [
-  "oklch(0.646 0.222 41.116)",
-  "oklch(0.6 0.118 184.704)",
-  "oklch(0.398 0.07 227.392)",
-  "oklch(0.828 0.189 84.429)",
-  "oklch(0.769 0.188 70.08)",
+  "#9fe870",
+  "#2ead4b",
+  "#163300",
+  "#c5edab",
+  "#ffc091",
 ];
 
 const EnrollmentPieChart = ({
@@ -101,8 +101,14 @@ const EnrollmentPieChart = ({
                 />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip
+              contentStyle={{
+                borderRadius: 16,
+                border: "1px solid #e8ebe6",
+                boxShadow: "0 10px 30px rgba(14,15,12,0.08)",
+              }}
+            />
+            <Legend wrapperStyle={{ fontSize: 13 }} />
           </PieChart>
         </ResponsiveContainer>
       </CardContent>

@@ -12,7 +12,7 @@ const VideoPlayer = ({ url, title }: VideoPlayerProps) => {
 
   if (youtubeId) {
     return (
-      <div className="aspect-video overflow-hidden rounded-lg">
+      <div className="aspect-video overflow-hidden rounded-2xl bg-canvas-soft">
         <iframe
           src={`https://www.youtube.com/embed/${youtubeId}`}
           title={title || "Video"}
@@ -27,7 +27,7 @@ const VideoPlayer = ({ url, title }: VideoPlayerProps) => {
   if (url.includes("vimeo")) {
     const vimeoId = url.split("/").pop();
     return (
-      <div className="aspect-video overflow-hidden rounded-lg">
+      <div className="aspect-video overflow-hidden rounded-2xl bg-canvas-soft">
         <iframe
           src={`https://player.vimeo.com/video/${vimeoId}`}
           title={title || "Video"}
@@ -40,7 +40,7 @@ const VideoPlayer = ({ url, title }: VideoPlayerProps) => {
   }
 
   return (
-    <div className="aspect-video overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+    <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-canvas-soft">
       <video controls className="size-full" poster="">
         <source src={url} type="video/mp4" />
         Your browser does not support the video tag.

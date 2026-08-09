@@ -212,7 +212,7 @@ const DataTablePagination = <TData,>({
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-mute-text">
         <Select value={pageSizeSelectValue} onValueChange={onPageSizeSelect}>
           <SelectTrigger className="w-24" aria-label="Rows per page">
             <SelectValue placeholder="Limit" />

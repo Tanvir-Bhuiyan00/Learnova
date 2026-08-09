@@ -21,8 +21,8 @@ const UserInfoCell = ({ name, email, profilePhoto }: UserInfoCellProps) => {
       </Avatar>
 
       <div className="flex flex-col">
-        <span className="font-medium text-sm">{name}</span>
-        <span className="text-muted-foreground text-xs">{email}</span>
+        <span className="text-sm font-semibold text-ink">{name}</span>
+        <span className="text-xs text-mute-text">{email}</span>
       </div>
     </div>
   );

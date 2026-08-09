@@ -38,22 +38,26 @@ export function AdminListPage<T>({
   const items = allItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+          {title}
+        </h1>
+        {description && <p className="mt-1 text-sm text-mute-text">{description}</p>}
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" />
+          <Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" />
         </div>
       ) : allItems.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">No {title.toLowerCase()} found.</div>
+        <div className="rounded-3xl border border-dashed p-12 text-center text-mute-text">
+          No {title.toLowerCase()} found.
+        </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
           <Table>
-            <TableHeader>
+            <TableHeader className="[&_tr]:bg-canvas-soft/70">
               <TableRow>
                 {columns.map((col) => <TableHead key={col.key}>{col.label}</TableHead>)}
                 {onDelete && <TableHead className="w-16">Actions</TableHead>}
@@ -65,7 +69,12 @@ export function AdminListPage<T>({
                   {columns.map((col) => <TableCell key={col.key}>{col.render(item)}</TableCell>)}
                   {onDelete && (
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => onDelete(String(item[idKey]))}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-mute-text hover:bg-negative/10 hover:text-negative"
+                        onClick={() => onDelete(String(item[idKey]))}
+                      >
                         <Trash2 className="size-4" />
                       </Button>
                     </TableCell>
@@ -74,7 +83,9 @@ export function AdminListPage<T>({
               ))}
             </TableBody>
           </Table>
-          <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+          <div className="border-t border-canvas-soft px-4 py-3">
+            <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
         </div>
       )}
     </div>

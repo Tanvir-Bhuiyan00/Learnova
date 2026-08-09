@@ -44,12 +44,12 @@ const DataTableSearch = ({
 
   return (
     <div className="relative w-full md:max-w-sm">
-      <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+      <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-mute-text" />
       <Input
         value={value}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="h-9 pr-9 pl-9"
+        className="h-10 rounded-full border-border bg-canvas-soft/70 pr-9 pl-10 focus-visible:bg-white"
         disabled={isLoading}
       />
 

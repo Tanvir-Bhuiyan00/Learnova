@@ -17,7 +17,9 @@ const StatusBadgeCell = ({ status }: IStatusBadgeCellProps) => {
       }
       // className="px-2 py-1"
     >
-      <span className="text-sm capitalize">{status.toLowerCase()}</span>
+      <span className="text-xs font-semibold capitalize">
+        {status.toLowerCase()}
+      </span>
     </Badge>
   );
 };

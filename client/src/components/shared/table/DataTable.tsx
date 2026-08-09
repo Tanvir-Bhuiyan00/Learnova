@@ -224,9 +224,9 @@ const DataTable = <TData,>({
       )}
 
       {/* // Table */}
-      <div className="rounded-lg border">
+      <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
         <Table>
-          <TableHeader>
+          <TableHeader className="[&_tr]:bg-canvas-soft/70">
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (

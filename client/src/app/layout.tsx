@@ -3,6 +3,7 @@ import { Inter, Manrope, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProviders from "@/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
+import FloatingChatbot from "@/components/modules/Chatbot/FloatingChatbot";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -52,6 +53,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <QueryProviders>{children}</QueryProviders>
+        <FloatingChatbot />
         <Toaster position="top-center" richColors closeButton />
       </body>
     </html>

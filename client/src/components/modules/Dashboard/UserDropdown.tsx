@@ -19,8 +19,8 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"outline"} size={"icon"} className="rounded-full">
-          <span className="text-sm font-semibold">
+        <Button variant="outline" size="icon" className="rounded-full bg-primary-pale hover:bg-primary-pale">
+          <span className="text-sm font-extrabold text-ink-deep">
             {userInfo.name.charAt(0).toUpperCase()}
           </span>
         </Button>
@@ -33,7 +33,7 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
 
             <p className="text-xs text-muted-foreground">{userInfo.email}</p>
 
-            <p className="text-xs text-primary capitalize">
+            <p className="text-xs font-medium capitalize text-ink-deep">
               {userInfo.role.toLowerCase().replace("_", " ")}
             </p>
           </div>

@@ -66,13 +66,13 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 const getNotificationIcon = (type: Notification["type"]) => {
   switch (type) {
     case "enrollment":
-      return <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+      return <BookOpen className="h-4 w-4 text-positive" />;
     case "review":
-      return <MessageSquare className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+      return <MessageSquare className="h-4 w-4 text-warning-deep" />;
     case "system":
-      return <CheckCircle className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+      return <CheckCircle className="h-4 w-4 text-ink" />;
     case "user":
-      return <UserPlus className="h-4 w-4 text-green-600 dark:text-green-400" />;
+      return <UserPlus className="h-4 w-4 text-positive-deep" />;
     default:
       return <Bell className="h-4 w-4 text-muted-foreground" />;
   }
@@ -134,7 +134,7 @@ const NotificationDropdown = () => {
                       {notification.title}
                     </p>
                     {!notification.read && (
-                      <div className="h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                      <div className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
 

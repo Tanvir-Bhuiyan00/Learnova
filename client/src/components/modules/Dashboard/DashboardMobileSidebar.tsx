@@ -1,4 +1,5 @@
 "use client";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SheetTitle } from "@/components/ui/sheet";
@@ -15,6 +16,14 @@ interface DashboardMobileSidebarProps {
   dashboardHome: string;
 }
 
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
 const DashboardMobileSidebar = ({
   dashboardHome,
   navItems,
@@ -22,24 +31,26 @@ const DashboardMobileSidebar = ({
 }: DashboardMobileSidebarProps) => {
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col overflow-y-auto">
+    <div className="flex h-full flex-col overflow-y-auto bg-white">
       {/* Logo / Brand */}
-      <div className="flex h-16 items-center border-b px-6">
-        <Link href={dashboardHome}>
-          <span className="text-xl font-bold text-primary">Learnova</span>
+      <div className="flex h-16 shrink-0 items-center px-6">
+        <Link href={dashboardHome} className="flex items-center gap-2">
+          <span className="size-3 rounded-full bg-primary" />
+          <span className="font-heading text-xl font-extrabold tracking-tight text-ink">
+            Learnova
+          </span>
         </Link>
       </div>
 
       <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
 
-      {/* Navigation Area  */}
-
+      {/* Navigation Area */}
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1">
+        <nav className="space-y-6">
           {navItems.map((section, sectionId) => (
             <div key={sectionId}>
               {section.title && (
-                <h4 className="mb-2 px-3 text-xs font-semibold text-muted-foreground uppercase">
+                <h4 className="mb-2 px-3 text-[0.6875rem] font-bold uppercase tracking-widest text-mute-text">
                   {section.title}
                 </h4>
               )}
@@ -54,13 +65,13 @@ const DashboardMobileSidebar = ({
                       href={item.href}
                       key={id}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
+                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                          ? "bg-primary text-ink"
+                          : "text-body-text hover:bg-canvas-soft hover:text-ink",
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="size-4" />
                       <span className="flex-1">{item.title}</span>
                     </Link>
                   );
@@ -68,7 +79,7 @@ const DashboardMobileSidebar = ({
               </div>
 
               {sectionId < navItems.length - 1 && (
-                <Separator className="my-4" />
+                <Separator className="my-4 bg-canvas-soft" />
               )}
             </div>
           ))}
@@ -76,19 +87,19 @@ const DashboardMobileSidebar = ({
       </ScrollArea>
 
       {/* User Info */}
-      <div className="border-t p-4">
+      <div className="border-t border-canvas-soft p-4">
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-            {/* if profile doesnt exist , use first letter of user name as profile photo like component */}
-            <span className="text-sm font-semibold text-primary">
-              {userInfo.name.charAt(0).toUpperCase()}
-            </span>
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-extrabold text-ink-deep">
+            {getInitials(userInfo.name) ||
+              userInfo.name.charAt(0).toUpperCase()}
           </div>
 
-          <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium truncate">{userInfo.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">
-              {userInfo.role.toLocaleLowerCase().replace("_", " ")}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-ink">
+              {userInfo.name}
+            </p>
+            <p className="truncate text-xs capitalize text-mute-text">
+              {userInfo.role.toLowerCase().replace("_", " ")}
             </p>
           </div>
         </div>

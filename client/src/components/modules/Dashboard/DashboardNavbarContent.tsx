@@ -29,12 +29,18 @@ const DashboardNavbarContent = ({
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   return (
-    <div className="flex items-center gap-4 w-full px-4 py-3 border-b bg-background">
+    <div className="flex w-full items-center gap-4 border-b border-canvas-soft bg-white px-4 py-3 md:px-6">
       {/* Mobile Menu Toggle Button And Menu */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild className="md:hidden">
-          <Button variant={"outline"} size={"icon"} aria-label="Toggle menu" aria-expanded={isOpen}>
-            <Menu className="h-5 w-5" />
+          <Button
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+            aria-label="Toggle menu"
+            aria-expanded={isOpen}
+          >
+            <Menu className="size-5" />
           </Button>
         </SheetTrigger>
 
@@ -48,30 +54,44 @@ const DashboardNavbarContent = ({
       </Sheet>
 
       {/* Search Component */}
-      <div className={cn("flex-1 flex flex-col gap-1 min-w-0", showMobileSearch && "sm:hidden")}>
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col gap-1",
+          showMobileSearch && "sm:hidden",
+        )}
+      >
         {/* Desktop Search - always visible on sm+ */}
-        <div className="relative w-full hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input type="text" placeholder="Search..." className="pl-9 pr-4" />
-        </div>
-
-        {/* Mobile Search - expandable */}
-        <div className={cn("relative w-full sm:hidden", showMobileSearch ? "block" : "hidden")}>
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative hidden w-full sm:block">
+          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-mute-text" />
           <Input
             type="text"
             placeholder="Search..."
-            className="pl-9 pr-10"
+            className="rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-white"
+          />
+        </div>
+
+        {/* Mobile Search - expandable */}
+        <div
+          className={cn(
+            "relative w-full sm:hidden",
+            showMobileSearch ? "block" : "hidden",
+          )}
+        >
+          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-mute-text" />
+          <Input
+            type="text"
+            placeholder="Search..."
+            className="rounded-full border-border bg-canvas-soft/70 pl-10 pr-10 focus-visible:bg-white"
             autoFocus
           />
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+            className="absolute right-1 top-1/2 size-7 -translate-y-1/2 rounded-full"
             onClick={() => setShowMobileSearch(false)}
             aria-label="Close search"
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </Button>
         </div>
 
@@ -85,11 +105,11 @@ const DashboardNavbarContent = ({
           <Button
             variant="outline"
             size="icon"
-            className="sm:hidden"
+            className="rounded-full sm:hidden"
             onClick={() => setShowMobileSearch(true)}
             aria-label="Open search"
           >
-            <Search className="h-5 w-5" />
+            <Search className="size-5" />
           </Button>
         )}
 
@@ -99,7 +119,7 @@ const DashboardNavbarContent = ({
         {/* Notification */}
         <NotificationDropdown />
 
-        {/* User Dropdown  */}
+        {/* User Dropdown */}
         <UserDropdown userInfo={userInfo} />
       </div>
     </div>

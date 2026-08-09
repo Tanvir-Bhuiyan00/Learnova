@@ -489,6 +489,159 @@ const deleteLesson = async (id: string, user: IRequestUser) => {
   return lesson;
 };
 
+const getMyLessonProgress = async (courseId: string, user: IRequestUser) => {
+  const student = await prisma.student.findUnique({
+    where: { userId: user.userId },
+  });
+
+  if (!student) {
+    throw new AppError(status.NOT_FOUND, "Student profile not found");
+  }
+
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      studentId: student.id,
+      courseId,
+      isDeleted: false,
+    },
+  });
+
+  if (!enrollment) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You must be enrolled in the course to track progress",
+    );
+  }
+
+  const [lessonProgress, totalLessons] = await Promise.all([
+    prisma.lessonProgress.findMany({
+      where: {
+        enrollmentId: enrollment.id,
+        isCompleted: true,
+      },
+      select: { lessonId: true },
+    }),
+    prisma.lesson.count({
+      where: {
+        module: { courseId, isDeleted: false },
+        isDeleted: false,
+      },
+    }),
+  ]);
+
+  return {
+    completedLessonIds: lessonProgress.map((p) => p.lessonId),
+    completedLessons: lessonProgress.length,
+    totalLessons,
+    progress: enrollment.progress,
+    isCompleted: enrollment.isCompleted,
+    completedAt: enrollment.completedAt,
+  };
+};
+
+const markLessonComplete = async (
+  courseId: string,
+  lessonId: string,
+  user: IRequestUser,
+) => {
+  const student = await prisma.student.findUnique({
+    where: { userId: user.userId },
+  });
+
+  if (!student) {
+    throw new AppError(status.NOT_FOUND, "Student profile not found");
+  }
+
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      studentId: student.id,
+      courseId,
+      isDeleted: false,
+    },
+  });
+
+  if (!enrollment) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You must be enrolled in the course to track progress",
+    );
+  }
+
+  const lesson = await prisma.lesson.findFirst({
+    where: {
+      id: lessonId,
+      isDeleted: false,
+      module: { courseId, isDeleted: false },
+    },
+  });
+
+  if (!lesson) {
+    throw new AppError(status.NOT_FOUND, "Lesson not found");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const lessonProgress = await tx.lessonProgress.upsert({
+      where: {
+        enrollmentId_lessonId: {
+          enrollmentId: enrollment.id,
+          lessonId,
+        },
+      },
+      update: {
+        isCompleted: true,
+        completedAt: new Date(),
+      },
+      create: {
+        enrollmentId: enrollment.id,
+        lessonId,
+        isCompleted: true,
+        completedAt: new Date(),
+      },
+    });
+
+    const [completedLessons, totalLessons] = await Promise.all([
+      tx.lessonProgress.count({
+        where: {
+          enrollmentId: enrollment.id,
+          isCompleted: true,
+        },
+      }),
+      tx.lesson.count({
+        where: {
+          module: { courseId, isDeleted: false },
+          isDeleted: false,
+        },
+      }),
+    ]);
+
+    const progress =
+      totalLessons > 0
+        ? Math.round((completedLessons / totalLessons) * 100)
+        : 0;
+    const isCourseCompleted = totalLessons > 0 && completedLessons >= totalLessons;
+
+    const updatedEnrollment = await tx.enrollment.update({
+      where: { id: enrollment.id },
+      data: {
+        progress,
+        isCompleted: isCourseCompleted,
+        completedAt: isCourseCompleted
+          ? enrollment.completedAt ?? new Date()
+          : null,
+      },
+    });
+
+    return {
+      lessonProgress,
+      completedLessons,
+      totalLessons,
+      progress: updatedEnrollment.progress,
+      isCompleted: updatedEnrollment.isCompleted,
+      completedAt: updatedEnrollment.completedAt,
+    };
+  });
+};
+
 export const CourseService = {
   createCourse,
   getAllCourses,
@@ -503,4 +656,6 @@ export const CourseService = {
   getLessonsByModule,
   updateLesson,
   deleteLesson,
+  getMyLessonProgress,
+  markLessonComplete,
 };

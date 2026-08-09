@@ -80,6 +80,21 @@ router.get(
   ),
   CourseController.getLessonsByModule,
 );
+router.get(
+  "/:courseId/progress",
+  checkAuth(
+    UserRole.STUDENT,
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  ),
+  CourseController.getMyLessonProgress,
+);
+router.post(
+  "/:courseId/progress/:lessonId",
+  checkAuth(UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  CourseController.markLessonComplete,
+);
 router.patch(
   "/:courseId/modules/:moduleId/lessons/:id",
   checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),

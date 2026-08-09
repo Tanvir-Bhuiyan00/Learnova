@@ -183,6 +183,39 @@ const deleteLesson = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMyLessonProgress = catchAsync(async (req: Request, res: Response) => {
+  const { courseId } = req.params;
+
+  const result = await CourseService.getMyLessonProgress(
+    courseId as string,
+    req.user,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Lesson progress fetched successfully",
+    data: result,
+  });
+});
+
+const markLessonComplete = catchAsync(async (req: Request, res: Response) => {
+  const { courseId, lessonId } = req.params;
+
+  const result = await CourseService.markLessonComplete(
+    courseId as string,
+    lessonId as string,
+    req.user,
+  );
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Lesson marked as complete",
+    data: result,
+  });
+});
+
 export const CourseController = {
   createCourse,
   getAllCourses,
@@ -197,4 +230,6 @@ export const CourseController = {
   getLessonsByModule,
   updateLesson,
   deleteLesson,
+  getMyLessonProgress,
+  markLessonComplete,
 };

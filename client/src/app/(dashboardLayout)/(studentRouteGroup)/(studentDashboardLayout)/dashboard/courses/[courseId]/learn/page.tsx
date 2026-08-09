@@ -1,13 +1,16 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   getCourseById,
   getLessonsByModule,
   getModulesByCourse,
+  getMyLessonProgress,
+  markLessonComplete,
 } from "@/services/course.services";
 import { ILesson, IModule } from "@/types/course.types";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   BookOpen,
@@ -22,6 +25,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import VideoPlayer from "@/components/modules/Courses/VideoPlayer";
+import { toast } from "sonner";
 
 interface Props {
   params: Promise<{ courseId: string }>;
@@ -47,6 +51,26 @@ const CourseLearnPage = ({ params }: Props) => {
     queryKey: ["course-modules", courseId],
     queryFn: () => getModulesByCourse(courseId),
     enabled: !!courseId,
+  });
+
+  const queryClient = useQueryClient();
+  const { data: progressData } = useQuery({
+    queryKey: ["course-progress", courseId],
+    queryFn: () => getMyLessonProgress(courseId),
+    enabled: !!courseId,
+  });
+
+  const completedLessonIds = new Set(progressData?.data?.completedLessonIds ?? []);
+
+  const completeMutation = useMutation({
+    mutationFn: (lessonId: string) => markLessonComplete(courseId, lessonId),
+    onSuccess: (res) => {
+      queryClient.setQueryData(["course-progress", courseId], res);
+      toast.success(res.data.isCompleted ? "Course completed!" : "Lesson marked as complete");
+    },
+    onError: () => {
+      toast.error("Failed to mark lesson as complete");
+    },
   });
 
   const modules: IModule[] = modulesData?.data ?? [];
@@ -80,6 +104,27 @@ const CourseLearnPage = ({ params }: Props) => {
         )}
       </div>
 
+      {progressData?.data && (
+        <div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-body-text">Course progress</span>
+            <span className="font-bold text-ink">
+              {progressData.data.isCompleted
+                ? "Completed"
+                : `${progressData.data.progress}%`}
+            </span>
+          </div>
+          <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-canvas-soft">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{
+                width: `${Math.min(100, progressData.data.progress)}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px]">
         {/* Player / lesson content */}
         <div>
@@ -90,9 +135,32 @@ const CourseLearnPage = ({ params }: Props) => {
                 title={selectedLesson.title}
               />
               <div className="p-6 md:p-8">
-                <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink">
-                  {selectedLesson.title}
-                </h2>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <h2 className="min-w-0 font-heading text-2xl font-extrabold tracking-tight text-ink">
+                    {selectedLesson.title}
+                  </h2>
+                  <Button
+                    className="shrink-0 rounded-full"
+                    variant={
+                      completedLessonIds.has(selectedLesson.id)
+                        ? "outline"
+                        : "default"
+                    }
+                    onClick={() => completeMutation.mutate(selectedLesson.id)}
+                    disabled={completeMutation.isPending}
+                  >
+                    {completeMutation.isPending ? (
+                      "Saving..."
+                    ) : completedLessonIds.has(selectedLesson.id) ? (
+                      <>
+                        <CheckCircle2 className="size-4" />
+                        Completed
+                      </>
+                    ) : (
+                      "Mark as complete"
+                    )}
+                  </Button>
+                </div>
                 {selectedLesson.description && (
                   <p className="mt-2 text-body-text">
                     {selectedLesson.description}
@@ -161,6 +229,7 @@ const CourseLearnPage = ({ params }: Props) => {
                     onToggle={() => toggleModule(mod.id)}
                     selectedLessonId={selectedLesson?.id}
                     onSelectLesson={setSelectedLesson}
+                    completedLessonIds={completedLessonIds}
                   />
                 ))}
               </div>
@@ -179,6 +248,7 @@ function ModuleCard({
   onToggle,
   selectedLessonId,
   onSelectLesson,
+  completedLessonIds,
 }: {
   mod: IModule;
   courseId: string;
@@ -186,6 +256,7 @@ function ModuleCard({
   onToggle: () => void;
   selectedLessonId?: string;
   onSelectLesson: (lesson: ILesson) => void;
+  completedLessonIds: Set<string>;
 }) {
   const { data } = useQuery({
     queryKey: ["lessons", courseId, mod.id],
@@ -217,7 +288,8 @@ function ModuleCard({
           )}
         </div>
         <span className="shrink-0 text-xs text-mute-text">
-          {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
+          {mod.lessons?.length ?? lessons.length}{" "}
+          {(mod.lessons?.length ?? lessons.length) === 1 ? "lesson" : "lessons"}
         </span>
       </button>
 
@@ -248,7 +320,9 @@ function ModuleCard({
                     <FileText className="size-3.5 shrink-0 text-mute-text" />
                   )}
                   <span className="min-w-0 flex-1 truncate">{lesson.title}</span>
-                  {lesson.videoDuration ? (
+                  {completedLessonIds.has(lesson.id) ? (
+                    <CheckCircle2 className="size-3.5 shrink-0 text-positive" />
+                  ) : lesson.videoDuration ? (
                     <span className="flex shrink-0 items-center gap-1 text-xs text-mute-text">
                       <Clock className="size-3" />
                       {lesson.videoDuration} min

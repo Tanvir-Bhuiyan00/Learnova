@@ -11,6 +11,7 @@ import {
   ILesson,
   ICreateLessonPayload,
   IUpdateLessonPayload,
+  ILessonProgress,
 } from "@/types/course.types";
 
 export const getCourses = async (queryString?: string) => {
@@ -176,6 +177,34 @@ export const deleteLesson = async (
     return result;
   } catch (error) {
     console.log("Error deleting lesson:", error);
+    throw error;
+  }
+};
+
+export const getMyLessonProgress = async (courseId: string) => {
+  try {
+    const progress = await httpClient.get<ILessonProgress>(
+      `/courses/${courseId}/progress`,
+    );
+    return progress;
+  } catch (error) {
+    console.log("Error fetching lesson progress:", error);
+    throw error;
+  }
+};
+
+export const markLessonComplete = async (
+  courseId: string,
+  lessonId: string,
+) => {
+  try {
+    const progress = await httpClient.post<ILessonProgress>(
+      `/courses/${courseId}/progress/${lessonId}`,
+      {},
+    );
+    return progress;
+  } catch (error) {
+    console.log("Error marking lesson complete:", error);
     throw error;
   }
 };

@@ -56,6 +56,7 @@ export interface IModule {
   createdAt: string;
   updatedAt: string;
   courseId: string;
+  lessons?: ILesson[];
 }
 
 export interface ICreateModulePayload {
@@ -104,4 +105,13 @@ export interface IUpdateLessonPayload {
   content?: string;
   order?: number;
   isFree?: boolean;
+}
+
+export interface ILessonProgress {
+  completedLessonIds: string[];
+  completedLessons: number;
+  totalLessons: number;
+  progress: number;
+  isCompleted: boolean;
+  completedAt?: string | null;
 }

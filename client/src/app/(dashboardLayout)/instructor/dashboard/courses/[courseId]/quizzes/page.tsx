@@ -1,19 +1,23 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getQuizzesByCourse } from "@/services/quiz.services";
 import { IQuiz } from "@/types/quiz.types";
 import { useQuery } from "@tanstack/react-query";
-import { HelpCircle, Plus } from "lucide-react";
+import { Gauge, HelpCircle, Plus, Repeat, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
+import EmptyState from "@/components/shared/EmptyState";
 
-interface Props { params: Promise<{ courseId: string }> }
+interface Props {
+  params: Promise<{ courseId: string }>;
+}
 
 const CourseQuizzesPage = ({ params }: Props) => {
   const [courseId, setCourseId] = useState("");
-  useEffect(() => { params.then((p) => setCourseId(p.courseId)); }, [params]);
+  useEffect(() => {
+    params.then((p) => setCourseId(p.courseId));
+  }, [params]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["course-quizzes", courseId],
@@ -24,22 +28,65 @@ const CourseQuizzesPage = ({ params }: Props) => {
   const quizzes: IQuiz[] = data?.data ?? [];
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Quizzes</h1>
-        <Button><Plus className="mr-2 size-4" />Add Quiz</Button>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+            Quizzes
+          </h1>
+          <p className="mt-1 text-sm text-mute-text">
+            Assess your students with quizzes.
+          </p>
+        </div>
+        <Button className="gap-2 rounded-full">
+          <Plus className="size-4" />
+          Add quiz
+        </Button>
       </div>
+
       {isLoading ? (
-        <div className="space-y-3"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
+        <div className="space-y-3">
+          <Skeleton className="h-24 rounded-3xl" />
+          <Skeleton className="h-24 rounded-3xl" />
+        </div>
       ) : quizzes.length === 0 ? (
-        <Card><CardContent className="flex flex-col items-center py-12">
-          <HelpCircle className="mb-4 size-12 text-muted-foreground" />
-          <p className="text-lg font-medium">No quizzes yet</p>
-        </CardContent></Card>
+        <EmptyState
+          icon={HelpCircle}
+          title="No quizzes yet"
+          description="Add a quiz to test what your students have learned."
+        />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-5 md:grid-cols-2">
           {quizzes.map((q) => (
-            <Card key={q.id}><CardHeader><CardTitle className="text-base">{q.title}</CardTitle></CardHeader></Card>
+            <div
+              key={q.id}
+              className="rounded-3xl bg-white p-6 ring-1 ring-border transition-all duration-300 hover:shadow-lg hover:shadow-primary-pale"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-pale">
+                  <HelpCircle className="size-5 text-ink-deep" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-heading text-lg font-bold text-ink">
+                    {q.title}
+                  </h3>
+                  <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs font-medium text-mute-text">
+                    <span className="flex items-center gap-1">
+                      <Timer className="size-3.5" />
+                      {q.timeLimit ? `${q.timeLimit} min` : "No limit"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Gauge className="size-3.5" />
+                      Pass: {q.passingScore}%
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Repeat className="size-3.5" />
+                      {q.maxAttempts} attempts
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}

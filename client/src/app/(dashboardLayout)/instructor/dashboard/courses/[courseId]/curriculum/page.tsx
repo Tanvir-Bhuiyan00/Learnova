@@ -129,13 +129,20 @@ const CourseCurriculumPage = ({ params }: Props) => {
   });
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Curriculum Builder</h1>
-          <p className="text-sm text-muted-foreground">Organize your course into modules and lessons</p>
+          <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+            Curriculum builder
+          </h1>
+          <p className="mt-1 text-sm text-mute-text">
+            Organize your course into modules and lessons
+          </p>
         </div>
-        <Button onClick={() => setAddingModule(true)}><Plus className="mr-2 size-4" />Add Module</Button>
+        <Button className="gap-2 rounded-full" onClick={() => setAddingModule(true)}>
+          <Plus className="size-4" />
+          Add Module
+        </Button>
       </div>
 
       {addingModule && (
@@ -237,26 +244,26 @@ function ModuleSection({
             {lessons.map((lesson) => (
               <div key={lesson.id}>
                 {editingLesson?.id === lesson.id ? (
-                  <div className="rounded-lg border p-3">
+                  <div className="rounded-2xl ring-1 ring-border p-3">
                     <LessonForm lesson={lesson} onSave={(data) => onSaveEditLesson(lesson.id, data)} onCancel={onCancelEditLesson} />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 rounded-lg border px-3 py-2">
-                    <FileText className="size-4 text-muted-foreground shrink-0" />
-                    <span className="flex-1 text-sm truncate">{lesson.title}</span>
-                    {lesson.videoDuration && <span className="text-xs text-muted-foreground">{lesson.videoDuration} min</span>}
-                    <Button variant="ghost" size="icon" className="size-7" onClick={() => onStartEditLesson(lesson)}><Edit3 className="size-3" /></Button>
-                    <Button variant="ghost" size="icon" className="size-7 text-destructive" onClick={() => onDeleteLesson(lesson.id)}><Trash2 className="size-3" /></Button>
+                  <div className="flex items-center gap-3 rounded-xl ring-1 ring-border px-3 py-2">
+                    <FileText className="size-4 text-mute-text shrink-0" />
+                    <span className="flex-1 text-sm truncate text-ink">{lesson.title}</span>
+                    {lesson.videoDuration && <span className="text-xs text-mute-text">{lesson.videoDuration} min</span>}
+                    <Button variant="ghost" size="icon" className="size-7 rounded-full" onClick={() => onStartEditLesson(lesson)}><Edit3 className="size-3" /></Button>
+                    <Button variant="ghost" size="icon" className="size-7 rounded-full text-mute-text hover:bg-negative/10 hover:text-negative" onClick={() => onDeleteLesson(lesson.id)}><Trash2 className="size-3" /></Button>
                   </div>
                 )}
               </div>
             ))}
             {addingLesson && (
-              <div className="rounded-lg border p-3">
+              <div className="rounded-2xl ring-1 ring-border p-3">
                 <LessonForm onSave={(data) => onSaveLesson({ ...data, order: lessons.length + 1 })} onCancel={onCancelAddLesson} />
               </div>
             )}
-            <Button variant="outline" size="sm" className="w-full mt-2" onClick={onStartAddLesson}>
+            <Button variant="outline" size="sm" className="w-full mt-2 rounded-full" onClick={onStartAddLesson}>
               <Plus className="mr-2 size-3.5" />Add Lesson
             </Button>
           </div>

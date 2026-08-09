@@ -155,7 +155,7 @@ const RegisterForm = () => {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-background text-muted-foreground">
+            <span className="bg-card px-2 text-mute-text">
               Or continue with
             </span>
           </div>
@@ -196,7 +196,7 @@ const RegisterForm = () => {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-primary font-medium hover:underline underline-offset-4"
+            className="font-semibold text-ink-deep transition-colors hover:text-ink hover:underline underline-offset-4"
           >
             Log In
           </Link>

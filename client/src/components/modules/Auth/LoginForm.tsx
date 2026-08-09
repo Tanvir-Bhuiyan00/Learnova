@@ -123,7 +123,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
           <div className="text-right mt-2">
             <Link
               href="/forgot-password"
-              className="text-sm text-primary hover:underline underline-offset-4"
+              className="text-sm font-semibold text-ink-deep transition-colors hover:text-ink hover:underline underline-offset-4"
             >
               Forgot password?
             </Link>
@@ -155,7 +155,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-background text-muted-foreground">
+            <span className="bg-card px-2 text-mute-text">
               Or continue with
             </span>
           </div>
@@ -197,7 +197,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
-            className="text-primary font-medium hover:underline underline-offset-4"
+            className="font-semibold text-ink-deep transition-colors hover:text-ink hover:underline underline-offset-4"
           >
             Sign Up for an account
           </Link>

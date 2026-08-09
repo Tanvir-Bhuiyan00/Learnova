@@ -69,7 +69,7 @@ const ForgotPasswordForm = () => {
           </CardDescription>
           <Link
             href="/login"
-            className="block text-sm text-primary hover:underline underline-offset-4 mt-4"
+            className="mt-4 block text-sm font-semibold text-ink-deep transition-colors hover:text-ink hover:underline underline-offset-4"
           >
             Back to Login
           </Link>
@@ -140,7 +140,7 @@ const ForgotPasswordForm = () => {
           Remember your password?{" "}
           <Link
             href="/login"
-            className="text-primary font-medium hover:underline underline-offset-4"
+            className="font-semibold text-ink-deep transition-colors hover:text-ink hover:underline underline-offset-4"
           >
             Log In
           </Link>

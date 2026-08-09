@@ -1,3 +1,4 @@
+import AuthLayout from "@/components/modules/Auth/AuthLayout";
 import LoginForm from "@/components/modules/Auth/LoginForm";
 
 interface LoginParams {
@@ -7,7 +8,11 @@ interface LoginParams {
 const LoginPage = async ({ searchParams }: LoginParams) => {
   const params = await searchParams;
   const redirectPath = params.redirect;
-  return <LoginForm redirectPath={redirectPath} />;
+  return (
+    <AuthLayout>
+      <LoginForm redirectPath={redirectPath} />
+    </AuthLayout>
+  );
 };
 
 export default LoginPage;

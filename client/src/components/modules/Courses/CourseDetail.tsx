@@ -3,9 +3,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { enrollNowAction } from "@/app/_actions/enrollment.actions";
 import { getCourseById } from "@/services/course.services";
 import { ICourse } from "@/types/course.types";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   BookOpen,
@@ -32,6 +36,9 @@ interface CourseDetailProps {
 }
 
 const CourseDetail = ({ courseId }: CourseDetailProps) => {
+  const router = useRouter();
+  const [isEnrolling, startEnrollTransition] = useTransition();
+
   const { data, isLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourseById(courseId),
@@ -76,6 +83,18 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
   const displayPrice = course.discountPrice ?? course.price;
   const hasDiscount =
     course.discountPrice != null && course.discountPrice < course.price;
+
+  const handleEnroll = () => {
+    startEnrollTransition(async () => {
+      const result = await enrollNowAction(course.id);
+
+      if (result.success) {
+        router.push("/dashboard/checkout");
+      } else {
+        toast.error(result.error ?? "Could not enroll in this course.");
+      }
+    });
+  };
 
   return (
     <div>
@@ -149,7 +168,7 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
 
           {/* Purchase card */}
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
+            <div className="overflow-hidden rounded-3xl bg-card ring-1 ring-border">
               {course.thumbnail && (
                 <img
                   src={course.thumbnail}
@@ -174,8 +193,13 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
                   </p>
                 )}
 
-                <Button className="mt-5 w-full rounded-full" size="lg">
-                  Enroll now
+                <Button
+                  className="mt-5 w-full rounded-full"
+                  size="lg"
+                  onClick={handleEnroll}
+                  disabled={isEnrolling}
+                >
+                  {isEnrolling ? "Adding to cart..." : "Enroll now"}
                 </Button>
                 <p className="mt-3 text-center text-xs text-mute-text">
                   30-day money-back guarantee

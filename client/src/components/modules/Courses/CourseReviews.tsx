@@ -90,7 +90,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="flex gap-4 rounded-3xl bg-white p-6 ring-1 ring-border"
+              className="flex gap-4 rounded-3xl bg-card p-6 ring-1 ring-border"
             >
               <Skeleton className="size-11 shrink-0 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -137,7 +137,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
                     <span className="w-8 shrink-0 font-medium text-body-text">
                       {star} star
                     </span>
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-white ring-1 ring-border">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-card ring-1 ring-border">
                       <div
                         className="h-full rounded-full bg-amber-400"
                         style={{ width: `${(count / maxCount) * 100}%` }}
@@ -157,7 +157,7 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
             {reviews.map((review, index) => (
               <article
                 key={review.id}
-                className="rounded-3xl bg-white p-6 ring-1 ring-border"
+                className="rounded-3xl bg-card p-6 ring-1 ring-border"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">

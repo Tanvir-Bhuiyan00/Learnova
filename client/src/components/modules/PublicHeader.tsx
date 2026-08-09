@@ -28,7 +28,7 @@ const PublicHeader = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-canvas-soft bg-white/90 backdrop-blur-xl supports-[backdrop-filter]:bg-white/75">
+    <header className="sticky top-0 z-50 w-full border-b border-canvas-soft bg-card/90 backdrop-blur-xl supports-[backdrop-filter]:bg-card/75">
       <div className="container mx-auto flex h-20 items-center justify-between gap-4 px-4 md:px-6">
         <Link href="/" className="group flex items-center gap-2">
           <span className="size-3 rounded-full bg-primary transition-transform group-hover:scale-125" />
@@ -61,7 +61,7 @@ const PublicHeader = () => {
             placeholder="Search courses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-60 rounded-full border-border bg-canvas-soft/70 pl-10 transition-colors focus-visible:bg-white lg:w-72"
+            className="w-60 rounded-full border-border bg-canvas-soft/70 pl-10 transition-colors focus-visible:bg-card lg:w-72"
           />
         </form>
 
@@ -98,7 +98,7 @@ const PublicHeader = () => {
                 placeholder="Search courses..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-white"
+                className="w-full rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-card"
               />
             </form>
             {navLinks.map((link) => (

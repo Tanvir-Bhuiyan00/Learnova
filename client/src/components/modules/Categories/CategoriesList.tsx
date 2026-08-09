@@ -73,7 +73,7 @@ const CategoriesList = () => {
                 <Link
                   key={cat.id}
                   href={`/categories/${cat.id}`}
-                  className="group relative flex flex-col rounded-3xl bg-white p-7 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                  className="group relative flex flex-col rounded-3xl bg-card p-7 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-pale">

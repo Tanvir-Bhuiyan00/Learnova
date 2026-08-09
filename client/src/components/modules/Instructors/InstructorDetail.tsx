@@ -78,7 +78,7 @@ const InstructorDetail = ({ instructorId }: Props) => {
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
         {/* Profile card */}
         <div className="lg:sticky lg:top-28 lg:self-start">
-          <div className="flex flex-col items-center rounded-3xl bg-white p-8 text-center ring-1 ring-border">
+          <div className="flex flex-col items-center rounded-3xl bg-card p-8 text-center ring-1 ring-border">
             {instructor.profilePhoto ? (
               <img
                 src={instructor.profilePhoto}
@@ -134,7 +134,7 @@ const InstructorDetail = ({ instructorId }: Props) => {
           </div>
 
           {instructor.qualification && (
-            <div className="mt-4 rounded-3xl bg-white p-6 ring-1 ring-border">
+            <div className="mt-4 rounded-3xl bg-card p-6 ring-1 ring-border">
               <p className="text-xs font-bold uppercase tracking-widest text-mute-text">
                 Qualification
               </p>
@@ -169,7 +169,7 @@ const InstructorDetail = ({ instructorId }: Props) => {
                   <Link
                     key={course.id}
                     href={`/courses/${course.id}`}
-                    className="group flex flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                    className="group flex flex-col overflow-hidden rounded-3xl bg-card ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
                   >
                     {course.thumbnail && (
                       <div className="h-36 overflow-hidden bg-canvas-soft">

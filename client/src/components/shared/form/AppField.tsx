@@ -72,7 +72,7 @@ const AppField = ({
           aria-invalid={hasError}
           aria-describedby={hasError ? `${field.name}-error` : undefined}
           className={cn(
-            "rounded-xl border-border bg-canvas-soft/50 focus-visible:bg-white",
+            "rounded-xl border-border bg-canvas-soft/50 focus-visible:bg-card",
             prepend && "pl-10",
             append && "pr-10",
             hasError && "border-negative focus-visible:ring-negative/20",

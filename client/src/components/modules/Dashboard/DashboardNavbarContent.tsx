@@ -29,7 +29,7 @@ const DashboardNavbarContent = ({
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   return (
-    <div className="flex w-full items-center gap-4 border-b border-canvas-soft bg-white px-4 py-3 md:px-6">
+    <div className="flex w-full items-center gap-4 border-b border-canvas-soft bg-card px-4 py-3 md:px-6">
       {/* Mobile Menu Toggle Button And Menu */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild className="md:hidden">
@@ -66,7 +66,7 @@ const DashboardNavbarContent = ({
           <Input
             type="text"
             placeholder="Search..."
-            className="rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-white"
+            className="rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-card"
           />
         </div>
 
@@ -81,7 +81,7 @@ const DashboardNavbarContent = ({
           <Input
             type="text"
             placeholder="Search..."
-            className="rounded-full border-border bg-canvas-soft/70 pl-10 pr-10 focus-visible:bg-white"
+            className="rounded-full border-border bg-canvas-soft/70 pl-10 pr-10 focus-visible:bg-card"
             autoFocus
           />
           <Button

@@ -34,7 +34,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
               courses.
             </p>
 
-            <div className="mt-10 max-w-md rounded-3xl bg-white p-6 shadow-xl shadow-ink/5">
+            <div className="mt-10 max-w-md rounded-3xl bg-card p-6 shadow-xl shadow-ink/5">
               <div className="flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star

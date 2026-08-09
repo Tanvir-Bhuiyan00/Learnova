@@ -65,7 +65,7 @@ export function AdminListPage<T>({
           No {title.toLowerCase()} found.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-3xl bg-white ring-1 ring-border">
+        <div className="overflow-hidden rounded-3xl bg-card ring-1 ring-border">
           <Table>
             <TableHeader className="[&_tr]:bg-canvas-soft/70">
               <TableRow>

@@ -36,7 +36,7 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
     <Link
       href={`/courses/${course.id}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-3xl bg-white ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50",
+        "group flex flex-col overflow-hidden rounded-3xl bg-card ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50",
         className
       )}
     >
@@ -54,7 +54,7 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
         {course.level && (
           <Badge
             variant="secondary"
-            className="absolute left-3 top-3 rounded-full border-0 bg-white/90 text-ink-deep backdrop-blur"
+            className="absolute left-3 top-3 rounded-full border-0 bg-card/90 text-ink-deep backdrop-blur"
           >
             {levelLabels[course.level] ?? course.level.replace("_", " ")}
           </Badge>

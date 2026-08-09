@@ -49,7 +49,7 @@ const DataTableSearch = ({
         value={value}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="h-10 rounded-full border-border bg-canvas-soft/70 pr-9 pl-10 focus-visible:bg-white"
+        className="h-10 rounded-full border-border bg-canvas-soft/70 pr-9 pl-10 focus-visible:bg-card"
         disabled={isLoading}
       />
 

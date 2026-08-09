@@ -139,7 +139,7 @@ const HomeHero = () => {
         <PageContainer className="relative">
           <div className="grid items-center gap-16 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink-deep shadow-sm">
+              <span className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-semibold text-ink-deep shadow-sm">
                 <Sparkles className="size-4" />
                 Skills for ambitious people
               </span>
@@ -177,7 +177,7 @@ const HomeHero = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="rounded-full bg-white/70"
+                    className="rounded-full bg-card/70"
                   >
                     Get started free
                   </Button>
@@ -223,7 +223,7 @@ const HomeHero = () => {
                 aria-hidden
                 className="absolute -inset-4 -rotate-3 rounded-[2.75rem] bg-primary-pale"
               />
-              <div className="relative overflow-hidden rounded-[2.75rem] bg-white p-5 shadow-2xl shadow-ink/10">
+              <div className="relative overflow-hidden rounded-[2.75rem] bg-card p-5 shadow-2xl shadow-ink/10">
                 <div className="flex h-72 items-center justify-center overflow-hidden rounded-[2rem] bg-canvas-soft">
                   {heroCourse?.thumbnail ? (
                     <img
@@ -259,7 +259,7 @@ const HomeHero = () => {
                 </div>
               </div>
 
-              <div className="absolute -left-10 top-10 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-ink/5">
+              <div className="absolute -left-10 top-10 rounded-2xl bg-card px-4 py-3 shadow-xl shadow-ink/5">
                 <p className="text-xs font-medium text-mute-text">
                   Average rating
                 </p>
@@ -316,7 +316,7 @@ const HomeHero = () => {
       </PageContainer>
 
       {/* Why Learnova */}
-      <section className="bg-white py-20 md:py-24">
+      <section className="bg-card py-20 md:py-24">
         <PageContainer>
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-widest text-mute-text">
@@ -335,7 +335,7 @@ const HomeHero = () => {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-3xl bg-white p-6 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                className="rounded-3xl bg-card p-6 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
               >
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-pale">
                   <feature.icon className="size-6 text-ink-deep" />
@@ -372,7 +372,7 @@ const HomeHero = () => {
             {TESTIMONIALS.map((testimonial, index) => (
               <figure
                 key={`${testimonial.name}-${index}`}
-                className="flex flex-col rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                className="flex flex-col rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
               >
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -446,7 +446,7 @@ const HomeHero = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="rounded-full border-white/30 text-white hover:bg-white/10 hover:text-white"
+                className="rounded-full border-white/30 text-white hover:bg-card/10 hover:text-white"
               >
                 Explore courses
               </Button>

@@ -31,7 +31,7 @@ const DashboardMobileSidebar = ({
 }: DashboardMobileSidebarProps) => {
   const pathname = usePathname();
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-white">
+    <div className="flex h-full flex-col overflow-y-auto bg-card">
       {/* Logo / Brand */}
       <div className="flex h-16 shrink-0 items-center px-6">
         <Link href={dashboardHome} className="flex items-center gap-2">

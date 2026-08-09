@@ -86,7 +86,7 @@ const PublicFooter = () => {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="flex size-10 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-primary hover:text-ink"
+                  className="flex size-10 items-center justify-center rounded-full bg-card/10 text-white/80 transition-colors hover:bg-primary hover:text-ink"
                 >
                   <Icon className="size-4" />
                 </a>

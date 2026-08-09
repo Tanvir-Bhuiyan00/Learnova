@@ -30,7 +30,7 @@ const DashboardSidebarContent = ({
 }: DashboardSidebarContentProps) => {
   const pathname = usePathname();
   return (
-    <div className="hidden h-full w-64 flex-col border-r border-canvas-soft bg-white md:flex">
+    <div className="hidden h-full w-64 flex-col border-r border-canvas-soft bg-card md:flex">
       {/* Logo / Brand */}
       <div className="flex h-16 shrink-0 items-center px-6">
         <Link href={dashboardHome} className="flex items-center gap-2">

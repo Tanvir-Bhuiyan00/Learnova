@@ -8,8 +8,7 @@ export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setDark(isDark);
+    setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggle = () => {
@@ -17,18 +16,17 @@ export function ThemeToggle() {
     setDark(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("theme", next ? "dark" : "light");
+    document.documentElement.dispatchEvent(new CustomEvent("themechange"));
   };
 
-  useEffect(() => {
-    const stored = localStorage.getItem("theme");
-    if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-      setDark(true);
-    }
-  }, []);
-
   return (
-    <Button variant="outline" size="icon" onClick={toggle} title={dark ? "Light mode" : "Dark mode"}>
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={toggle}
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
       {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
     </Button>
   );

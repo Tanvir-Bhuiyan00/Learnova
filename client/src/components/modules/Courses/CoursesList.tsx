@@ -124,7 +124,7 @@ const CoursesList = () => {
         <div className="grid gap-10 lg:grid-cols-[260px_1fr]">
           {/* Filters sidebar */}
           <aside className="lg:sticky lg:top-28 lg:self-start">
-            <div className="space-y-6 rounded-3xl bg-white p-6 ring-1 ring-border">
+            <div className="space-y-6 rounded-3xl bg-card p-6 ring-1 ring-border">
               <div className="flex items-center justify-between">
                 <h2 className="font-heading text-lg font-bold text-ink">
                   Filters
@@ -146,7 +146,7 @@ const CoursesList = () => {
                   placeholder="Search courses..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-white"
+                  className="rounded-full border-border bg-canvas-soft/70 pl-10 focus-visible:bg-card"
                 />
               </div>
 

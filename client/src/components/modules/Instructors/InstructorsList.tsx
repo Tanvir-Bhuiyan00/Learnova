@@ -63,7 +63,7 @@ const InstructorsList = () => {
               <Link
                 key={instructor.id}
                 href={`/instructors/${instructor.id}`}
-                className="group flex flex-col rounded-3xl bg-white p-7 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                className="group flex flex-col rounded-3xl bg-card p-7 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
               >
                 <div className="flex items-center gap-4">
                   {instructor.profilePhoto ? (

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import PageContainer from "@/components/shared/PageContainer";
+import CourseReviews from "./CourseReviews";
 
 const levelLabels: Record<string, string> = {
   BEGINNER: "Beginner",
@@ -202,6 +203,10 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
             </div>
           </div>
         </div>
+      </PageContainer>
+
+      <PageContainer spacing="lg">
+        <CourseReviews courseId={course.id} />
       </PageContainer>
     </div>
   );

@@ -9,6 +9,17 @@ export interface IReview {
   studentId: string;
   courseId: string;
   instructorId?: string | null;
+  student?: {
+    id: string;
+    name: string;
+    email?: string;
+    profilePhoto?: string | null;
+  };
+  course?: {
+    id: string;
+    title: string;
+    thumbnail?: string | null;
+  };
 }
 
 export interface ICreateReviewPayload {

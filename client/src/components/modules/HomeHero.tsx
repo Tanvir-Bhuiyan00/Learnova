@@ -19,6 +19,7 @@ import Link from "next/link";
 import CourseCard from "@/components/shared/CourseCard";
 import EmptyState from "@/components/shared/EmptyState";
 import PageContainer from "@/components/shared/PageContainer";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -45,6 +46,59 @@ const features = [
     description:
       "Connect with thousands of motivated learners and instructors around the world.",
   },
+];
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "This bootcamp took me from writing my first HTML tag to building a full-stack app. The pace is perfect and every lesson has a project.",
+    name: "Rahim Uddin",
+    role: "Web Development Bootcamp",
+    rating: 5,
+  },
+  {
+    quote:
+      "Best course I've taken. The teachers explain everything so clearly and real projects make the concepts stick.",
+    name: "Nusrat Jahan",
+    role: "Python for Data Science",
+    rating: 5,
+  },
+  {
+    quote:
+      "The wireframing section changed how I think about interfaces. I redesigned my entire portfolio after the first module.",
+    name: "Tanvir Ahmed",
+    role: "UI/UX Design Fundamentals",
+    rating: 5,
+  },
+  {
+    quote:
+      "I went from no Python to analyzing real datasets confidently. The visualization module was my absolute favorite.",
+    name: "Farhana Islam",
+    role: "Machine Learning with Python",
+    rating: 5,
+  },
+  {
+    quote:
+      "Window functions finally clicked for me. The query plan section alone is a superpower for any backend developer.",
+    name: "Minhaj Karim",
+    role: "SQL & PostgreSQL Mastery",
+    rating: 5,
+  },
+  {
+    quote:
+      "Sarah is an incredible teacher. Server components and the App Router finally make sense to me now.",
+    name: "Rahim Uddin",
+    role: "React & Next.js Masterclass",
+    rating: 5,
+  },
+];
+
+const TESTIMONIAL_AVATAR_COLORS = [
+  "bg-primary-pale text-ink-deep",
+  "bg-ink text-primary",
+  "bg-primary text-ink",
+  "bg-amber-100 text-amber-800",
+  "bg-sky-100 text-sky-800",
 ];
 
 const HomeHero = () => {
@@ -293,6 +347,68 @@ const HomeHero = () => {
                   {feature.description}
                 </p>
               </div>
+            ))}
+          </div>
+        </PageContainer>
+      </section>
+
+      {/* Testimonials */}
+      <section className="bg-canvas-soft/60 py-20 md:py-24">
+        <PageContainer>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-widest text-mute-text">
+              Testimonials
+            </p>
+            <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
+              Loved by ambitious learners
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-body-text">
+              Thousands of learners are growing with Learnova every day. Here is
+              what some of them have to say.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {TESTIMONIALS.map((testimonial, index) => (
+              <figure
+                key={`${testimonial.name}-${index}`}
+                className="flex flex-col rounded-3xl bg-white p-6 shadow-sm ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+              >
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className="size-4 fill-amber-400 text-amber-400"
+                    />
+                  ))}
+                </div>
+                <blockquote className="mt-4 flex-1 leading-relaxed text-body-text">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </blockquote>
+                <figcaption className="mt-6 flex items-center gap-3 border-t border-canvas-soft pt-5">
+                  <div
+                    className={cn(
+                      "flex size-11 shrink-0 items-center justify-center rounded-full font-heading text-sm font-bold",
+                      TESTIMONIAL_AVATAR_COLORS[index % TESTIMONIAL_AVATAR_COLORS.length],
+                    )}
+                  >
+                    {testimonial.name
+                      .split(" ")
+                      .map((part) => part[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-ink">
+                      {testimonial.name}
+                    </p>
+                    <p className="truncate text-sm text-mute-text">
+                      {testimonial.role}
+                    </p>
+                  </div>
+                </figcaption>
+              </figure>
             ))}
           </div>
         </PageContainer>

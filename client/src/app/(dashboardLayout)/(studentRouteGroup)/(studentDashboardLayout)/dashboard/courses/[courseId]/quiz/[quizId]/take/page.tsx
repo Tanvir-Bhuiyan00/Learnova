@@ -5,21 +5,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getQuizById, getQuizForTake, submitAttempt } from "@/services/quiz.services";
+import {
+  getQuizById,
+  getQuizForTake,
+  submitAttempt,
+} from "@/services/quiz.services";
 import { IQuizQuestion } from "@/types/quiz.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Clock, Flag } from "lucide-react";
+import { CheckCircle2, Clock, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-interface Props { params: Promise<{ courseId: string; quizId: string }> }
+interface Props {
+  params: Promise<{ courseId: string; quizId: string }>;
+}
 
-interface QuizTakeData { title: string; questions: IQuizQuestion[]; timeLimit?: number }
+interface QuizTakeData {
+  title: string;
+  questions: IQuizQuestion[];
+  timeLimit?: number;
+}
 
 const TakeQuizPage = ({ params }: Props) => {
   const [courseId, setCourseId] = useState("");
   const [quizId, setQuizId] = useState("");
-  useEffect(() => { params.then((p) => { setCourseId(p.courseId); setQuizId(p.quizId); }); }, [params]);
+  useEffect(() => {
+    params.then((p) => {
+      setCourseId(p.courseId);
+      setQuizId(p.quizId);
+    });
+  }, [params]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["quiz-take", courseId, quizId],
@@ -46,19 +61,32 @@ const TakeQuizPage = ({ params }: Props) => {
       setTimeLeft(timeLimit * 60);
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
-          if (prev <= 1) { clearInterval(timerRef.current!); timerRef.current = null; return 0; }
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            timerRef.current = null;
+            return 0;
+          }
           return prev - 1;
         });
       }, 1000);
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [timeLimit]);
 
   const answeredCount = Object.keys(answers).length;
 
   const submitMutation = useMutation({
-    mutationFn: () => submitAttempt(quizId, { answers: Object.entries(answers).map(([questionId, selectedAnswer]) => ({ questionId, selectedAnswer })) }),
-    onSuccess: (res) => { toast.success(res.success ? "Quiz submitted!" : "Submission failed"); },
+    mutationFn: () =>
+      submitAttempt(quizId, {
+        answers: Object.entries(answers).map(
+          ([questionId, selectedAnswer]) => ({ questionId, selectedAnswer }),
+        ),
+      }),
+    onSuccess: (res) => {
+      toast.success(res.success ? "Quiz submitted!" : "Submission failed");
+    },
   });
 
   const formatTime = (s: number) => {
@@ -67,51 +95,123 @@ const TakeQuizPage = ({ params }: Props) => {
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
 
-  if (isLoading) return <div className="p-6"><Skeleton className="h-48" /></div>;
+  if (isLoading) return <Skeleton className="h-64 rounded-3xl" />;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{takeData?.title ?? "Quiz"}</h1>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-mute-text">
+            Quiz
+          </p>
+          <h1 className="mt-1 font-heading text-2xl font-extrabold tracking-tight text-ink md:text-3xl">
+            {takeData?.title ?? "Quiz"}
+          </h1>
+        </div>
         {timeLimit && timeLimit > 0 && (
-          <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium ${timeLeft < 60 ? "text-destructive border-destructive" : ""}`}>
+          <div
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${
+              timeLeft < 60
+                ? "bg-negative/10 text-negative"
+                : "bg-canvas-soft text-ink"
+            }`}
+          >
             <Clock className="size-4" />
             {formatTime(timeLeft)}
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Flag className="size-4" />
-        <span>{answeredCount} of {questions.length} answered</span>
-      </div>
-
-      <div className="h-2 rounded-full bg-secondary overflow-hidden">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(answeredCount / Math.max(questions.length, 1)) * 100}%` }} />
+      <div className="rounded-3xl bg-white p-6 ring-1 ring-border">
+        <div className="flex items-center gap-2 text-sm font-medium text-body-text">
+          <Flag className="size-4 text-ink-deep" />
+          <span>
+            {answeredCount} of {questions.length} answered
+          </span>
+        </div>
+        <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-canvas-soft">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{
+              width: `${(answeredCount / Math.max(questions.length, 1)) * 100}%`,
+            }}
+          />
+        </div>
       </div>
 
       {questions.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground">No questions available</CardContent></Card>
+        <div className="rounded-3xl border border-dashed p-12 text-center text-mute-text">
+          No questions available
+        </div>
       ) : (
         <div className="space-y-6">
-          {questions.map((q, i) => (
-            <Card key={q.id} className={answers[q.id] ? "ring-1 ring-primary/20" : ""}>
-              <CardHeader><CardTitle className="text-base">{i + 1}. {q.question}</CardTitle></CardHeader>
-              <CardContent>
-                <RadioGroup value={answers[q.id] || ""} onValueChange={(v) => setAnswers({ ...answers, [q.id]: v })}>
-                  {q.options.map((opt) => (
-                    <div key={opt} className="flex items-center gap-2 py-1">
-                      <RadioGroupItem value={opt} id={`${q.id}-${opt}`} />
-                      <Label htmlFor={`${q.id}-${opt}`} className="text-sm cursor-pointer">{opt}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </CardContent>
-            </Card>
-          ))}
-          <Button className="w-full" onClick={() => submitMutation.mutate()} disabled={submitMutation.isPending}>
-            {submitMutation.isPending ? "Submitting..." : "Submit Answers"}
-          </Button>
+          {questions.map((q, i) => {
+            const isAnswered = Boolean(answers[q.id]);
+            return (
+              <Card
+                key={q.id}
+                className={`ring-1 ${
+                  isAnswered ? "ring-primary/40" : "ring-border"
+                }`}
+              >
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <CardTitle className="text-lg leading-snug">
+                    <span className="mr-2 inline-flex size-7 items-center justify-center rounded-full bg-primary-pale text-sm font-extrabold text-ink-deep">
+                      {i + 1}
+                    </span>
+                    {q.question}
+                  </CardTitle>
+                  {isAnswered && (
+                    <CheckCircle2 className="mt-1 size-5 shrink-0 text-positive" />
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <RadioGroup
+                    value={answers[q.id] || ""}
+                    onValueChange={(v) =>
+                      setAnswers({ ...answers, [q.id]: v })
+                    }
+                    className="space-y-2"
+                  >
+                    {q.options.map((opt) => {
+                      const isSelected = answers[q.id] === opt;
+                      return (
+                        <div
+                          key={opt}
+                          className={`flex items-center gap-3 rounded-2xl border px-4 py-3 transition-colors ${
+                            isSelected
+                              ? "border-primary bg-primary-pale"
+                              : "border-border hover:bg-canvas-soft/60"
+                          }`}
+                        >
+                          <RadioGroupItem value={opt} id={`${q.id}-${opt}`} />
+                          <Label
+                            htmlFor={`${q.id}-${opt}`}
+                            className="cursor-pointer text-sm font-medium text-ink"
+                          >
+                            {opt}
+                          </Label>
+                        </div>
+                      );
+                    })}
+                  </RadioGroup>
+                </CardContent>
+              </Card>
+            );
+          })}
+
+          <div className="flex items-center justify-end gap-3">
+            <p className="text-sm text-mute-text">
+              {questions.length - answeredCount} left
+            </p>
+            <Button
+              className="rounded-full px-8"
+              onClick={() => submitMutation.mutate()}
+              disabled={submitMutation.isPending}
+            >
+              {submitMutation.isPending ? "Submitting..." : "Submit answers"}
+            </Button>
+          </div>
         </div>
       )}
     </div>

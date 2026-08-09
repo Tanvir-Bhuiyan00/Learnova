@@ -91,8 +91,15 @@ export async function proxy(request: NextRequest) {
       return response;
     }
 
-    // Rule - 1 : User is logged in (has access token) and trying to access auth route -> allow
-    if (isAuth && isValidAccessToken) {
+    // Rule - 1 : User is logged in (has access token) and trying to access auth route -> redirect to dashboard.
+    // /verify-email and /reset-password are exempt: they are required to clear
+    // the emailVerified / needPasswordChange enforcement flags below.
+    const isEnforcedAuthRoute =
+      isAuth &&
+      pathname !== "/verify-email" &&
+      pathname !== "/reset-password";
+
+    if (isEnforcedAuthRoute && isValidAccessToken) {
       return NextResponse.redirect(
         new URL(getDefaultDashboardRoute(userRole as UserRole), request.url),
       );
@@ -128,6 +135,24 @@ export async function proxy(request: NextRequest) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Rule - 2b : User has a valid token and is on the verify-email page.
+    // Verified users are bounced to their dashboard; unverified users stay.
+    if (
+      pathname === "/verify-email" &&
+      accessToken &&
+      isValidAccessToken
+    ) {
+      const userInfo = await getUserInfo();
+
+      if (userInfo?.emailVerified) {
+        return NextResponse.redirect(
+          new URL(getDefaultDashboardRoute(userRole as UserRole), request.url),
+        );
+      }
+
+      return NextResponse.next();
     }
 
     // Rule-3 User trying to access Public route -> allow

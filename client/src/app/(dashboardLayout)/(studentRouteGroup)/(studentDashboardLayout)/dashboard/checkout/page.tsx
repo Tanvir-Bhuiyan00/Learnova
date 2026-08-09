@@ -17,7 +17,6 @@ const CheckoutPage = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [couponCode, setCouponCode] = useState("");
-  const [discount, setDiscount] = useState(0);
 
   const { data, isLoading } = useQuery({
     queryKey: ["cart"],
@@ -25,8 +24,9 @@ const CheckoutPage = () => {
   });
 
   const items: ICartItem[] = (data?.data as any)?.items ?? [];
-  const subtotal = items.length * 100; // placeholder price
-  const total = Math.max(0, subtotal - discount);
+  const subtotal = (data?.data as any)?.subtotal ?? 0;
+  const discount = (data?.data as any)?.discount ?? 0;
+  const total = (data?.data as any)?.total ?? 0;
 
   const checkoutMutation = useMutation({
     mutationFn: () => checkout(),
@@ -43,9 +43,10 @@ const CheckoutPage = () => {
 
   const couponMutation = useMutation({
     mutationFn: () => applyCoupon({ code: couponCode }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       if (res.success) {
-        setDiscount(res.data?.discount || 10);
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+        setCouponCode("");
         toast.success("Coupon applied!");
       } else {
         toast.error(res.message || "Invalid coupon");
@@ -88,19 +89,23 @@ const CheckoutPage = () => {
               </h2>
             </div>
             <CardContent className="space-y-3 p-6">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between rounded-2xl bg-canvas-soft/50 px-4 py-3"
-                >
-                  <span className="text-sm font-medium text-ink">
-                    Course {item.courseId.slice(0, 8)}...
-                  </span>
-                  <span className="text-sm font-semibold text-ink">
-                    $100.00
-                  </span>
-                </div>
-              ))}
+              {items.map((item) => {
+                const course = (item as any)?.course;
+                const price = course?.discountPrice ?? course?.price ?? 0;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-2xl bg-canvas-soft/50 px-4 py-3"
+                  >
+                    <span className="text-sm font-medium text-ink">
+                      {course?.title ?? `Course ${item.courseId.slice(0, 8)}...`}
+                    </span>
+                    <span className="text-sm font-semibold text-ink">
+                      ${price.toFixed(2)}
+                    </span>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
 

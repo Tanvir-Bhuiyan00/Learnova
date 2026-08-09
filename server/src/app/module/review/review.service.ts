@@ -113,6 +113,7 @@ const getAllReviews = async (query: IQueryParams) => {
 
   const result = await queryBuilder
     .where({ isDeleted: false } as any)
+    .filter()
     .include({
       student: true,
       course: true,

@@ -35,7 +35,6 @@ client/.yarn/*
 # Testing
 client/coverage/
 client/src/**/__tests__/
-client/vitest.config.ts
 
 # Next.js
 client/.next/

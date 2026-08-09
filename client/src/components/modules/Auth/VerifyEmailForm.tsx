@@ -57,7 +57,7 @@ const VerifyEmailForm = ({ email }: VerifyEmailFormProps) => {
   return (
     <Card className="w-full max-w-md mx-auto shadow-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Verify Email</CardTitle>
+        <CardTitle className="font-heading text-3xl font-black tracking-tight">Verify Email</CardTitle>
         <CardDescription>
           Enter the OTP sent to your email to verify your account.
         </CardDescription>

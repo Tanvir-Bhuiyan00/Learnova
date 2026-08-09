@@ -54,7 +54,7 @@ const RegisterForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto shadow-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+        <CardTitle className="font-heading text-3xl font-black tracking-tight">Create Account</CardTitle>
         <CardDescription>
           Sign up to start learning with Learnova.
         </CardDescription>

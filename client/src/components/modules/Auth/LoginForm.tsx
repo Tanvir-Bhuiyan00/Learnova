@@ -57,7 +57,7 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
   return (
     <Card className="w-full max-w-md mx-auto shadow-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle>
+        <CardTitle className="font-heading text-3xl font-black tracking-tight">Welcome Back!</CardTitle>
         <CardDescription>
           Please enter your credentials to log in.
         </CardDescription>

@@ -61,8 +61,8 @@ const ForgotPasswordForm = () => {
     return (
       <Card className="w-full max-w-md mx-auto shadow-md">
         <CardContent className="pt-8 text-center space-y-4">
-          <CheckCircle className="mx-auto h-12 w-12 text-green-600" />
-          <CardTitle className="text-xl">Check Your Email</CardTitle>
+          <CheckCircle className="mx-auto h-12 w-12 text-positive" />
+          <CardTitle className="font-heading text-2xl font-extrabold text-ink">Check Your Email</CardTitle>
           <CardDescription>
             If an account with that email exists, we&apos;ve sent password reset
             instructions.
@@ -81,7 +81,7 @@ const ForgotPasswordForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto shadow-md">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
+        <CardTitle className="font-heading text-3xl font-black tracking-tight">Forgot Password?</CardTitle>
         <CardDescription>
           Enter your email and we&apos;ll send you a reset link.
         </CardDescription>

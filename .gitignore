@@ -1,5 +1,7 @@
 .opencode
 
+ci/github-secrets.input.env
+
 # =========================
 # Server
 # =========================

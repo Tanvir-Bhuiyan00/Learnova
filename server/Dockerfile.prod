@@ -22,11 +22,10 @@ RUN npm install -g tsx@4.23.0
 
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./
 
 EXPOSE 5000
 
-CMD ["tsx", "dist/src/server.js"]
+CMD ["tsx", "src/server.ts"]

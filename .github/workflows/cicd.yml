@@ -50,6 +50,8 @@ jobs:
 
       - name: Build server
         working-directory: ./server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
         run: pnpm build
 
       - name: Install client deps

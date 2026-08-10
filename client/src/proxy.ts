@@ -13,6 +13,9 @@ import {
 } from "./services/auth.services";
 import { jwtUtils } from "./lib/jwtUtils";
 
+const isSecureContext =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.startsWith("https://") ?? false;
+
 function setCookieOnResponse(
   response: NextResponse,
   name: string,
@@ -21,8 +24,8 @@ function setCookieOnResponse(
 ) {
   response.cookies.set(name, value, {
     httpOnly: true,
-    secure: true,
-    sameSite: "strict",
+    secure: isSecureContext,
+    sameSite: isSecureContext ? "strict" : "lax",
     path: "/",
     maxAge: maxAgeInSeconds,
   });

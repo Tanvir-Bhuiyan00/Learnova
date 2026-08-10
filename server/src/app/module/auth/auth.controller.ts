@@ -121,21 +121,16 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 const logoutUser = catchAsync(async (req: Request, res: Response) => {
   const betterAuthSessionToken = req.cookies["better-auth.session_token"];
   const result = await AuthService.logoutUser(betterAuthSessionToken);
-  CookieUtils.clearCookie(res, "accessToken", {
+  const cookieSecurity = {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
-  CookieUtils.clearCookie(res, "refreshToken", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
-  CookieUtils.clearCookie(res, "better-auth.session_token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
+    secure: envVars.FRONTEND_URL.startsWith("https://"),
+    sameSite: envVars.FRONTEND_URL.startsWith("https://")
+      ? ("none" as const)
+      : ("lax" as const),
+  };
+  CookieUtils.clearCookie(res, "accessToken", cookieSecurity);
+  CookieUtils.clearCookie(res, "refreshToken", cookieSecurity);
+  CookieUtils.clearCookie(res, "better-auth.session_token", cookieSecurity);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

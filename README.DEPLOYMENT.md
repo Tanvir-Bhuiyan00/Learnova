@@ -84,7 +84,7 @@ sudo mkdir -p /opt/apps && sudo chown ubuntu:ubuntu /opt/apps
 cd /opt/apps && git clone https://github.com/Tanvir-Bhuiyan00/Learnova.git learnova
 
 # 4. Nginx
-sudo cp ~/learnova/nginx/learnova.conf /etc/nginx/sites-available/learnova
+sudo cp /opt/apps/learnova/nginx/learnova.conf /etc/nginx/sites-available/learnova
 sudo ln -sf /etc/nginx/sites-available/learnova /etc/nginx/sites-enabled/learnova
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
@@ -115,6 +115,33 @@ curl -sI http://localhost:3000                      # client
 curl -sI http://<EC2-IP>/                           # through Nginx
 docker compose -f docker-compose.prod.yaml ps
 ```
+
+## Domain + HTTPS (free, via DuckDNS)
+
+1. Create a subdomain at **duckdns.org**, e.g. `learnova.duckdns.org`, and point it
+   to the EC2 public IP:
+   `https://www.duckdns.org/update?domains=learnova&token=<token>&ip=<EC2-IP>`.
+   Confirm: `dig +short learnova.duckdns.org`.
+2. Open **port 443** in the EC2 security group (HTTPS).
+3. On the VPS, point nginx at the domain, then let certbot add HTTPS:
+   ```bash
+   sudo sed -i 's/server_name _;/server_name learnova.duckdns.org;/' /etc/nginx/sites-available/learnova
+   sudo nginx -t && sudo systemctl reload nginx
+   sudo apt-get install -y certbot python3-certbot-nginx
+   sudo certbot --nginx -d learnova.duckdns.org
+   ```
+4. Update GitHub secrets and redeploy (push) so the client image is rebuilt with
+   the `https` base URL and the server env is rewritten:
+   - `CLIENT_PUBLIC_API_BASE_URL=https://learnova.duckdns.org/api/v1`
+   - `SERVER_ENV_PRODUCTION` → `FRONTEND_URL=https://learnova.duckdns.org`,
+     `BETTER_AUTH_URL=https://learnova.duckdns.org`,
+     `GOOGLE_CALLBACK_URL=https://learnova.duckdns.org/api/auth/callback/google`
+5. (Optional) Google social login now works — add the origin and redirect URI for
+   the domain to the OAuth client in Google Cloud Console.
+6. Update the Stripe webhook endpoint URL to `https://learnova.duckdns.org/webhook`.
+
+The app's cookie code sets `Secure` automatically when the configured URL uses
+`https://`, so no code change is required.
 
 ## Troubleshooting
 

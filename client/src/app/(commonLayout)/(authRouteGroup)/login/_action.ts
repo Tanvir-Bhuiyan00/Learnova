@@ -70,11 +70,13 @@ export const loginAction = async (
       error.response &&
       error.response.data.message === "Email not verified"
     ) {
+      // redirect() throws a NEXT_REDIRECT error — rethrow it so Next.js
+      // picks it up instead of treating it as a login failure.
       redirect(`/verify-email?email=${payload.email}`);
     }
     return {
       success: false,
-      message: `Login failed: ${error.message}`,
+      message: `Login failed: ${error.message ?? "Unknown error"}`,
     };
   }
 };

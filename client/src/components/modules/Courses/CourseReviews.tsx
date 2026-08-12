@@ -6,6 +6,7 @@ import { getReviews } from "@/services/review.services";
 import { IReview } from "@/types/review.types";
 import { useQuery } from "@tanstack/react-query";
 import { MessageSquareQuote, Star } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 const AVATAR_COLORS = [
@@ -162,9 +163,11 @@ const CourseReviews = ({ courseId }: { courseId: string }) => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
                     {review.student?.profilePhoto ? (
-                      <img
+                      <Image
                         src={review.student.profilePhoto}
                         alt={review.student.name}
+                        width={44}
+                        height={44}
                         className="size-11 rounded-full object-cover"
                       />
                     ) : (

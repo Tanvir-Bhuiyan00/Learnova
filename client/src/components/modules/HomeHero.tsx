@@ -23,6 +23,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import CourseCard from "@/components/shared/CourseCard";
 import { CountUp } from "@/components/shared/CountUp";
 import EmptyState from "@/components/shared/EmptyState";
@@ -274,12 +275,14 @@ const HomeHero = () => {
                 className="absolute -inset-4 -rotate-3 rounded-[2.75rem] bg-primary-pale"
               />
               <div className="relative overflow-hidden rounded-[2.75rem] bg-card p-5 shadow-2xl shadow-ink/10">
-                <div className="flex h-72 items-center justify-center overflow-hidden rounded-[2rem] bg-canvas-soft">
+                <div className="relative flex h-72 items-center justify-center overflow-hidden rounded-[2rem] bg-canvas-soft">
                   {heroCourse?.thumbnail ? (
-                    <img
+                    <Image
                       src={heroCourse.thumbnail}
                       alt={heroCourse.title}
-                      className="size-full object-cover"
+                      fill
+                      sizes="(max-width: 1024px) 0px, 28rem"
+                      className="object-cover"
                     />
                   ) : (
                     <BookOpen className="size-20 text-mute-text" />

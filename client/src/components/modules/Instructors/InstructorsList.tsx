@@ -4,6 +4,7 @@ import { getInstructors } from "@/services/instructor.services";
 import { IInstructor } from "@/types/instructor.types";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Star, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import EmptyState from "@/components/shared/EmptyState";
 import LoadingState from "@/components/shared/LoadingState";
@@ -67,9 +68,11 @@ const InstructorsList = () => {
               >
                 <div className="flex items-center gap-4">
                   {instructor.profilePhoto ? (
-                    <img
+                    <Image
                       src={instructor.profilePhoto}
                       alt={instructor.name}
+                      width={64}
+                      height={64}
                       className="size-16 rounded-full object-cover ring-2 ring-canvas-soft"
                     />
                   ) : (

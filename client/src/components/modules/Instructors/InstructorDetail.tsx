@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getInstructorById } from "@/services/instructor.services";
 import { IInstructorDetails } from "@/types/instructor.types";
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -80,9 +81,11 @@ const InstructorDetail = ({ instructorId }: Props) => {
         <div className="lg:sticky lg:top-28 lg:self-start">
           <div className="flex flex-col items-center rounded-3xl bg-card p-8 text-center ring-1 ring-border">
             {instructor.profilePhoto ? (
-              <img
+              <Image
                 src={instructor.profilePhoto}
                 alt={instructor.name}
+                width={112}
+                height={112}
                 className="size-28 rounded-full object-cover ring-4 ring-primary-pale"
               />
             ) : (
@@ -173,9 +176,11 @@ const InstructorDetail = ({ instructorId }: Props) => {
                   >
                     {course.thumbnail && (
                       <div className="h-36 overflow-hidden bg-canvas-soft">
-                        <img
+                        <Image
                           src={course.thumbnail}
                           alt={course.title}
+                          width={400}
+                          height={144}
                           className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>

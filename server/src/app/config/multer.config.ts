@@ -79,7 +79,6 @@ const videoStorage = new CloudinaryStorage({
   cloudinary: cloudinaryUpload,
   params: async (_req, file) => {
     const originalName = file.originalname;
-    const extension = originalName.split(".").pop()?.toLocaleLowerCase();
 
     const fileNameWithoutExtension = originalName
       .split(".")

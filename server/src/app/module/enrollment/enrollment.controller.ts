@@ -48,12 +48,23 @@ const getSingleEnrollment = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const checkEnrollment = catchAsync(async (req: Request, res: Response) => {
+  const courseId = req.params.courseId as string;
+  const result = await EnrollmentService.checkEnrollment(courseId, req.user);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Enrollment status retrieved successfully",
+    data: result,
+  });
+});
+
 const getAllEnrollments = catchAsync(async (req: Request, res: Response) => {
   const query = req.query;
   const result = await EnrollmentService.getAllEnrollments(query as IQueryParams);
 
-  sendResponse(res, {
-    httpStatusCode: status.OK,
+  sendResponse(res, {    httpStatusCode: status.OK,
     success: true,
     message: "All enrollments retrieved successfully",
     data: result.data,
@@ -65,5 +76,6 @@ export const EnrollmentController = {
   checkoutCart,
   getMyEnrollments,
   getSingleEnrollment,
+  checkEnrollment,
   getAllEnrollments,
 };

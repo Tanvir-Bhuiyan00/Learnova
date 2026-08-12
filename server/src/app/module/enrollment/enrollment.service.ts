@@ -436,10 +436,36 @@ const cancelUnpaidEnrollments = async () => {
   });
 };
 
+const checkEnrollment = async (courseId: string, user: IRequestUser) => {
+  const student = await prisma.student.findUnique({
+    where: { userId: user.userId },
+    select: { id: true },
+  });
+
+  if (!student) {
+    return { enrolled: false, isPaid: false };
+  }
+
+  const enrollment = await prisma.enrollment.findFirst({
+    where: { studentId: student.id, courseId, isDeleted: false },
+    include: { payment: true },
+  });
+
+  if (!enrollment) {
+    return { enrolled: false, isPaid: false };
+  }
+
+  return {
+    enrolled: true,
+    isPaid: enrollment.payment?.status === PaymentStatus.SUCCEEDED,
+  };
+};
+
 export const EnrollmentService = {
   checkoutCart,
   getMyEnrollments,
   getSingleEnrollment,
+  checkEnrollment,
   getAllEnrollments,
   cancelUnpaidEnrollments,
 };

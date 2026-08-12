@@ -3,12 +3,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { enrollNowAction } from "@/app/_actions/enrollment.actions";
+import {
+  checkEnrollmentAction,
+  enrollNowAction,
+} from "@/app/_actions/enrollment.actions";
 import { getCourseById } from "@/services/course.services";
 import { ICourse } from "@/types/course.types";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -38,11 +41,29 @@ interface CourseDetailProps {
 const CourseDetail = ({ courseId }: CourseDetailProps) => {
   const router = useRouter();
   const [isEnrolling, startEnrollTransition] = useTransition();
+  const [enrollmentState, setEnrollmentState] = useState<{
+    enrolled: boolean;
+    isPaid: boolean;
+  } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["course", courseId],
     queryFn: () => getCourseById(courseId),
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    checkEnrollmentAction(courseId)
+      .then((state) => {
+        if (!cancelled) setEnrollmentState(state);
+      })
+      .catch(() => {
+        if (!cancelled) setEnrollmentState({ enrolled: false, isPaid: false });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [courseId]);
 
   const course: ICourse | undefined = data?.data;
 
@@ -193,17 +214,36 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
                   </p>
                 )}
 
-                <Button
-                  className="mt-5 w-full rounded-full"
-                  size="lg"
-                  onClick={handleEnroll}
-                  disabled={isEnrolling}
-                >
-                  {isEnrolling ? "Adding to cart..." : "Enroll now"}
-                </Button>
-                <p className="mt-3 text-center text-xs text-mute-text">
-                  30-day money-back guarantee
-                </p>
+                {enrollmentState?.enrolled ? (
+                  <>
+                    <Button
+                      className="mt-5 w-full rounded-full"
+                      size="lg"
+                      variant="secondary"
+                      onClick={() => router.push("/dashboard/my-learning")}
+                    >
+                      <BookOpen className="size-4" />
+                      Go to course
+                    </Button>
+                    <p className="mt-3 text-center text-xs text-mute-text">
+                      You&apos;re enrolled in this course.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      className="mt-5 w-full rounded-full"
+                      size="lg"
+                      onClick={handleEnroll}
+                      disabled={isEnrolling}
+                    >
+                      {isEnrolling ? "Adding to cart..." : "Enroll now"}
+                    </Button>
+                    <p className="mt-3 text-center text-xs text-mute-text">
+                      30-day money-back guarantee
+                    </p>
+                  </>
+                )}
 
                 <ul className="mt-6 space-y-3 border-t border-canvas-soft pt-6 text-sm text-body-text">
                   <li className="flex items-center gap-2.5">

@@ -27,6 +27,12 @@ router.get(
 );
 
 router.get(
+  "/check/:courseId",
+  checkAuth(UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  EnrollmentController.checkEnrollment,
+);
+
+router.get(
   "/",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   EnrollmentController.getAllEnrollments,

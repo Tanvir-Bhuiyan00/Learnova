@@ -13,4 +13,5 @@ export interface IRagQueryData {
   answer: string;
   sources: IRagSource[];
   contextUsed: boolean;
+  noContext?: boolean;
 }

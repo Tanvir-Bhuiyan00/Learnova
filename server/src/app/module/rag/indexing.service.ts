@@ -7,7 +7,132 @@ export const RagSourceType = {
   LESSON: "LESSON",
   INSTRUCTOR: "INSTRUCTOR",
   REVIEW: "REVIEW",
+  PLATFORM: "PLATFORM",
 } as const;
+
+export const PLATFORM_SOURCE_ID = "learnova";
+
+const PLATFORM_KNOWLEDGE: Array<{
+  chunkKey: string;
+  sourceLabel: string;
+  content: string;
+  metadata: Record<string, string | number>;
+}> = [
+  {
+    chunkKey: "platform-about",
+    sourceLabel: "About Learnova",
+    content: [
+      "About Learnova:",
+      "Learnova is an online learning management system (LMS) where instructors publish courses and students learn through structured lessons, quizzes, assignments, and certificates.",
+      "It supports four user roles: Student, Instructor, Admin, and Super Admin. Courses are organized into modules and lessons, and progress is tracked automatically.",
+    ].join("\n"),
+    metadata: { topic: "about" },
+  },
+  {
+    chunkKey: "platform-roles",
+    sourceLabel: "User roles on Learnova",
+    content: [
+      "User roles on Learnova:",
+      "Students browse the catalog, enroll by paying, watch lessons, take quizzes, submit assignments, write reviews, join discussions, and earn certificates.",
+      "Instructors create and edit courses, modules, lessons, quizzes, and assignments, grade student submissions, answer discussions, and track their performance dashboard.",
+      "Admins manage categories, users, courses, enrollments, payments, and moderate reviews and discussions.",
+      "Super Admins do everything Admins do, plus they manage the Admin accounts themselves.",
+    ].join("\n"),
+    metadata: { topic: "roles" },
+  },
+  {
+    chunkKey: "platform-student",
+    sourceLabel: "What can students do",
+    content: [
+      "What can a student do on Learnova?",
+      "A student can create an account, verify their email, browse and search courses, add courses to the wishlist or cart, apply coupons, check out with Stripe payment, enroll, and start learning.",
+      "Students watch lesson content, get progress by marking lessons complete, take timed quizzes with automatic submission, submit assignments, and read instructor feedback and grades.",
+      "Students can write and edit reviews, post in course discussions, ask the AI assistant, and view their dashboard with stats, certificates, wishlist, payment history, and notifications.",
+    ].join("\n"),
+    metadata: { topic: "student" },
+  },
+  {
+    chunkKey: "platform-instructor",
+    sourceLabel: "What can instructors do",
+    content: [
+      "What can an instructor do on Learnova?",
+      "An instructor can create courses and publish their details, build the curriculum with modules and lessons, create quizzes with questions, and create assignments for students.",
+      "Instructors review assignment submissions, grade them with feedback, moderate their course discussions, and edit their public instructor profile.",
+      "The instructor dashboard shows student counts, earnings, and course performance.",
+      "Note: instructors cannot enroll in or buy courses as a student, and they cannot delete courses — course deletion is an Admin action.",
+    ].join("\n"),
+    metadata: { topic: "instructor" },
+  },
+  {
+    chunkKey: "platform-admin",
+    sourceLabel: "What can admins do",
+    content: [
+      "What can Admins and Super Admins do on Learnova?",
+      "Admins manage course categories, list and manage all students and instructors, create users, view all enrollments and payments, and see a platform-wide dashboard.",
+      "Admins can moderate reviews and discussions and trigger re-indexing of the AI search knowledge base.",
+      "Super Admins additionally create and delete Admin accounts, change admin roles, and can block admins.",
+    ].join("\n"),
+    metadata: { topic: "admin" },
+  },
+  {
+    chunkKey: "platform-pricing",
+    sourceLabel: "Pricing and payments",
+    content: [
+      "Pricing and payments on Learnova:",
+      "Course prices are listed in BDT (Bangladeshi Taka). Many courses have a discounted price shown next to the original price.",
+      "Payment is processed securely with Stripe at checkout. Students can also apply coupons to their cart.",
+      "After a successful payment the student is enrolled immediately and the enrollment appears in their dashboard under My Learning.",
+      "Payment history is always available in the student dashboard.",
+    ].join("\n"),
+    metadata: { topic: "pricing" },
+  },
+  {
+    chunkKey: "platform-certificates",
+    sourceLabel: "Certificates",
+    content: [
+      "Certificates on Learnova:",
+      "Students earn a certificate when they complete a course. Each certificate has a unique ID that anyone can verify.",
+      "Earned certificates appear under My Certificates in the student dashboard and can be downloaded or shared.",
+      "Certificates are only issued for paid courses with a completed enrollment.",
+    ].join("\n"),
+    metadata: { topic: "certificates" },
+  },
+  {
+    chunkKey: "platform-enrollment",
+    sourceLabel: "How enrollment works",
+    content: [
+      "How to enroll in a course:",
+      "Find a course in the catalog, open its detail page, and press the Enroll or payment button.",
+      "The checkout accepts a coupon, then processes payment via Stripe. A successful payment creates your enrollment.",
+      "Students who are already enrolled see a 'Go to course' button instead of the Enroll button on the course detail page.",
+      "Enrolled students can access lessons, quizzes, assignments, and their certificate for that course.",
+    ].join("\n"),
+    metadata: { topic: "enrollment" },
+  },
+  {
+    chunkKey: "platform-quiz-assignment",
+    sourceLabel: "Quizzes and assignments",
+    content: [
+      "Quizzes and assignments on Learnova:",
+      "Quizzes are timed. When the timer expires an in-progress attempt is submitted automatically with the answers given so far.",
+      "Students can retake quizzes and their best (or latest) score is recorded.",
+      "Assignments are submitted as text or files and graded by the instructor with written feedback.",
+    ].join("\n"),
+    metadata: { topic: "quiz" },
+  },
+  {
+    chunkKey: "platform-faq",
+    sourceLabel: "Learnova FAQ",
+    content: [
+      "Learnova FAQ:",
+      "Q: How do I recover my password? A: Use the 'Forgot password' link on the login page; a reset email is sent to your inbox.",
+      "Q: Do I need to verify my email? A: Yes, accounts start with email verification before you can log into the dashboard.",
+      "Q: Can instructors also buy courses? A: No, enrollment as a student is separate from the instructor account.",
+      "Q: Where are my notifications? A: The bell icon in the header shows your notifications with unread counts.",
+    ].join("\n"),
+    metadata: { topic: "faq" },
+  },
+];
 
 const courseLevelLabels: Record<string, string> = {
   BEGINNER: "Beginner",
@@ -279,9 +404,21 @@ export const IndexingService = {
       indexedCount += result.indexedCount;
     }
 
+    for (const doc of PLATFORM_KNOWLEDGE) {
+      await this.indexDocument(
+        doc.chunkKey,
+        RagSourceType.PLATFORM,
+        PLATFORM_SOURCE_ID,
+        doc.content,
+        doc.sourceLabel,
+        doc.metadata,
+      );
+      indexedCount++;
+    }
+
     return {
       success: true,
-      message: `Successfully indexed ${indexedCount} documents (${courses.length} courses, ${instructors.length} instructors).`,
+      message: `Successfully indexed ${indexedCount} documents (${courses.length} courses, ${instructors.length} instructors, ${PLATFORM_KNOWLEDGE.length} platform guides).`,
       indexedCount,
     };
   },

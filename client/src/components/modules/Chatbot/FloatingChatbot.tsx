@@ -27,6 +27,7 @@ type Message = {
   sources?: IRagSource[];
   isError?: boolean;
   queryToRetry?: string;
+  noContext?: boolean;
 };
 
 const INITIAL_MESSAGES: Message[] = [
@@ -34,14 +35,16 @@ const INITIAL_MESSAGES: Message[] = [
     id: "welcome",
     role: "bot",
     content:
-      "Hi! I'm the Learnova course assistant. Ask me about our courses, instructors, pricing, lessons, or what students say about them.",
+      "Hi! I'm the Learnova course assistant. Ask me about our courses, instructors, pricing, enrollment, or what each role on the platform can do.",
   },
 ];
 
 const SUGGESTED_QUERIES = [
+  "Tell me about the project",
+  "What can students do?",
+  "How do instructors earn?",
   "Best courses for beginners?",
-  "Which instructor teaches Python?",
-  "What is the cheapest course?",
+  "How do I get my certificate?",
 ];
 
 function TypingIndicator() {
@@ -121,7 +124,10 @@ function MessageBubble({
           </button>
         )}
 
-        {!isUser && message.sources && message.sources.length > 0 && (
+        {!isUser &&
+          !message.noContext &&
+          message.sources &&
+          message.sources.length > 0 && (
           <div className="flex flex-wrap gap-1 px-1">
             <span className="mb-0.5 w-full text-[10px] text-mute-text">
               Sources:
@@ -199,6 +205,7 @@ export default function FloatingChatbot() {
           ? result.answer!
           : (result.error ?? "Something went wrong. Please try again."),
         sources: result.success ? result.sources : undefined,
+        noContext: result.success ? result.noContext : undefined,
         isError: !result.success,
         queryToRetry: !result.success ? text : undefined,
       };

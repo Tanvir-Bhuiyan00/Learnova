@@ -8,6 +8,7 @@ export interface QueryRagActionResult {
   success: boolean;
   answer?: string;
   sources?: IRagSource[];
+  noContext?: boolean;
   error?: string;
 }
 
@@ -34,6 +35,7 @@ export async function queryRagAction(
       success: true,
       answer: data.answer,
       sources: data.sources ?? [],
+      noContext: data.noContext,
     };
   } catch (error: unknown) {
     console.error("[queryRagAction] Error:", error);

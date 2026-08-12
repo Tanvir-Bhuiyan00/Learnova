@@ -45,7 +45,7 @@ export const LLMService = {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:3000",
+        "HTTP-Referer": envVars.FRONTEND_URL || "http://localhost:3000",
         "X-Title": "Learnova",
       },
       body: JSON.stringify(bodyPayload),

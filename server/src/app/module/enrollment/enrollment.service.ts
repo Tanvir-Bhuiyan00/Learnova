@@ -406,8 +406,11 @@ const cancelUnpaidEnrollments = async () => {
       .map((p) => p.couponId)
       .filter((id): id is string => Boolean(id));
 
-    await tx.payment.deleteMany({
+    await tx.payment.updateMany({
       where: { id: { in: paymentIds } },
+      data: {
+        status: PaymentStatus.FAILED,
+      },
     });
 
     await tx.enrollment.updateMany({

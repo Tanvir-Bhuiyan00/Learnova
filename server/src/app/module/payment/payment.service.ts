@@ -6,6 +6,7 @@ import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { incrementCouponUsage } from "../../utils/coupon";
 import { sendEmail } from "../../utils/email";
 import { paymentFilterableFields, paymentSearchableFields } from "./payment.constant";
 import { generateInvoicePdf } from "./payment.utils";
@@ -49,19 +50,60 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
 
       const isPaid = session.payment_status === "paid";
 
-      await prisma.$transaction(async (tx) => {
+      const updatedPayments = await prisma.$transaction(async (tx) => {
         const updatedPayments = [];
 
         for (const enrollment of enrollments) {
-          const updatedPayment = await tx.payment.update({
-            where: { id: enrollment.payment!.id },
-            data: {
+          // A FAILED status alone isn't proof the cron rolled counters back
+          // (the webhook may have failed an unpaid session itself), but a
+          // soft-deleted enrollment is: the cron always soft-deletes the
+          // enrollment in the same transaction that rolls back the counters.
+          const wasExpiredByCron = enrollment.isDeleted;
+
+          const updatedPayment = await tx.payment.upsert({
+            where: { enrollmentId: enrollment.id },
+            update: {
               status: isPaid ? PaymentStatus.SUCCEEDED : PaymentStatus.FAILED,
               stripePaymentIntentId: session.payment_intent,
               paymentGatewayData: session,
               stripeEventId: event.id,
             },
+            create: {
+              amount:
+                enrollment.payment?.amount ??
+                (enrollment.course.discountPrice ?? enrollment.course.price),
+              status: isPaid ? PaymentStatus.SUCCEEDED : PaymentStatus.FAILED,
+              studentId: enrollment.studentId,
+              enrollmentId: enrollment.id,
+              couponId: enrollment.payment?.couponId ?? null,
+              stripePaymentIntentId: session.payment_intent,
+              paymentGatewayData: session,
+              stripeEventId: event.id,
+            },
           });
+
+          // The 30-min cron may have expired this payment while the customer
+          // was still completing checkout. If the customer actually paid,
+          // restore the enrollment and the counters the cron rolled back.
+          if (isPaid && wasExpiredByCron) {
+            await tx.enrollment.update({
+              where: { id: enrollment.id },
+              data: { isDeleted: false, deletedAt: null },
+            });
+
+            await tx.course.update({
+              where: { id: enrollment.courseId },
+              data: { totalStudents: { increment: 1 } },
+            });
+
+            if (updatedPayment.couponId) {
+              const coupon = await tx.coupon.findUnique({
+                where: { id: updatedPayment.couponId },
+                select: { maxUsage: true },
+              });
+              await incrementCouponUsage(tx, updatedPayment.couponId, coupon?.maxUsage ?? null);
+            }
+          }
 
           updatedPayments.push(updatedPayment);
         }
@@ -70,29 +112,35 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
       });
 
       if (isPaid) {
+        const paymentByEnrollmentId = new Map(
+          updatedPayments.map((p) => [p.enrollmentId, p]),
+        );
+
         for (const enrollment of enrollments) {
+          const payment = paymentByEnrollmentId.get(enrollment.id);
+          if (!payment) continue;
           try {
             const pdfBuffer = await generateInvoicePdf({
-              invoiceId: enrollment.payment!.id,
+              invoiceId: payment.id,
               studentName: enrollment.student.name,
               studentEmail: enrollment.student.email,
               courseName: enrollment.course.title,
               instructorName: enrollment.course.instructor?.name || "N/A",
-              amount: enrollment.payment?.amount || 0,
-              transactionId: enrollment.payment?.id || "",
+              amount: payment.amount,
+              transactionId: payment.id,
               paymentDate: new Date().toISOString(),
             });
 
             const cloudinaryResponse = await uploadFileToCloudinary(
               pdfBuffer,
-              `learnova/invoices/invoice-${enrollment.payment!.id}-${Date.now()}.pdf`,
+              `learnova/invoices/invoice-${payment.id}-${Date.now()}.pdf`,
             );
 
             const invoiceUrl = cloudinaryResponse?.secure_url;
 
             if (invoiceUrl) {
               await prisma.payment.update({
-                where: { id: enrollment.payment!.id },
+                where: { id: payment.id },
                 data: { invoiceUrl },
               });
             }
@@ -103,17 +151,17 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
               templateName: "invoice",
               templateData: {
                 studentName: enrollment.student.name,
-                invoiceId: enrollment.payment!.id,
-                transactionId: enrollment.payment!.id,
+                invoiceId: payment.id,
+                transactionId: payment.id,
                 paymentDate: new Date().toLocaleDateString(),
                 courseName: enrollment.course.title,
                 instructorName: enrollment.course.instructor?.name || "N/A",
-                amount: enrollment.payment?.amount || 0,
+                amount: payment.amount,
                 invoiceUrl: invoiceUrl || "",
               },
               attachments: [
                 {
-                  filename: `Invoice-${enrollment.payment!.id}.pdf`,
+                  filename: `Invoice-${payment.id}.pdf`,
                   content: pdfBuffer || Buffer.from(""),
                   contentType: "application/pdf",
                 },

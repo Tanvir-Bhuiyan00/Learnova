@@ -14,6 +14,20 @@ import { PaymentController } from "./app/module/payment/payment.controller";
 import { EnrollmentService } from "./app/module/enrollment/enrollment.service";
 import { catchAsync } from "./app/shared/catchAsync";
 import { sendResponse } from "./app/shared/sendResponse";
+import { rateLimit, sweepRateLimitBuckets } from "./app/middleware/rateLimit";
+
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  keyPrefix: "rl:auth",
+  message: "Too many authentication attempts, please try again later.",
+});
+
+const apiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  keyPrefix: "rl:api",
+});
 
 const app: Application = express();
 app.set("query parser", (str: string) => qs.parse(str));
@@ -41,7 +55,7 @@ app.use(
   }),
 );
 
-app.use("/api/auth", toNodeHandler(auth));
+app.use("/api/auth", authRateLimiter, toNodeHandler(auth));
 
 // Enable URL-encoded form data parsing
 app.use(express.urlencoded({ extended: true }));
@@ -63,6 +77,10 @@ cron.schedule("*/25 * * * *", async () => {
   }
 });
 
+cron.schedule("* * * * *", () => {
+  sweepRateLimitBuckets();
+});
+
 app.get(
   "/api/v1/cron/cancel-unpaid-enrollments",
   catchAsync(async (req, res) => {
@@ -82,7 +100,7 @@ app.get(
   }),
 );
 
-app.use("/api/v1", IndexRoutes);
+app.use("/api/v1", apiRateLimiter, IndexRoutes);
 
 app.use(globalErrorHandler);
 app.use(notFound);

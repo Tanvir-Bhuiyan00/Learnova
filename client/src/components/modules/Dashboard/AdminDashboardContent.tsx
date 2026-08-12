@@ -9,8 +9,19 @@ import { getDashboardData } from "@/services/dashboard.services";
 import { ApiResponse } from "@/types/api.types";
 import { ISuperAdminDashboardStats } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  Briefcase,
+  CreditCard,
+  GraduationCap,
+  PlusCircle,
+  RefreshCw,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { motion } from "motion/react";
+import Link from "next/link";
 
 // recharts is heavy — load it only when the admin dashboard is opened.
 const EnrollmentBarChart = dynamic(
@@ -24,6 +35,13 @@ const EnrollmentPieChart = dynamic(
     import("@/components/shared/EnrollmentPieChart").then((mod) => mod.default),
   { ssr: false },
 );
+
+const quickActions = [
+  { label: "Manage Courses", href: "/admin/dashboard/courses-management", icon: BookOpen, color: "text-blue-600 dark:text-blue-400" },
+  { label: "Add Instructor", href: "/admin/dashboard/instructors-management", icon: GraduationCap, color: "text-green-600 dark:text-green-400" },
+  { label: "View Payments", href: "/admin/dashboard/payments-management", icon: CreditCard, color: "text-emerald-600 dark:text-emerald-400" },
+  { label: "Manage Users", href: "/admin/dashboard/users-management", icon: Users, color: "text-indigo-600 dark:text-indigo-400" },
+];
 
 const AdminDashboardContent = () => {
   const {
@@ -77,95 +95,129 @@ const AdminDashboardContent = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
-          Overview
-        </h1>
-        <p className="mt-1 text-sm text-mute-text">
-          A snapshot of your platform at a glance.
-        </p>
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl font-black tracking-tight text-ink">
+            Overview
+          </h1>
+          <p className="mt-1 text-sm text-mute-text">
+            A snapshot of your platform at a glance.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-full bg-primary-pale px-4 py-2 text-sm font-semibold text-ink-deep">
+          <TrendingUp className="size-4" />
+          {data?.totalRevenue != null && (
+            <>
+              Total Revenue{" "}
+              <span className="ml-1 font-heading text-lg font-extrabold">
+                ৳{data.totalRevenue.toLocaleString("en-US")}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2">
+        {quickActions.map((action, i) => (
+          <motion.div
+            key={action.label}
+            variants={fadeInUp}
+            custom={i}
+          >
+            <Link href={action.href}>
+              <Button
+                variant="outline"
+                className="gap-2 rounded-full bg-card px-4 text-sm font-medium ring-1 ring-border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40"
+              >
+                <action.icon className={`size-4 ${action.color}`} />
+                {action.label}
+              </Button>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Stats Grid */}
       <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="show"
         className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
       >
-        <motion.div variants={fadeInUp}>
         <StatsCard
+          index={0}
           title="Total Users"
           value={data?.totalUsers || 0}
           iconName="Users"
-          description="Number of registered users"
+          description="Registered users"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Total Students"
+          index={1}
+          title="Students"
           value={data?.totalStudents || 0}
           iconName="GraduationCap"
-          description="Number of students enrolled"
+          description="Enrolled students"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Total Instructors"
+          index={2}
+          title="Instructors"
           value={data?.totalInstructors || 0}
           iconName="Presentation"
-          description="Number of instructors"
+          description="Active instructors"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Total Courses"
+          index={3}
+          title="Courses"
           value={data?.totalCourses || 0}
           iconName="BookOpen"
-          description="Number of courses"
+          description="Published courses"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Total Enrollments"
+          index={4}
+          title="Enrollments"
           value={data?.totalEnrollments || 0}
           iconName="ClipboardList"
-          description="Number of enrollments"
+          description="Total enrollments"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Total Revenue"
+          index={5}
+          title="Revenue"
           value={data?.totalRevenue || 0}
           iconName="DollarSign"
-          description="Total revenue generated"
+          description="Total revenue"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Average Rating"
+          index={6}
+          title="Avg Rating"
           value={data?.averageRating || 0}
           iconName="Star"
-          description="Average course rating"
+          description="Course rating"
         />
-        </motion.div>
-        <motion.div variants={fadeInUp}>
         <StatsCard
-          title="Completion Rate"
+          index={7}
+          title="Completion"
           value={`${data?.completionRate || 0}%`}
           iconName="CheckCircle"
-          description="Course completion rate"
+          description="Completion rate"
         />
-        </motion.div>
       </motion.div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Charts */}
+      <motion.div
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
+        className="grid gap-4 md:grid-cols-2"
+      >
         <EnrollmentBarChart data={data?.revenueByMonth || []} />
         <EnrollmentPieChart
           data={data?.userRoleDistribution || []}
           title="User Role Distribution"
           description="Distribution of users by role"
         />
-      </div>
+      </motion.div>
     </div>
   );
 };

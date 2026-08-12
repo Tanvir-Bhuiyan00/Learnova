@@ -65,13 +65,13 @@ const DashboardMobileSidebar = ({
                       href={item.href}
                       key={id}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                         isActive
-                          ? "bg-primary text-ink"
+                          ? "bg-primary text-ink shadow-sm shadow-primary-pale"
                           : "text-body-text hover:bg-canvas-soft hover:text-ink",
                       )}
                     >
-                      <Icon className="size-4" />
+                      <Icon className={cn("size-4 shrink-0", isActive && "text-ink-deep")} />
                       <span className="flex-1">{item.title}</span>
                     </Link>
                   );

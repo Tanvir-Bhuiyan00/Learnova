@@ -20,8 +20,8 @@ router.get(
   CertificateController.getMyCertificates,
 );
 
-router.get("/:id", CertificateController.getCertificateById);
-
 router.get("/verify/:id", CertificateController.verifyCertificate);
+
+router.get("/:id", checkAuth(), CertificateController.getCertificateById);
 
 export const CertificateRoutes = router;

@@ -17,7 +17,7 @@ router.post(
 
 router.get("/", AssignmentController.getAllAssignments);
 
-router.get("/:id", AssignmentController.getAssignmentById);
+router.get("/:id", checkAuth(), AssignmentController.getAssignmentById);
 
 router.patch(
   "/:id",

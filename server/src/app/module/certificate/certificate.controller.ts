@@ -31,7 +31,11 @@ const getMyCertificates = catchAsync(async (req: Request, res: Response) => {
 
 const getCertificateById = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const result = await CertificateService.getCertificateById(id);
+  const result = await CertificateService.getCertificateById(
+    id,
+    req.user.userId,
+    req.user.role,
+  );
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,

@@ -35,7 +35,7 @@ const getAllAssignments = catchAsync(async (req: Request, res: Response) => {
 
 const getAssignmentById = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const result = await AssignmentService.getAssignmentById(id);
+  const result = await AssignmentService.getAssignmentById(id, req.user);
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,

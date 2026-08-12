@@ -92,7 +92,7 @@ const getMyCertificates = async (user: IRequestUser) => {
   return certificates;
 };
 
-const getCertificateById = async (certificateId: string) => {
+const getCertificateById = async (certificateId: string, userId: string, role: string) => {
   const certificate = await prisma.certificate.findFirstOrThrow({
     where: { id: certificateId, isDeleted: false },
     include: {
@@ -100,6 +100,18 @@ const getCertificateById = async (certificateId: string) => {
       course: true,
     },
   });
+
+  const student = await prisma.student.findUnique({
+    where: { userId },
+    select: { id: true },
+  });
+
+  const isOwner = student?.id === certificate.studentId;
+  const isStaff = role === "ADMIN" || role === "SUPER_ADMIN";
+
+  if (!isOwner && !isStaff) {
+    throw new AppError(httpStatus.NOT_FOUND, "Certificate not found");
+  }
 
   return certificate;
 };

@@ -56,20 +56,51 @@ const getAllAssignments = async (
   return result;
 };
 
-const getAssignmentById = async (assignmentId: string) => {
+const getAssignmentById = async (assignmentId: string, user: IRequestUser) => {
   const assignment = await prisma.assignment.findFirstOrThrow({
     where: { id: assignmentId, isDeleted: false },
     include: {
       course: true,
-      submissions: {
-        where: { isDeleted: false },
-        include: { student: true },
-        orderBy: { submittedAt: "desc" },
-      },
     },
   });
 
-  return assignment;
+  const [instructor, student] = await Promise.all([
+    prisma.instructor.findUnique({
+      where: { userId: user.userId },
+      select: { id: true },
+    }),
+    prisma.student.findUnique({
+      where: { userId: user.userId },
+      select: { id: true },
+    }),
+  ]);
+
+  const isInstructor = instructor?.id === assignment.course?.instructorId;
+
+  let submissions: unknown[] = [];
+  if (isInstructor) {
+    submissions = await prisma.assignmentSubmission.findMany({
+      where: { assignmentId, isDeleted: false },
+      include: { student: true },
+      orderBy: { submittedAt: "desc" },
+    });
+  } else if (student) {
+    submissions = await prisma.assignmentSubmission.findMany({
+      where: { assignmentId, studentId: student.id, isDeleted: false },
+      select: {
+        id: true,
+        content: true,
+        fileUrl: true,
+        submittedAt: true,
+        marks: true,
+        feedback: true,
+        gradedAt: true,
+      },
+      orderBy: { submittedAt: "desc" },
+    });
+  }
+
+  return { ...assignment, submissions };
 };
 
 const updateAssignment = async (

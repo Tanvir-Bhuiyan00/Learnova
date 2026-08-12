@@ -44,6 +44,7 @@ describe("checkAuth", () => {
       role: UserRole.STUDENT,
       status: "ACTIVE",
       isDeleted: false,
+      emailVerified: true,
     },
     expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     createdAt: new Date(Date.now() - 60 * 60 * 1000),
@@ -109,6 +110,19 @@ describe("checkAuth", () => {
 
     expect(next).toHaveBeenCalledTimes(1);
     expect(makeAppError(next.mock.calls[0][0]).statusCode).toBe(401);
+  });
+
+  it("rejects session users whose email is not verified", async () => {
+    req.cookies["better-auth.session_token"] = "session-1";
+    sessionFindManyMock.mockResolvedValue({
+      ...validSession,
+      user: { ...validSession.user, emailVerified: false },
+    });
+
+    await checkAuth()(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(makeAppError(next.mock.calls[0][0]).statusCode).toBe(403);
   });
 
   it("rejects session users without the required role", async () => {

@@ -33,6 +33,12 @@ const apiRateLimiter = rateLimit({
 const app: Application = express();
 app.set("query parser", (str: string) => qs.parse(str));
 
+// Behind nginx (which sets X-Forwarded-For), req.ip must resolve to the
+// real client address — otherwise the per-IP rate limiter buckets every
+// visitor under 127.0.0.1 and either blocks everyone or lets one heavy
+// user consume the shared allowance. Trust exactly one proxy hop.
+app.set("trust proxy", 1);
+
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), `src/app/templates`));
 

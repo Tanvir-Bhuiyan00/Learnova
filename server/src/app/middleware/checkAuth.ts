@@ -81,6 +81,15 @@ export const checkAuth =
           );
         }
 
+        // Unverified accounts must not be able to use protected APIs until
+        // they confirm their email (mirrors the proxy's client-side gate).
+        if (!user.emailVerified) {
+          throw new AppError(
+            status.FORBIDDEN,
+            "Email not verified. Please verify your email first.",
+          );
+        }
+
         if (authRoles.length > 0 && !authRoles.includes(user.role)) {
           throw new AppError(
             status.FORBIDDEN,

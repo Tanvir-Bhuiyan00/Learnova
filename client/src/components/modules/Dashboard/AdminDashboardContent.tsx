@@ -3,21 +3,65 @@
 import EnrollmentBarChart from "@/components/shared/EnrollmentBarChart";
 import EnrollmentPieChart from "@/components/shared/EnrollmentPieChart";
 import StatsCard from "@/components/shared/StatsCard";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 import { getDashboardData } from "@/services/dashboard.services";
 import { ApiResponse } from "@/types/api.types";
 import { ISuperAdminDashboardStats } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import { motion } from "motion/react";
 
 const AdminDashboardContent = () => {
-  const { data: adminDashboardData } = useQuery({
+  const {
+    data: adminDashboardData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-dashboard-data"],
     queryFn: getDashboardData,
     refetchOnWindowFocus: "always",
   });
 
   const { data } = adminDashboardData as ApiResponse<ISuperAdminDashboardStats>;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-1">
+          <Skeleton className="h-9 w-44" />
+          <Skeleton className="h-5 w-72" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 rounded-3xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed p-16 text-center">
+        <AlertTriangle className="size-10 text-negative" />
+        <div>
+          <h2 className="font-heading text-xl font-bold text-ink">
+            Couldn&apos;t load your dashboard
+          </h2>
+          <p className="mt-1 text-sm text-mute-text">
+            Something went wrong while fetching your stats.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} className="rounded-full">
+          <RefreshCw className="size-4" />
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

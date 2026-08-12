@@ -2,17 +2,39 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import StatsCard from "@/components/shared/StatsCard";
+import { Button } from "@/components/ui/button";
 import { getDashboardData } from "@/services/dashboard.services";
 import { IStudentDashboardStats } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 const StudentDashboardPage = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["student-dashboard"],
     queryFn: () => getDashboardData(),
   });
 
   const stats: IStudentDashboardStats | null = data?.data as any;
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed p-16 text-center">
+        <AlertTriangle className="size-10 text-negative" />
+        <div>
+          <h2 className="font-heading text-xl font-bold text-ink">
+            Couldn&apos;t load your dashboard
+          </h2>
+          <p className="mt-1 text-sm text-mute-text">
+            Something went wrong while fetching your stats.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => refetch()} className="rounded-full">
+          <RefreshCw className="size-4" />
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

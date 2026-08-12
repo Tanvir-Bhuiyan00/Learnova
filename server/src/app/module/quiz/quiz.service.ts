@@ -413,7 +413,22 @@ const startAttempt = async (quizId: string, user: IRequestUser) => {
   });
 
   if (incompleteAttempt) {
-    return incompleteAttempt;
+    // Resume only if the attempt is still within its time window. An
+    // expired attempt is auto-finalized (scored 0) so the student cannot
+    // keep it open forever and must start fresh with a new attempt.
+    if (
+      quiz.timeLimit &&
+      quiz.timeLimit > 0 &&
+      Date.now() - incompleteAttempt.startedAt.getTime() >
+        quiz.timeLimit * 60 * 1000
+    ) {
+      await prisma.quizAttempt.update({
+        where: { id: incompleteAttempt.id },
+        data: { score: 0, isPassed: false, completedAt: new Date() },
+      });
+    } else {
+      return incompleteAttempt;
+    }
   }
 
   const attempt = await prisma.quizAttempt.create({

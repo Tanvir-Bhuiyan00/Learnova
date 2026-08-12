@@ -89,6 +89,20 @@ export const getDefaultDashboardRoute = (role: UserRole) => {
   return "/";
 };
 
+const isSafeRelativePath = (path: string): boolean => {
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return false;
+  }
+
+  // Block protocol-relative and absolute URLs ("https://", "javascript:",
+  // "data:", etc.) passing through as redirect targets.
+  if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(path)) {
+    return false;
+  }
+
+  return true;
+};
+
 export const isValidRedirectForRole = (
   redirectPath: string,
   role: UserRole,
@@ -96,6 +110,10 @@ export const isValidRedirectForRole = (
   const unifySuperAdminAndAdminRole = role === "SUPER_ADMIN" ? "ADMIN" : role;
 
   role = unifySuperAdminAndAdminRole;
+
+  if (!isSafeRelativePath(redirectPath)) {
+    return false;
+  }
 
   const sanitizedRedirectPath = redirectPath.split("?")[0] || redirectPath;
   const routeOwner = getRouteOwner(sanitizedRedirectPath);

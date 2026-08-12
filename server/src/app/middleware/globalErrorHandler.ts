@@ -28,7 +28,6 @@ export const globalErrorHandler = async (
   }
 
   await deleteUploadedFilesFromGlobalErrorHandler(req);
-
   let errorSources: TErrorSources[] = [];
   let statusCode: number = status.INTERNAL_SERVER_ERROR;
   let message: string = "Internal Server Error";
@@ -82,14 +81,21 @@ export const globalErrorHandler = async (
     ];
   } else if (err instanceof Error) {
     statusCode = status.INTERNAL_SERVER_ERROR;
-    message = err.message;
+    message =
+      envVars.NODE_ENV === "development"
+        ? err.message
+        : "Internal Server Error";
     stack = err.stack;
     errorSources = [
       {
         path: "",
-        message: err.message,
+        message,
       },
     ];
+
+    if (envVars.NODE_ENV === "production") {
+      console.error("Unhandled server error:", err);
+    }
   }
 
   const errorResponse: TErrorResponse = {

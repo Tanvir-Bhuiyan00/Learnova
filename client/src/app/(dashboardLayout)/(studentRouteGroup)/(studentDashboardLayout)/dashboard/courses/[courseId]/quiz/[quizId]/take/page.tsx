@@ -57,10 +57,13 @@ const TakeQuizPage = ({ params }: Props) => {
   const takeData = data?.data as unknown as QuizTakeData | undefined;
   const questions = takeData?.questions ?? [];
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
   const timeLimit = quizData?.data?.timeLimit ?? takeData?.timeLimit;
 
   const [timeLeft, setTimeLeft] = useState(timeLimit ? timeLimit * 60 : 0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoSubmittedRef = useRef(false);
 
   useEffect(() => {
     if (timeLimit && timeLimit > 0 && !timerRef.current) {
@@ -70,6 +73,10 @@ const TakeQuizPage = ({ params }: Props) => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
             timerRef.current = null;
+            if (attemptId && !autoSubmittedRef.current) {
+              autoSubmittedRef.current = true;
+              submitMutation.mutate();
+            }
             return 0;
           }
           return prev - 1;
@@ -79,7 +86,7 @@ const TakeQuizPage = ({ params }: Props) => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [timeLimit]);
+  }, [timeLimit, attemptId]);
 
   const answeredCount = Object.keys(answers).length;
 
@@ -111,7 +118,7 @@ const TakeQuizPage = ({ params }: Props) => {
   const submitMutation = useMutation({
     mutationFn: () =>
       submitAttempt(attemptId!, {
-        answers: Object.entries(answers).map(
+        answers: Object.entries(answersRef.current).map(
           ([questionId, selectedAnswer]) => ({ questionId, selectedAnswer }),
         ),
       }),

@@ -31,12 +31,14 @@ function setCookieOnResponse(
   });
 }
 
-function maxAgeFromToken(token: string): number {
+function maxAgeFromToken(token: string, fallbackMaxAge: number): number {
   const decoded = jwtUtils.decodedToken(token);
   if (decoded?.exp) {
     return Math.max(0, decoded.exp - Math.floor(Date.now() / 1000));
   }
-  return 0;
+  // If the token has no exp claim, keep it for the fallback lifetime instead
+  // of expiring the cookie immediately (Max-Age=0 deletes it).
+  return fallbackMaxAge;
 }
 
 function updateCookieHeader(
@@ -149,7 +151,7 @@ export async function proxy(request: NextRequest) {
             response,
             "accessToken",
             refreshedTokens.accessToken,
-            maxAgeFromToken(refreshedTokens.accessToken),
+            maxAgeFromToken(refreshedTokens.accessToken, 60 * 60 * 24),
           );
         }
 
@@ -158,7 +160,7 @@ export async function proxy(request: NextRequest) {
             response,
             "refreshToken",
             refreshedTokens.refreshToken,
-            maxAgeFromToken(refreshedTokens.refreshToken),
+            maxAgeFromToken(refreshedTokens.refreshToken, 7 * 24 * 60 * 60),
           );
         }
 
@@ -320,7 +322,22 @@ export async function proxy(request: NextRequest) {
 
     return NextResponse.next();
   } catch (error) {
+    // Fail closed: if anything in the auth checks throws (transient network
+    // error, unsupported API), redirect to login rather than silently serving
+    // protected routes without any authorization checks.
     console.error("Error in proxy middleware:", error);
+
+    const routerOwner = getRouteOwner(request.nextUrl.pathname);
+    const isProtectedRoute =
+      routerOwner !== null && !isAuthRoute(request.nextUrl.pathname);
+
+    if (isProtectedRoute) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
   }
 }
 

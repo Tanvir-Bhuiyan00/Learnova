@@ -60,6 +60,9 @@ const CoursesList = ({ initialCategory = "all" }: { initialCategory?: string }) 
   const [freeOnly, setFreeOnly] = useState(false);
   const [page, setPage] = useState(1);
 
+  // Hydrate filters from URL query params on mount / when they change.
+  // Syncing local filter state from the URL is a legitimate effect use.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const q = searchParams.get("q");
     if (q) {
@@ -73,6 +76,7 @@ const CoursesList = ({ initialCategory = "all" }: { initialCategory?: string }) 
       setPage(1);
     }
   }, [searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,7 +85,9 @@ const CoursesList = ({ initialCategory = "all" }: { initialCategory?: string }) 
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Reset to page 1 whenever an active filter changes.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [debouncedSearch, categoryId, level, sort, freeOnly]);
 

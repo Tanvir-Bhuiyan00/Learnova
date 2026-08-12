@@ -3,7 +3,7 @@ import {
   getNewTokensWithRefreshToken,
   getUserInfo,
 } from "@/services/auth.services";
-import { isTokenExpiringSoon } from "@/lib/tokenUtils";
+import { isTokenExpired, isTokenExpiringSoon } from "@/lib/tokenUtils";
 import { cookies } from "next/headers";
 
 // Always resolve the user from the request's httpOnly cookies; never cache.
@@ -23,7 +23,12 @@ export async function GET() {
   const accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
 
-  if (accessToken && refreshToken && (await isTokenExpiringSoon(accessToken))) {
+  if (
+    accessToken &&
+    refreshToken &&
+    ((await isTokenExpired(accessToken)) ||
+      (await isTokenExpiringSoon(accessToken)))
+  ) {
     await getNewTokensWithRefreshToken(refreshToken);
   }
 

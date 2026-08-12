@@ -14,7 +14,7 @@ import {
 import { IQuizQuestion } from "@/types/quiz.types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Clock, Flag } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -30,6 +30,8 @@ interface QuizTakeData {
 
 const TakeQuizPage = ({ params }: Props) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [courseId, setCourseId] = useState("");
   const [quizId, setQuizId] = useState("");
   const [attemptId, setAttemptId] = useState<string | null>(
@@ -63,36 +65,10 @@ const TakeQuizPage = ({ params }: Props) => {
   }, [answers]);
   const timeLimit = quizData?.data?.timeLimit ?? takeData?.timeLimit;
 
-  const [timeLeft, setTimeLeft] = useState(timeLimit ? timeLimit * 60 : 0);
+  const [deadline, setDeadline] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const autoSubmittedRef = useRef(false);
-
-  const answeredCount = Object.keys(answers).length;
-
-  const [starting, setStarting] = useState(!searchParams.get("attemptId"));
-
-  useEffect(() => {
-    if (!quizId || attemptId) return;
-    let cancelled = false;
-    startAttempt(quizId)
-      .then((res) => {
-        if (cancelled) return;
-        if (res.success) {
-          setAttemptId(res.data.id);
-        } else {
-          toast.error(res.message || "Failed to start quiz");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) toast.error("Failed to start quiz");
-      })
-      .finally(() => {
-        if (!cancelled) setStarting(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [quizId, attemptId]);
 
   const submitMutation = useMutation({
     mutationFn: () =>
@@ -106,28 +82,81 @@ const TakeQuizPage = ({ params }: Props) => {
     },
   });
 
+  // Derive the countdown from a fixed deadline instead of resetting on every
+  // re-render. The deadline is set once when the time limit first arrives;
+  // submitting (mutation state changes) must never restart the countdown.
   useEffect(() => {
-    if (timeLimit && timeLimit > 0 && !timerRef.current) {
-      setTimeLeft(timeLimit * 60);
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            timerRef.current = null;
-            if (attemptId && !autoSubmittedRef.current) {
-              autoSubmittedRef.current = true;
-              submitMutation.mutate();
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (timeLimit && timeLimit > 0 && !deadline && !autoSubmittedRef.current) {
+      setDeadline(Date.now() + timeLimit * 60 * 1000);
     }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+  }, [timeLimit, deadline]);
+
+  useEffect(() => {
+    if (!deadline) return;
+
+    const tick = () => {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+        if (attemptId && !autoSubmittedRef.current) {
+          autoSubmittedRef.current = true;
+          submitMutation.mutate();
+        }
+      }
     };
-  }, [timeLimit, attemptId, submitMutation]);
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+    // submitMutation is intentionally excluded: it changes identity on every
+    // mutation state transition and would restart the countdown.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deadline, attemptId]);
+
+  const answeredCount = Object.keys(answers).length;
+
+  const [starting, setStarting] = useState(!searchParams.get("attemptId"));
+
+  useEffect(() => {
+    if (!quizId || attemptId) return;
+    let cancelled = false;
+    startAttempt(quizId)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.success) {
+          setAttemptId(res.data.id);
+          // Persist the attempt so a refresh resumes this attempt instead of
+          // silently starting a brand-new one (which burns an attempt).
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("attemptId", res.data.id);
+          router.replace(`${pathname}?${params.toString()}`, {
+            scroll: false,
+          });
+        } else {
+          toast.error(res.message || "Failed to start quiz");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Failed to start quiz");
+      })
+      .finally(() => {
+        if (!cancelled) setStarting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [quizId, attemptId, router, pathname, searchParams]);
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);

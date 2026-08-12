@@ -8,6 +8,7 @@ import { CertificateRoutes } from "../module/certificate/certificate.route";
 import { CourseRoutes } from "../module/course/course.route";
 import { DiscussionRoutes } from "../module/discussion/discussion.route";
 import { EnrollmentRoutes } from "../module/enrollment/enrollment.route";
+import { NotificationRoutes } from "../module/notification/notification.route";
 import { InstructorRoutes } from "../module/instructor/instructor.route";
 import { PaymentRoutes } from "../module/payment/payment.route";
 import {
@@ -44,5 +45,6 @@ router.use("/discussions", DiscussionRoutes);
 router.use("/assignments", AssignmentRoutes);
 router.use("/certificates", CertificateRoutes);
 router.use("/rag", RagRoutes);
+router.use("/notifications", NotificationRoutes);
 
 export const IndexRoutes = router;

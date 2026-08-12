@@ -63,3 +63,12 @@ enum QuizCategory {
 
     @@map("quiz_category")
 }
+
+enum NotificationType {
+    ENROLLMENT
+    REVIEW
+    SYSTEM
+    USER
+
+    @@map("notification_type")
+}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Stripe from "stripe";
-import { PaymentStatus } from "../../../generated/prisma/enums";
+import { NotificationType, PaymentStatus } from "../../../generated/prisma/enums";
 import { uploadFileToCloudinary } from "../../config/cloudinary.config";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { IQueryParams } from "../../interfaces/query.interface";
@@ -121,6 +121,21 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
             });
           } catch (err) {
             console.error("Error processing invoice for enrollment:", enrollment.id, err);
+          }
+
+          try {
+            if (enrollment.course.instructor?.userId) {
+              await prisma.notification.create({
+                data: {
+                  userId: enrollment.course.instructor.userId,
+                  title: "New enrollment",
+                  message: `${enrollment.student.name} enrolled in "${enrollment.course.title}".`,
+                  type: NotificationType.ENROLLMENT,
+                },
+              });
+            }
+          } catch (err) {
+            console.error("Error creating enrollment notification:", err);
           }
         }
       }

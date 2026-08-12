@@ -1,5 +1,5 @@
 import status from "http-status";
-import { PaymentStatus } from "../../../generated/prisma/enums";
+import { NotificationType, PaymentStatus } from "../../../generated/prisma/enums";
 import { Prisma } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
@@ -101,6 +101,22 @@ const giveReview = async (
     }
 
     await recalculateCourseRating(tx, payload.courseId);
+
+    const instructor = await tx.instructor.findUnique({
+      where: { id: course.instructorId },
+      select: { userId: true },
+    });
+
+    if (instructor?.userId) {
+      await tx.notification.create({
+        data: {
+          userId: instructor.userId,
+          title: "New review",
+          message: `${student.name} left a ${payload.rating}-star review on "${course.title}".`,
+          type: NotificationType.REVIEW,
+        },
+      });
+    }
 
     return review;
   });

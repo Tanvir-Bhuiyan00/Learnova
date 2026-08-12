@@ -1,5 +1,5 @@
 import status from "http-status";
-import { CourseStatus, PaymentStatus } from "../../../generated/prisma/enums";
+import { CourseStatus, NotificationType, PaymentStatus } from "../../../generated/prisma/enums";
 import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
@@ -101,6 +101,22 @@ const checkoutCart = async (user: IRequestUser) => {
           where: { id: item.courseId },
           data: { totalStudents: { increment: 1 } },
         });
+
+        const instructor = await tx.instructor.findUnique({
+          where: { id: item.course.instructorId },
+          select: { userId: true },
+        });
+
+        if (instructor?.userId) {
+          await tx.notification.create({
+            data: {
+              userId: instructor.userId,
+              title: "New enrollment",
+              message: `${student.name} enrolled in "${item.course.title}".`,
+              type: NotificationType.ENROLLMENT,
+            },
+          });
+        }
 
         created.push(enrollment);
       }

@@ -17,6 +17,7 @@ model User {
     student    Student?
     instructor Instructor?
     admin      Admin?
+    notifications Notification[]
 
     @@unique([email])
     @@map("users")

@@ -12,67 +12,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, BookOpen, CheckCircle, MessageSquare, UserPlus } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getMyNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/services/notification.services";
+import { Notification, NotificationType } from "@/types/notification.types";
+import { useState } from "react";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: "enrollment" | "review" | "system" | "user";
-  timestamp: Date;
-  read: boolean;
-}
+export const notificationKeys = {
+  myNotifications: ["notifications", "mine"] as const,
+  unreadCount: ["notifications", "unread-count"] as const,
+};
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    title: "New Enrollment",
-    message:
-      "A student has enrolled in your course 'Advanced React'.",
-    type: "enrollment",
-    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-    read: false,
-  },
-
-  {
-    id: "2",
-    title: "New Review",
-    message: "Your course 'Python Basics' received a 5-star review.",
-    type: "review",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-    read: true,
-  },
-
-  {
-    id: "3",
-    title: "System Maintenance",
-    message:
-      "The system will undergo maintenance on 2024-06-20 from 1:00 AM to 3:00 AM.",
-    type: "system",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    read: false,
-  },
-
-  {
-    id: "4",
-    title: "New User Registered",
-    message: "A new user, Jane Smith, has registered on the platform.",
-    type: "user",
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
-    read: true,
-  },
-];
-
-const getNotificationIcon = (type: Notification["type"]) => {
+const getNotificationIcon = (type: NotificationType) => {
   switch (type) {
-    case "enrollment":
+    case "ENROLLMENT":
       return <BookOpen className="h-4 w-4 text-positive" />;
-    case "review":
+    case "REVIEW":
       return <MessageSquare className="h-4 w-4 text-warning-deep" />;
-    case "system":
-      return <CheckCircle className="h-4 w-4 text-ink" />;
-    case "user":
+    case "SYSTEM":
+      return <CheckCircle className="h-4 w-4 text-ink-solid" />;
+    case "USER":
       return <UserPlus className="h-4 w-4 text-positive-deep" />;
     default:
       return <Bell className="h-4 w-4 text-muted-foreground" />;
@@ -80,27 +47,57 @@ const getNotificationIcon = (type: Notification["type"]) => {
 };
 
 const NotificationDropdown = () => {
-  const unreadCount = MOCK_NOTIFICATIONS.filter(
-    (notification) => !notification.read,
-  ).length;
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const { data: notificationsData, isLoading } = useQuery({
+    queryKey: notificationKeys.myNotifications,
+    queryFn: () => getMyNotifications("limit=20&sortBy=createdAt&sortOrder=desc"),
+    enabled: open,
+  });
+
+  const { data: unreadData } = useQuery({
+    queryKey: notificationKeys.unreadCount,
+    queryFn: () => getUnreadNotificationCount(),
+    refetchInterval: 60000,
+  });
+
+  const notifications: Notification[] = notificationsData?.data ?? [];
+  const unreadCount = unreadData?.data?.unreadCount ?? 0;
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: notificationKeys.myNotifications });
+    queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount });
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    if (notifications.find((n) => n.id === id)?.isRead) return;
+    await markNotificationAsRead(id);
+    invalidate();
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (unreadCount === 0) return;
+    await markAllNotificationsAsRead();
+    invalidate();
+  };
+
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant={"outline"}
           size={"icon"}
           className="relative"
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center"
+              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full p-0"
               variant={"destructive"}
             >
-              <span className="text-[10px]">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
+              <span className="text-[10px]">{unreadCount > 9 ? "9+" : unreadCount}</span>
             </Badge>
           )}
         </Button>
@@ -121,32 +118,37 @@ const NotificationDropdown = () => {
         <DropdownMenuSeparator />
 
         <ScrollArea className="h-75">
-          {MOCK_NOTIFICATIONS.length > 0 ? (
-            MOCK_NOTIFICATIONS.map((notification) => (
+          {isLoading ? (
+            <div className="space-y-3 p-3">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : notifications.length > 0 ? (
+            notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className="flex flex-col items-start gap-2 p-3 cursor-pointer"
+                onClick={() => handleMarkAsRead(notification.id)}
+                className={`flex cursor-pointer flex-col items-start gap-2 p-3 ${notification.isRead ? "opacity-60" : ""}`}
               >
-                <div className="mt-0.5">
-                  {getNotificationIcon(notification.type)}
-                </div>
+                <div className="mt-0.5">{getNotificationIcon(notification.type)}</div>
 
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium leading-none">
                       {notification.title}
                     </p>
-                    {!notification.read && (
+                    {!notification.isRead && (
                       <div className="h-2 w-2 rounded-full bg-primary" />
                     )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground line-clamp-2">
+                  <p className="line-clamp-2 text-xs text-muted-foreground">
                     {notification.message}
                   </p>
 
                   <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(notification.timestamp, {
+                    {formatDistanceToNow(new Date(notification.createdAt), {
                       addSuffix: true,
                     })}
                   </p>
@@ -162,8 +164,11 @@ const NotificationDropdown = () => {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="text-center justify-center cursor-pointer">
-          View All Notifications
+        <DropdownMenuItem
+          className="justify-center text-center"
+          onClick={handleMarkAllAsRead}
+        >
+          Mark all as read
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

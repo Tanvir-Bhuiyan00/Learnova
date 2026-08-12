@@ -15,6 +15,7 @@ import { EnrollmentService } from "./app/module/enrollment/enrollment.service";
 import { catchAsync } from "./app/shared/catchAsync";
 import { sendResponse } from "./app/shared/sendResponse";
 import { rateLimit, sweepRateLimitBuckets } from "./app/middleware/rateLimit";
+import { compress } from "./app/middleware/compress";
 
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -40,6 +41,10 @@ app.post(
   express.raw({ type: "application/json" }),
   PaymentController.handleStripeWebhookEvent,
 );
+
+// Compress JSON/text responses. Mounted after the raw webhook route so
+// Stripe signature verification always sees the unmodified body.
+app.use(compress());
 
 app.use(
   cors({

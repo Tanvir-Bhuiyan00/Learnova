@@ -7,6 +7,7 @@ import { IQuiz } from "@/types/quiz.types";
 import { useQuery } from "@tanstack/react-query";
 import { Gauge, HelpCircle, Plus, Repeat, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import EmptyState from "@/components/shared/EmptyState";
 
 interface Props {
@@ -38,9 +39,11 @@ const CourseQuizzesPage = ({ params }: Props) => {
             Assess your students with quizzes.
           </p>
         </div>
-        <Button className="gap-2 rounded-full">
-          <Plus className="size-4" />
-          Add quiz
+        <Button className="gap-2 rounded-full" asChild>
+          <Link href={`/instructor/dashboard/courses/${courseId}/quizzes/create`}>
+            <Plus className="size-4" />
+            Add quiz
+          </Link>
         </Button>
       </div>
 

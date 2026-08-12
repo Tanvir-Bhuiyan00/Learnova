@@ -28,9 +28,11 @@ const InstructorAssignmentsPage = () => {
             Manage assignments across your courses.
           </p>
         </div>
-        <Button className="gap-2 rounded-full">
-          <Plus className="size-4" />
-          Create assignment
+        <Button className="gap-2 rounded-full" asChild>
+          <Link href="/instructor/dashboard/assignments/create">
+            <Plus className="size-4" />
+            Create assignment
+          </Link>
         </Button>
       </div>
 

@@ -157,17 +157,8 @@ const getMe = async (user: IRequestUser) => {
 };
 
 const getNewToken = async (refreshToken: string, sessionToken: string) => {
-  const isSessionTokenExists = await prisma.session.findUnique({
-    where: {
-      token: sessionToken,
-    },
-    include: {
-      user: true,
-    },
-  });
-
-  if (!isSessionTokenExists) {
-    throw new AppError(status.UNAUTHORIZED, "Invalid session token");
+  if (!sessionToken) {
+    throw new AppError(status.UNAUTHORIZED, "Session token is missing");
   }
 
   const verifiedRefreshToken = jwtUtils.verifyToken(
@@ -175,11 +166,41 @@ const getNewToken = async (refreshToken: string, sessionToken: string) => {
     envVars.REFRESH_TOKEN_SECRET,
   );
 
-  if (!verifiedRefreshToken.success && verifiedRefreshToken.error) {
+  if (!verifiedRefreshToken.success) {
     throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
   }
 
   const data = verifiedRefreshToken.data as JwtPayload;
+
+  // Both the session and the refresh token must belong to the same user,
+  // and the session must not have expired. Without this, a stolen refresh
+  // token could be paired with an unrelated (or stale) session token to
+  // mint fresh access tokens.
+  const isSessionTokenExists = await prisma.session.findUnique({
+    where: {
+      token: sessionToken,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!isSessionTokenExists) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Invalid or expired session token",
+    );
+  }
+
+  if (isSessionTokenExists.userId !== data.userId) {
+    throw new AppError(
+      status.UNAUTHORIZED,
+      "Session token does not match the refresh token",
+    );
+  }
 
   const newAccessToken = tokenUtils.getAccessToken({
     userId: data.userId,

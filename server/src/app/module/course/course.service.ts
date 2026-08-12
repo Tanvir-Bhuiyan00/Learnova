@@ -5,6 +5,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IQueryParams, IQueryResult } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
+import { sanitizeHtmlContent } from "../../utils/html";
 import { getCached, invalidateCacheByPrefix, setCached } from "../../utils/cache";
 import { assertPaidEnrollment } from "../../utils/enrollmentAccess";
 import { courseFilterableFields, courseSearchableFields } from "./course.constant";
@@ -453,7 +454,7 @@ const createLesson = async (
       description: payload.description,
       videoUrl: payload.videoUrl,
       videoDuration: payload.videoDuration,
-      content: payload.content,
+      content: sanitizeHtmlContent(payload.content),
       order: payload.order,
       isFree: payload.isFree ?? false,
       moduleId,
@@ -526,7 +527,13 @@ const updateLesson = async (
 
   const lesson = await prisma.lesson.update({
     where: { id },
-    data: payload,
+    data: {
+      ...payload,
+      content:
+        payload.content !== undefined
+          ? sanitizeHtmlContent(payload.content)
+          : undefined,
+    },
   });
 
   reindexCourseByLessonAsync(id);

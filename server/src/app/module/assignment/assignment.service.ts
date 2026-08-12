@@ -37,14 +37,36 @@ const createAssignment = async (
 
 const getAllAssignments = async (
   query: IQueryParams,
-  courseId?: string,
+  courseId: string | undefined,
+  user: IRequestUser,
 ) => {
   const queryBuilder = new QueryBuilder(prisma.assignment, query);
+
+  const isAdmin = ["ADMIN", "SUPER_ADMIN"].includes(user.role);
+
+  let courseWhere: Record<string, unknown> = {};
+  if (!isAdmin) {
+    // Non-admin users only see assignments from courses they own.
+    const instructor = await prisma.instructor.findUnique({
+      where: { userId: user.userId },
+      select: { id: true },
+    });
+
+    if (!instructor) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "Instructor profile not found",
+      );
+    }
+
+    courseWhere = { course: { instructorId: instructor.id } };
+  }
 
   const result = await queryBuilder
     .where({
       isDeleted: false,
       ...(courseId ? { courseId } : {}),
+      ...courseWhere,
     } as any)
     .include({
       _count: { select: { submissions: true } },

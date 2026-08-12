@@ -24,7 +24,10 @@ const createCourse = catchAsync(async (req: Request, res: Response) => {
 const getAllCourses = catchAsync(async (req: Request, res: Response) => {
   const query = req.query;
 
-  const result = await CourseService.getAllCourses(query as IQueryParams);
+  const result = await CourseService.getAllCourses(
+    query as IQueryParams,
+    req.user,
+  );
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -38,7 +41,7 @@ const getAllCourses = catchAsync(async (req: Request, res: Response) => {
 const getCourseById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const result = await CourseService.getCourseById(id as string);
+  const result = await CourseService.getCourseById(id as string, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

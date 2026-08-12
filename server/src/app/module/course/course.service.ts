@@ -135,10 +135,45 @@ const FULL_LESSON_SELECT = {
   content: true,
 } as const;
 
-const getAllCourses = async (query: IQueryParams) => {
+const canSeeAllCourses = (user?: IRequestUser) =>
+  user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
+const isInstructor = (user?: IRequestUser) => user?.role === "INSTRUCTOR";
+
+const getCourseVisibilityFilter = async (
+  user?: IRequestUser,
+): Promise<Prisma.CourseWhereInput> => {
+  if (canSeeAllCourses(user)) {
+    return {};
+  }
+
+  if (isInstructor(user)) {
+    // Instructors see all published courses plus their own drafts (their
+    // management views reuse this endpoint).
+    const instructor = await prisma.instructor.findUnique({
+      where: { userId: user!.userId },
+      select: { id: true },
+    });
+
+    if (!instructor) {
+      return { status: CourseStatus.PUBLISHED };
+    }
+
+    return {
+      OR: [
+        { status: CourseStatus.PUBLISHED },
+        { instructorId: instructor.id },
+      ],
+    };
+  }
+
+  return { status: CourseStatus.PUBLISHED };
+};
+
+const getAllCourses = async (query: IQueryParams, user?: IRequestUser) => {
   // Cache catalog reads (2 min TTL). Interactive searches and admin
   // management views stay uncached so results are always fresh.
-  const isCacheable = !query.searchTerm;
+  const isCacheable = !query.searchTerm && !user;
 
   if (isCacheable) {
     const cacheKey = `course:list:${JSON.stringify(query)}`;
@@ -147,6 +182,8 @@ const getAllCourses = async (query: IQueryParams) => {
       return cached;
     }
   }
+
+  const visibilityFilter = await getCourseVisibilityFilter(user);
 
   const queryBuilder = new QueryBuilder<
     Course,
@@ -163,6 +200,7 @@ const getAllCourses = async (query: IQueryParams) => {
     .filter()
     .where({
       isDeleted: false,
+      ...visibilityFilter,
     })
     .include({
       category: true,
@@ -198,7 +236,7 @@ const getAllCourses = async (query: IQueryParams) => {
   return result;
 };
 
-const getCourseById = async (id: string) => {
+const getCourseById = async (id: string, user?: IRequestUser) => {
   const cacheKey = `course:detail:${id}`;
   const cached = getCached<Course>(cacheKey);
   if (cached) {
@@ -227,7 +265,29 @@ const getCourseById = async (id: string) => {
   });
 
   if (course) {
-    setCached(cacheKey, course, COURSE_DETAIL_CACHE_TTL);
+    if (canSeeAllCourses(user)) {
+      // Admins can access any course (published or not).
+    } else if (course.status !== CourseStatus.PUBLISHED) {
+      // Non-published courses are only visible to the owning instructor.
+      if (!isInstructor(user)) {
+        return null;
+      }
+
+      const instructor = await prisma.instructor.findUnique({
+        where: { userId: user!.userId },
+        select: { id: true },
+      });
+
+      if (!instructor || instructor.id !== course.instructorId) {
+        return null;
+      }
+    }
+
+    // Only cache published courses: a draft cached for an instructor/admin
+    // would be served to anonymous visitors (cache key has no user scope).
+    if (course.status === CourseStatus.PUBLISHED) {
+      setCached(cacheKey, course, COURSE_DETAIL_CACHE_TTL);
+    }
   }
 
   return course;

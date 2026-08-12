@@ -15,7 +15,11 @@ router.post(
   AssignmentController.createAssignment,
 );
 
-router.get("/", AssignmentController.getAllAssignments);
+router.get(
+  "/",
+  checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  AssignmentController.getAllAssignments,
+);
 
 router.get("/:id", checkAuth(), AssignmentController.getAssignmentById);
 

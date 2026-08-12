@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserRole } from "../../../generated/prisma/enums";
 import { multerUpload, videoMulterUpload } from "../../config/multer.config";
 import { checkAuth } from "../../middleware/checkAuth";
+import { optionalAuth } from "../../middleware/optionalAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { CourseController } from "./course.controller";
 import {
@@ -22,8 +23,8 @@ router.post(
   validateRequest(createCourseZodSchema),
   CourseController.createCourse,
 );
-router.get("/", CourseController.getAllCourses);
-router.get("/:id", CourseController.getCourseById);
+router.get("/", optionalAuth, CourseController.getAllCourses);
+router.get("/:id", optionalAuth, CourseController.getCourseById);
 router.patch(
   "/:id",
   checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),

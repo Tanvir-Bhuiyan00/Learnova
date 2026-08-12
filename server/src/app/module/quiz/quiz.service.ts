@@ -110,7 +110,11 @@ const getQuizzesByCourse = async (courseId: string, user: IRequestUser) => {
   return quizzes;
 };
 
-const getQuizById = async (quizId: string, user: IRequestUser) => {
+const getQuizById = async (
+  courseId: string,
+  quizId: string,
+  user: IRequestUser,
+) => {
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId, isDeleted: false },
     include: {
@@ -126,7 +130,27 @@ const getQuizById = async (quizId: string, user: IRequestUser) => {
     throw new AppError(status.NOT_FOUND, "Quiz not found");
   }
 
+  if (quiz.courseId !== courseId) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Quiz does not belong to this course",
+    );
+  }
+
   if (user.role === "STUDENT") {
+    // Students must be enrolled with a successful payment before they can
+    // see a quiz's questions (including its time limit), even if they are
+    // not taking it right now.
+    const student = await prisma.student.findUnique({
+      where: { userId: user.userId },
+    });
+
+    if (!student) {
+      throw new AppError(status.NOT_FOUND, "Student profile not found");
+    }
+
+    await assertPaidEnrollment(student.id, courseId);
+
     const safeQuestions = quiz.questions.map((q) => ({
       id: q.id,
       question: q.question,

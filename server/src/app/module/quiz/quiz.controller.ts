@@ -29,8 +29,9 @@ const getQuizzesByCourse = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getQuizById = catchAsync(async (req: Request, res: Response) => {
+  const courseId = req.params.courseId as string;
   const quizId = req.params.quizId as string;
-  const result = await QuizService.getQuizById(quizId, req.user);
+  const result = await QuizService.getQuizById(courseId, quizId, req.user);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

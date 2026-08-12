@@ -22,7 +22,7 @@ const getAllAssignments = catchAsync(async (req: Request, res: Response) => {
   const courseId = req.query.courseId as string | undefined;
   const query: IQueryParams = { ...(req.query as IQueryParams) };
   if (!query.limit) query.limit = "50";
-  const result = await AssignmentService.getAllAssignments(query, courseId);
+  const result = await AssignmentService.getAllAssignments(query, courseId, req.user);
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,

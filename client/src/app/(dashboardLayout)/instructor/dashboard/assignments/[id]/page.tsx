@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getAssignmentById } from "@/services/assignment.services";
+import { getAssignmentById, deleteAssignment } from "@/services/assignment.services";
 import { IAssignment } from "@/types/assignment.types";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -11,17 +11,24 @@ import {
   CalendarDays,
   ClipboardList,
   FileText,
+  Loader2,
+  Pencil,
+  Trash2,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 const AssignmentDetailPage = ({ params }: Props) => {
+  const router = useRouter();
   const [id, setId] = useState("");
+  const [deleting, setDeleting] = useState(false);
   useEffect(() => {
     params.then((p) => setId(p.id));
   }, [params]);
@@ -33,6 +40,25 @@ const AssignmentDetailPage = ({ params }: Props) => {
   });
 
   const assignment: IAssignment | null = data?.data ?? null;
+
+  const handleDelete = async () => {
+    if (!assignment) return;
+    if (!window.confirm(`Delete "${assignment.title}"? This cannot be undone.`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await deleteAssignment(id);
+      toast.success("Assignment deleted");
+      router.push("/instructor/dashboard/assignments");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not delete assignment",
+      );
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -76,15 +102,39 @@ const AssignmentDetailPage = ({ params }: Props) => {
               </div>
             </div>
 
-            <Link
-              href={`/instructor/dashboard/assignments/${id}/submissions`}
-              className="shrink-0"
-            >
-              <Button className="gap-2 rounded-full">
-                <FileText className="size-4" />
-                View submissions
+            <div className="flex shrink-0 flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+              <Link
+                href={`/instructor/dashboard/assignments/${id}/edit`}
+                className="shrink-0"
+              >
+                <Button variant="outline" className="gap-2 rounded-full">
+                  <Pencil className="size-4" />
+                  Edit
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="gap-2 rounded-full text-negative hover:text-negative"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+                Delete
               </Button>
-            </Link>
+              <Link
+                href={`/instructor/dashboard/assignments/${id}/submissions`}
+                className="shrink-0"
+              >
+                <Button className="gap-2 rounded-full">
+                  <FileText className="size-4" />
+                  View submissions
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <CardContent className="border-t border-canvas-soft p-8 pt-6">

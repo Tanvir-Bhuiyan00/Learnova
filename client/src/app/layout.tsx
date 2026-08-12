@@ -31,10 +31,54 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/v1\/?$/, "") ||
+  "https://learnova-lms.duckdns.org";
+
 export const metadata: Metadata = {
-  title: "Learnova — Master Skills Without Limits",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Learnova — Master Skills Without Limits",
+    template: "%s | Learnova",
+  },
   description:
     "Transform your future with expert-led online courses. Simple, transparent learning designed for ambitious individuals.",
+  applicationName: "Learnova",
+  keywords: [
+    "online courses",
+    "learn online",
+    "programming courses",
+    "expert-led learning",
+    "certificates",
+    "Learnova",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: SITE_URL,
+    siteName: "Learnova",
+    title: "Learnova — Master Skills Without Limits",
+    description:
+      "Expert-led online courses for ambitious people. Learn at your own pace, earn real certificates, and grow without limits.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@learnova",
+    title: "Learnova — Master Skills Without Limits",
+    description:
+      "Expert-led online courses for ambitious people. Learn at your own pace, earn real certificates, and grow without limits.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 const themeInitScript = `(function () {

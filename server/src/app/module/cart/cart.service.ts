@@ -186,7 +186,11 @@ const applyCoupon = async (payload: { code: string }, user: IRequestUser) => {
     throw new AppError(status.BAD_REQUEST, "Coupon has expired");
   }
 
-  if (coupon.maxUsage && coupon.usedCount >= coupon.maxUsage) {
+  if (
+    coupon.maxUsage !== null &&
+    coupon.maxUsage !== undefined &&
+    coupon.usedCount >= coupon.maxUsage
+  ) {
     throw new AppError(status.BAD_REQUEST, "Coupon usage limit reached");
   }
 

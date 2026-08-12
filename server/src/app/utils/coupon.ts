@@ -23,7 +23,11 @@ export const assertCouponValid = (coupon: CouponState) => {
     throw new AppError(status.BAD_REQUEST, "Coupon has expired");
   }
 
-  if (coupon.maxUsage && coupon.usedCount >= coupon.maxUsage) {
+  if (
+    coupon.maxUsage !== null &&
+    coupon.maxUsage !== undefined &&
+    coupon.usedCount >= coupon.maxUsage
+  ) {
     throw new AppError(status.BAD_REQUEST, "Coupon usage limit reached");
   }
 };
@@ -33,7 +37,7 @@ export const incrementCouponUsage = async (
   couponId: string,
   maxUsage: number | null,
 ) => {
-  if (maxUsage) {
+  if (maxUsage !== null && maxUsage !== undefined) {
     const updated = await tx.coupon.updateMany({
       where: { id: couponId, usedCount: { lt: maxUsage } },
       data: { usedCount: { increment: 1 } },

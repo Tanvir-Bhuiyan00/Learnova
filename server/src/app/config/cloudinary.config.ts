@@ -73,8 +73,18 @@ export const deleteFileFromCloudinary = async (url: string) => {
     if (match && match[1]) {
       const publicId = match[1];
 
+      // Derive the resource type from the folder in the public id. Videos
+      // are stored under /learnova/videos/ and must be destroyed with
+      // resource_type "video", not the default "image", or deletion fails
+      // silently and the file keeps occupying the paid Cloudinary account.
+      const resourceType = publicId.includes("/videos/")
+        ? "video"
+        : publicId.includes("/pdfs/")
+          ? "raw"
+          : "image";
+
       await cloudinary.uploader.destroy(publicId, {
-        resource_type: "image",
+        resource_type: resourceType,
       });
 
       console.log(`File ${publicId} deleted from cloudinary`);

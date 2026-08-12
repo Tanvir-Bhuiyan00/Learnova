@@ -397,33 +397,53 @@ const cancelUnpaidEnrollments = async () => {
 
   if (stalePayments.length === 0) return;
 
-  const enrollmentIds = stalePayments
-    .map((p) => p.enrollment?.id)
-    .filter(Boolean) as string[];
   const paymentIds = stalePayments.map((p) => p.id);
 
   await prisma.$transaction(async (tx) => {
-    const couponIds = stalePayments
-      .map((p) => p.couponId)
-      .filter((id): id is string => Boolean(id));
-
-    await tx.payment.updateMany({
-      where: { id: { in: paymentIds } },
+    // Only flip payments that are still PENDING. The Stripe webhook may
+    // have just marked one of these SUCCEEDED while the customer finished
+    // checkout; overwriting it here would delete a paid enrollment and
+    // corrupt the coupon/student counters.
+    const flipped = await tx.payment.updateMany({
+      where: { id: { in: paymentIds }, status: PaymentStatus.PENDING },
       data: {
         status: PaymentStatus.FAILED,
       },
     });
 
+    // Re-read the rows that are still FAILED *after* the update so we only
+    // expire the enrollments the cron actually rolled back. Payments the
+    // webhook already flipped to SUCCEEDED keep their enrollments and
+    // counters intact.
+    const expired = await tx.payment.findMany({
+      where: { id: { in: paymentIds }, status: PaymentStatus.FAILED },
+      include: { enrollment: true },
+    });
+
+    if (expired.length === 0) {
+      return;
+    }
+
+    const enrollmentIds = expired
+      .map((p) => p.enrollment?.id)
+      .filter(Boolean) as string[];
+    const couponIds = expired
+      .map((p) => p.couponId)
+      .filter((id): id is string => Boolean(id));
+
     await tx.enrollment.updateMany({
-      where: { id: { in: enrollmentIds } },
+      where: {
+        id: { in: enrollmentIds },
+        payment: { status: PaymentStatus.FAILED },
+      },
       data: { isDeleted: true, deletedAt: new Date() },
     });
 
-    const staleCourseIds = stalePayments
+    const expiredCourseIds = expired
       .map((p) => p.enrollment?.courseId)
       .filter(Boolean) as string[];
 
-    for (const courseId of new Set(staleCourseIds)) {
+    for (const courseId of new Set(expiredCourseIds)) {
       await tx.course.update({
         where: { id: courseId },
         data: { totalStudents: { decrement: 1 } },
@@ -432,6 +452,12 @@ const cancelUnpaidEnrollments = async () => {
 
     for (const couponId of couponIds) {
       await decrementCouponUsage(tx, couponId);
+    }
+
+    if (flipped.count > 0) {
+      console.log(
+        `Expired ${expired.length} unpaid enrollment(s) (flipped ${flipped.count} payments).`,
+      );
     }
   });
 };

@@ -101,7 +101,20 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
                 where: { id: updatedPayment.couponId },
                 select: { maxUsage: true },
               });
-              await incrementCouponUsage(tx, updatedPayment.couponId, coupon?.maxUsage ?? null);
+              try {
+                await incrementCouponUsage(tx, updatedPayment.couponId, coupon?.maxUsage ?? null);
+              } catch (error) {
+                // The coupon was already counted at checkout time; the cron
+                // rolled it back. If another student raced us to the last
+                // usage slot, do NOT fail the whole webhook — a paid
+                // enrollment must never be rolled back over a coupon edge
+                // case (that would leave the payment unrecorded and Stripe
+                // retrying forever).
+                console.error(
+                  "Coupon usage restore failed during webhook restore:",
+                  error,
+                );
+              }
             }
           }
 

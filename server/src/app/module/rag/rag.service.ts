@@ -98,20 +98,11 @@ export const RAGService = {
       sourceType,
     );
 
-    const strongMatches = relevantDocs.filter(
-      (doc) => doc.similarity >= SIMILARITY_THRESHOLD,
-    );
-
-    if (strongMatches.length === 0) {
-      return {
-        answer: FALLBACK_ANSWER,
-        sources: [],
-        contextUsed: false,
-        noContext: true,
-      };
-    }
-
-    const context = strongMatches
+    // Always use the top retrieved docs as context, even if similarity is
+    // modest — the LLM can still extract useful signals. No more "I don't
+    // have enough information" dead-end; the assistant always answers.
+    const context = relevantDocs
+      .slice(0, limit)
       .map((doc) => doc.content)
       .filter(Boolean);
 
@@ -119,16 +110,7 @@ export const RAGService = {
 
     return {
       answer,
-      sources: strongMatches.map((doc) => ({
-        id: doc.id,
-        chunkKey: doc.chunkKey,
-        sourceType: doc.sourceType,
-        sourceId: doc.sourceId,
-        sourceLabel: doc.sourceLabel,
-        content: doc.content,
-        similarity: doc.similarity,
-        metadata: doc.metadata,
-      })),
+      sources: [],
       contextUsed: context.length > 0,
       noContext: false,
     };

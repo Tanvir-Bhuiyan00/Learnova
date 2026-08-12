@@ -7,7 +7,6 @@ import {
   RefreshCw,
   Bot,
   User,
-  Sparkles,
   ChevronDown,
 } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
@@ -17,16 +16,13 @@ import {
   ingestRagAction,
   queryRagAction,
 } from "@/app/_actions/rag.actions";
-import { IRagSource } from "@/types/rag.types";
 
 type Message = {
   id: string;
   role: "user" | "bot";
   content: string;
-  sources?: IRagSource[];
   isError?: boolean;
   queryToRetry?: string;
-  noContext?: boolean;
 };
 
 const INITIAL_MESSAGES: Message[] = [
@@ -123,31 +119,7 @@ function MessageBubble({
           </button>
         )}
 
-        {!isUser &&
-          !message.noContext &&
-          message.sources &&
-          message.sources.length > 0 && (
-          <div className="flex flex-wrap gap-1 px-1">
-            <span className="mb-0.5 w-full text-[10px] text-mute-text">
-              Sources:
-            </span>
-            {message.sources.map((source, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary-pale px-2 py-0.5 text-[10px] font-medium text-ink-deep"
-              >
-                <Sparkles className="size-2.5" />
-                {source.sourceLabel ?? `Source ${i + 1}`}
-                {typeof source.similarity === "number" && (
-                  <span className="text-mute-text">
-                    {(source.similarity * 100).toFixed(0)}%
-                  </span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+        </div>
     </div>
   );
 }
@@ -206,8 +178,6 @@ export default function FloatingChatbot() {
         content: result.success
           ? result.answer!
           : (result.error ?? "Something went wrong. Please try again."),
-        sources: result.success ? result.sources : undefined,
-        noContext: result.success ? result.noContext : undefined,
         isError: !result.success,
         queryToRetry: !result.success ? text : undefined,
       };

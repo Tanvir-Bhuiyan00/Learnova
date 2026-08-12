@@ -159,7 +159,7 @@ const CoursesList = () => {
                     onClick={() => setCategoryId("all")}
                     className={
                       categoryId === "all"
-                        ? "flex w-full items-center justify-between rounded-xl bg-ink px-3.5 py-2 text-left text-sm font-semibold text-white"
+                        ? "flex w-full items-center justify-between rounded-xl bg-ink-solid px-3.5 py-2 text-left text-sm font-semibold text-white"
                         : "w-full rounded-xl px-3.5 py-2 text-left text-sm font-medium text-body-text transition-colors hover:bg-canvas-soft hover:text-ink"
                     }
                   >
@@ -172,7 +172,7 @@ const CoursesList = () => {
                       onClick={() => setCategoryId(cat.id)}
                       className={
                         categoryId === cat.id
-                          ? "flex w-full items-center justify-between rounded-xl bg-ink px-3.5 py-2 text-left text-sm font-semibold text-white"
+                          ? "flex w-full items-center justify-between rounded-xl bg-ink-solid px-3.5 py-2 text-left text-sm font-semibold text-white"
                           : "w-full rounded-xl px-3.5 py-2 text-left text-sm font-medium text-body-text transition-colors hover:bg-canvas-soft hover:text-ink"
                       }
                     >

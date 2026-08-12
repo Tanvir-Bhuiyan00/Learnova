@@ -65,7 +65,7 @@ const socials = [
 
 const PublicFooter = () => {
   return (
-    <footer className="relative overflow-hidden bg-ink text-white">
+    <footer className="relative overflow-hidden bg-ink-solid text-white">
       <div className="container mx-auto px-4 py-16 md:px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-3 lg:max-w-md">
@@ -81,15 +81,14 @@ const PublicFooter = () => {
               ambitious people.
             </p>
             <div className="mt-7 flex items-center gap-3">
-              {socials.map(({ href, label, Icon }) => (
-                <a
+              {socials.map(({ label, Icon }) => (
+                <span
                   key={label}
-                  href={href}
                   aria-label={label}
                   className="flex size-10 items-center justify-center rounded-full bg-card/10 text-white/80 transition-colors hover:bg-primary hover:text-ink"
                 >
                   <Icon className="size-4" />
-                </a>
+                </span>
               ))}
             </div>
           </div>
@@ -120,12 +119,12 @@ const PublicFooter = () => {
             © {new Date().getFullYear()} Learnova. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-white/50">
-            <a href="#" className="transition-colors hover:text-white">
+            <Link href="/privacy" className="transition-colors hover:text-white">
               Privacy Policy
-            </a>
-            <a href="#" className="transition-colors hover:text-white">
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-white">
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>

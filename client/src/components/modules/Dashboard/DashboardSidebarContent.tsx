@@ -42,7 +42,7 @@ const DashboardSidebarContent = ({
       </div>
 
       {/* Navigation Area */}
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="min-h-0 flex-1 px-3 py-4">
         <nav className="space-y-6">
           {navItems.map((section, sectionId) => (
             <div key={sectionId}>

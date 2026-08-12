@@ -83,7 +83,7 @@ function MessageBubble({
       <div
         className={`flex size-8 shrink-0 items-center justify-center rounded-full shadow-md ${
           isUser
-            ? "bg-ink text-background"
+            ? "bg-ink-solid text-background"
             : "bg-primary text-primary-foreground"
         }`}
       >

@@ -10,6 +10,7 @@
   --color-canvas-soft: var(--canvas-soft);
   --color-ink: var(--ink);
   --color-ink-deep: var(--ink-deep);
+  --color-ink-solid: var(--ink-solid);
   --color-body-text: var(--body-text);
   --color-mute-text: var(--mute-text);
   --color-primary-hover: var(--primary-hover);
@@ -81,6 +82,7 @@
   
   --ink: #0e0f0c;
   --ink-deep: #163300;
+  --ink-solid: #0e0f0c;
   --body-text: #454745;
   --mute-text: #868685;
   

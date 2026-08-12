@@ -116,7 +116,7 @@ const AboutPage = () => {
       </section>
 
       {/* Stats */}
-      <section className="bg-ink py-16 text-white md:py-20">
+      <section className="bg-ink-solid py-16 text-white md:py-20">
         <PageContainer>
           <div className="grid grid-cols-2 gap-10 text-center md:grid-cols-4">
             {stats.map((stat) => (
@@ -172,7 +172,7 @@ const AboutPage = () => {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/register">
-              <Button size="lg" className="gap-2 rounded-full bg-ink text-white hover:bg-ink/90">
+              <Button size="lg" className="gap-2 rounded-full bg-ink-solid text-white hover:bg-ink-solid/90">
                 Create free account
                 <ArrowRight className="size-4" />
               </Button>

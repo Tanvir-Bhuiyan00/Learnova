@@ -49,7 +49,7 @@ const MyCertificatesPage = () => {
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-primary">
                   <Award className="size-6 text-ink" />
                 </div>
-                <span className="flex size-9 items-center justify-center rounded-full bg-canvas-soft text-mute-text transition-colors group-hover:bg-ink group-hover:text-white">
+                <span className="flex size-9 items-center justify-center rounded-full bg-canvas-soft text-mute-text transition-colors group-hover:bg-ink-solid group-hover:text-white">
                   <Download className="size-4" />
                 </span>
               </div>

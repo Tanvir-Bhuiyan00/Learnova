@@ -95,7 +95,7 @@ const TESTIMONIALS = [
 
 const TESTIMONIAL_AVATAR_COLORS = [
   "bg-primary-pale text-ink-deep",
-  "bg-ink text-primary",
+  "bg-ink-solid text-primary",
   "bg-primary text-ink",
   "bg-amber-100 text-amber-800",
   "bg-sky-100 text-sky-800",
@@ -103,8 +103,8 @@ const TESTIMONIAL_AVATAR_COLORS = [
 
 const HomeHero = () => {
   const { data } = useQuery({
-    queryKey: ["courses"],
-    queryFn: () => getCourses(),
+    queryKey: ["courses", "published"],
+    queryFn: () => getCourses("status=PUBLISHED&limit=100"),
   });
 
   const courses: ICourse[] = (data?.data ?? []).filter(
@@ -269,7 +269,7 @@ const HomeHero = () => {
                 </p>
               </div>
 
-              <div className="absolute -right-8 bottom-16 rounded-2xl bg-ink px-5 py-4 text-white shadow-xl shadow-ink/20">
+              <div className="absolute -right-8 bottom-16 rounded-2xl bg-ink-solid px-5 py-4 text-white shadow-xl shadow-ink/20">
                 <p className="font-heading text-2xl font-extrabold">
                   {totalLearners.toLocaleString()}+
                 </p>
@@ -415,7 +415,7 @@ const HomeHero = () => {
       </section>
 
       {/* Instructor CTA band */}
-      <section className="relative overflow-hidden bg-ink py-20 text-white md:py-28">
+      <section className="relative overflow-hidden bg-ink-solid py-20 text-white md:py-28">
         <div
           aria-hidden
           className="absolute -right-20 -top-20 size-72 rounded-full bg-primary/20 blur-3xl"

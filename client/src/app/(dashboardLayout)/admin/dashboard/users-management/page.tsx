@@ -52,7 +52,7 @@ const UsersManagementPage = () => {
         <button
           onClick={() => setTab("students")}
           className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-            tab === "students" ? "bg-ink text-white shadow-sm" : "text-body-text hover:text-ink"
+            tab === "students" ? "bg-ink-solid text-white shadow-sm" : "text-body-text hover:text-ink"
           }`}
         >
           Students
@@ -60,7 +60,7 @@ const UsersManagementPage = () => {
         <button
           onClick={() => setTab("instructors")}
           className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-            tab === "instructors" ? "bg-ink text-white shadow-sm" : "text-body-text hover:text-ink"
+            tab === "instructors" ? "bg-ink-solid text-white shadow-sm" : "text-body-text hover:text-ink"
           }`}
         >
           Instructors

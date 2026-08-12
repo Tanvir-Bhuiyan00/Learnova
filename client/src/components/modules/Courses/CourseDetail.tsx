@@ -110,7 +110,7 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
 
           <div className="mt-8 flex flex-wrap gap-2">
             {course.level && (
-              <Badge className="rounded-full border-0 bg-ink text-primary">
+              <Badge className="rounded-full border-0 bg-ink-solid text-primary">
                 {levelLabels[course.level] ?? course.level.replace("_", " ")}
               </Badge>
             )}

@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import UserDropdown from "@/components/modules/Dashboard/UserDropdown";
+import { UserInfo } from "@/types/user.types";
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +16,7 @@ const navLinks = [
   { href: "/categories", label: "Categories" },
 ];
 
-const PublicHeader = () => {
+const PublicHeader = ({ userInfo }: { userInfo?: UserInfo | null }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -26,6 +28,21 @@ const PublicHeader = () => {
       setSearchQuery("");
     }
   };
+
+  const authArea = userInfo ? (
+    <UserDropdown userInfo={userInfo} />
+  ) : (
+    <>
+      <Link href="/login">
+        <Button variant="ghost" size="sm">
+          Log In
+        </Button>
+      </Link>
+      <Link href="/register">
+        <Button size="sm">Sign Up</Button>
+      </Link>
+    </>
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-canvas-soft bg-card/90 backdrop-blur-xl supports-[backdrop-filter]:bg-card/75">
@@ -67,14 +84,7 @@ const PublicHeader = () => {
 
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Log In
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm">Sign Up</Button>
-          </Link>
+          {authArea}
         </div>
 
         <Button
@@ -120,16 +130,22 @@ const PublicHeader = () => {
             </Link>
             <div className="flex items-center gap-2 border-t border-canvas-soft pt-3">
               <ThemeToggle />
-              <Link href="/login" className="flex-1">
-                <Button variant="outline" className="w-full" size="sm">
-                  Log In
-                </Button>
-              </Link>
-              <Link href="/register" className="flex-1">
-                <Button className="w-full" size="sm">
-                  Sign Up
-                </Button>
-              </Link>
+              {userInfo ? (
+                <UserDropdown userInfo={userInfo} />
+              ) : (
+                <>
+                  <Link href="/login" className="flex-1">
+                    <Button variant="outline" className="w-full" size="sm">
+                      Log In
+                    </Button>
+                  </Link>
+                  <Link href="/register" className="flex-1">
+                    <Button className="w-full" size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

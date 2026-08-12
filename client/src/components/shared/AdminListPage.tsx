@@ -47,6 +47,7 @@ export function AdminListPage<T>({
   // snap back to the last valid page so the table refetches instead of
   // showing an empty "no items" state for a page that no longer exists.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (page > totalPages) {
       setPage(Math.max(1, totalPages));
     }

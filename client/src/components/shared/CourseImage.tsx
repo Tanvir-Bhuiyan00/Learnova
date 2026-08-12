@@ -19,6 +19,7 @@ const CourseImage = ({ src, alt, fallbackSrc = PLACEHOLDER, ...props }: CourseIm
   // Re-sync when the src prop changes (the same component instance can be
   // reused across courses, e.g. in carousels and paginated lists).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentSrc(src);
   }, [src]);
 

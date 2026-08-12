@@ -10,7 +10,7 @@ import {
 import { ICreateCategoryPayload, IUpdateCategoryPayload } from "./category.interface";
 
 const CATEGORY_CACHE_KEY = "categories:all";
-const CATEGORY_CACHE_TTL = 60;
+const CATEGORY_CACHE_TTL = 300;
 
 const createCategory = async (payload: ICreateCategoryPayload): Promise<Category> => {
   const existingCategory = await prisma.category.findUnique({

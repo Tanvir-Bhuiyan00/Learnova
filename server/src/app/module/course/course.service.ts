@@ -31,11 +31,11 @@ const reindexCourseAsync = (courseId: string) => {
     .catch((error) => console.warn("[RAG] course reindex failed:", error));
 };
 
-const COURSE_LIST_CACHE_TTL = 60;
-const COURSE_DETAIL_CACHE_TTL = 60;
+const COURSE_LIST_CACHE_TTL = 120;
+const COURSE_DETAIL_CACHE_TTL = 120;
 
 const invalidateCourseCache = () => {
-  invalidateCourseCache();
+  invalidateCacheByPrefix("course:list:");
   invalidateCacheByPrefix("course:detail:");
 };
 
@@ -136,7 +136,7 @@ const FULL_LESSON_SELECT = {
 } as const;
 
 const getAllCourses = async (query: IQueryParams) => {
-  // Cache catalog reads (30s TTL). Interactive searches and admin
+  // Cache catalog reads (2 min TTL). Interactive searches and admin
   // management views stay uncached so results are always fresh.
   const isCacheable = !query.searchTerm;
 

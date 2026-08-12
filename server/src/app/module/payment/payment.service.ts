@@ -116,76 +116,82 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
           updatedPayments.map((p) => [p.enrollmentId, p]),
         );
 
-        for (const enrollment of enrollments) {
-          const payment = paymentByEnrollmentId.get(enrollment.id);
-          if (!payment) continue;
-          try {
-            const pdfBuffer = await generateInvoicePdf({
-              invoiceId: payment.id,
-              studentName: enrollment.student.name,
-              studentEmail: enrollment.student.email,
-              courseName: enrollment.course.title,
-              instructorName: enrollment.course.instructor?.name || "N/A",
-              amount: payment.amount,
-              transactionId: payment.id,
-              paymentDate: new Date().toISOString(),
-            });
-
-            const cloudinaryResponse = await uploadFileToCloudinary(
-              pdfBuffer,
-              `learnova/invoices/invoice-${payment.id}-${Date.now()}.pdf`,
-            );
-
-            const invoiceUrl = cloudinaryResponse?.secure_url;
-
-            if (invoiceUrl) {
-              await prisma.payment.update({
-                where: { id: payment.id },
-                data: { invoiceUrl },
-              });
-            }
-
-            await sendEmail({
-              to: enrollment.student.email,
-              subject: `Payment Confirmation & Invoice - ${enrollment.course.title}`,
-              templateName: "invoice",
-              templateData: {
-                studentName: enrollment.student.name,
+        // Invoice generation, Cloudinary upload, and email are slow and must
+        // not hold the webhook response open (Stripe expects an answer within
+        // seconds). Process them in the background; each step is guarded so a
+        // failure can never crash the loop or lose the paid enrollment state.
+        void (async () => {
+          for (const enrollment of enrollments) {
+            const payment = paymentByEnrollmentId.get(enrollment.id);
+            if (!payment) continue;
+            try {
+              const pdfBuffer = await generateInvoicePdf({
                 invoiceId: payment.id,
-                transactionId: payment.id,
-                paymentDate: new Date().toLocaleDateString(),
+                studentName: enrollment.student.name,
+                studentEmail: enrollment.student.email,
                 courseName: enrollment.course.title,
                 instructorName: enrollment.course.instructor?.name || "N/A",
                 amount: payment.amount,
-                invoiceUrl: invoiceUrl || "",
-              },
-              attachments: [
-                {
-                  filename: `Invoice-${payment.id}.pdf`,
-                  content: pdfBuffer || Buffer.from(""),
-                  contentType: "application/pdf",
-                },
-              ],
-            });
-          } catch (err) {
-            console.error("Error processing invoice for enrollment:", enrollment.id, err);
-          }
-
-          try {
-            if (enrollment.course.instructor?.userId) {
-              await prisma.notification.create({
-                data: {
-                  userId: enrollment.course.instructor.userId,
-                  title: "New enrollment",
-                  message: `${enrollment.student.name} enrolled in "${enrollment.course.title}".`,
-                  type: NotificationType.ENROLLMENT,
-                },
+                transactionId: payment.id,
+                paymentDate: new Date().toISOString(),
               });
+
+              const cloudinaryResponse = await uploadFileToCloudinary(
+                pdfBuffer,
+                `learnova/invoices/invoice-${payment.id}-${Date.now()}.pdf`,
+              );
+
+              const invoiceUrl = cloudinaryResponse?.secure_url;
+
+              if (invoiceUrl) {
+                await prisma.payment.update({
+                  where: { id: payment.id },
+                  data: { invoiceUrl },
+                });
+              }
+
+              await sendEmail({
+                to: enrollment.student.email,
+                subject: `Payment Confirmation & Invoice - ${enrollment.course.title}`,
+                templateName: "invoice",
+                templateData: {
+                  studentName: enrollment.student.name,
+                  invoiceId: payment.id,
+                  transactionId: payment.id,
+                  paymentDate: new Date().toLocaleDateString(),
+                  courseName: enrollment.course.title,
+                  instructorName: enrollment.course.instructor?.name || "N/A",
+                  amount: payment.amount,
+                  invoiceUrl: invoiceUrl || "",
+                },
+                attachments: [
+                  {
+                    filename: `Invoice-${payment.id}.pdf`,
+                    content: pdfBuffer || Buffer.from(""),
+                    contentType: "application/pdf",
+                  },
+                ],
+              });
+            } catch (err) {
+              console.error("Error processing invoice for enrollment:", enrollment.id, err);
             }
-          } catch (err) {
-            console.error("Error creating enrollment notification:", err);
+
+            try {
+              if (enrollment.course.instructor?.userId) {
+                await prisma.notification.create({
+                  data: {
+                    userId: enrollment.course.instructor.userId,
+                    title: "New enrollment",
+                    message: `${enrollment.student.name} enrolled in "${enrollment.course.title}".`,
+                    type: NotificationType.ENROLLMENT,
+                  },
+                });
+              }
+            } catch (err) {
+              console.error("Error creating enrollment notification:", err);
+            }
           }
-        }
+        })();
       }
 
       break;

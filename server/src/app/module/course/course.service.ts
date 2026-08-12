@@ -429,6 +429,32 @@ const deleteModule = async (id: string, user: IRequestUser) => {
   return module;
 };
 
+const recomputeCourseCounters = async (moduleId: string) => {
+  const module = await prisma.module.findUnique({
+    where: { id: moduleId },
+    select: { courseId: true },
+  });
+
+  if (!module) return;
+
+  const agg = await prisma.lesson.aggregate({
+    where: {
+      module: { courseId: module.courseId },
+      isDeleted: false,
+    },
+    _count: { _all: true },
+    _sum: { videoDuration: true },
+  });
+
+  await prisma.course.update({
+    where: { id: module.courseId },
+    data: {
+      totalLessons: agg._count._all,
+      totalDuration: agg._sum.videoDuration ?? 0,
+    },
+  });
+};
+
 const createLesson = async (
   moduleId: string,
   payload: ICreateLessonPayload,
@@ -474,6 +500,7 @@ const createLesson = async (
   });
 
   reindexCourseAsync(lesson.module.courseId);
+  await recomputeCourseCounters(moduleId);
 
   return lesson;
 };
@@ -546,6 +573,7 @@ const updateLesson = async (
   });
 
   reindexCourseByLessonAsync(id);
+  await recomputeCourseCounters(isLessonExist.moduleId);
 
   return lesson;
 };
@@ -570,6 +598,7 @@ const deleteLesson = async (id: string, user: IRequestUser) => {
   });
 
   reindexCourseByLessonAsync(id);
+  await recomputeCourseCounters(isLessonExist.moduleId);
 
   return lesson;
 };

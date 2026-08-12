@@ -8,7 +8,7 @@ import { UserInfo } from "@/types/user.types";
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const navLinks = [
   { href: "/courses", label: "Courses" },
@@ -16,10 +16,33 @@ const navLinks = [
   { href: "/categories", label: "Categories" },
 ];
 
-const PublicHeader = ({ userInfo }: { userInfo?: UserInfo | null }) => {
+const PublicHeader = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
   const router = useRouter();
+
+  // The public layout is statically rendered, so the header resolves the
+  // logged-in user client-side via the same-origin /api/me route (httpOnly
+  // cookies never leave the server).
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/me", { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : { user: null }))
+      .then((data: { user?: UserInfo | null }) => {
+        if (!cancelled) setUserInfo(data.user ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setUserInfo(null);
+      })
+      .finally(() => {
+        if (!cancelled) setUserLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +52,9 @@ const PublicHeader = ({ userInfo }: { userInfo?: UserInfo | null }) => {
     }
   };
 
-  const authArea = userInfo ? (
+  const authArea = !userLoaded ? (
+    <div className="h-9 w-24 animate-pulse rounded-full bg-canvas-soft" />
+  ) : userInfo ? (
     <UserDropdown userInfo={userInfo} />
   ) : (
     <>
@@ -130,7 +155,9 @@ const PublicHeader = ({ userInfo }: { userInfo?: UserInfo | null }) => {
             </Link>
             <div className="flex items-center gap-2 border-t border-canvas-soft pt-3">
               <ThemeToggle />
-              {userInfo ? (
+              {!userLoaded ? (
+                <div className="h-9 w-full animate-pulse rounded-full bg-canvas-soft" />
+              ) : userInfo ? (
                 <UserDropdown userInfo={userInfo} />
               ) : (
                 <>

@@ -332,7 +332,12 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
+     * - public content routes (home, about, privacy, terms, courses,
+     *   categories, instructors) — they need no auth checks; matching them
+     *   here would force those pages to render dynamically, and the header
+     *   resolves the user via /api/me instead. Token refresh for expiring
+     *   tokens on these routes is handled inside /api/me.
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.well-known|$|about|privacy|terms|courses|categories|instructors).*)",
   ],
 };

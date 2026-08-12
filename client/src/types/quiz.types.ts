@@ -11,6 +11,7 @@ export interface IQuiz {
   createdAt: string;
   updatedAt: string;
   courseId: string;
+  questions?: IQuizQuestion[];
 }
 
 export interface ICreateQuizPayload {

@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getQuizzesByCourse } from "@/services/quiz.services";
 import { IQuiz } from "@/types/quiz.types";
 import { useQuery } from "@tanstack/react-query";
-import { Gauge, HelpCircle, Plus, Repeat, Timer } from "lucide-react";
+import { Gauge, HelpCircle, Pencil, Plus, Repeat, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import EmptyState from "@/components/shared/EmptyState";
@@ -63,9 +63,9 @@ const CourseQuizzesPage = ({ params }: Props) => {
           {quizzes.map((q) => (
             <div
               key={q.id}
-              className="rounded-3xl bg-white p-6 ring-1 ring-border transition-all duration-300 hover:shadow-lg hover:shadow-primary-pale"
+              className="flex flex-col rounded-3xl bg-white p-6 ring-1 ring-border transition-all duration-300 hover:shadow-lg hover:shadow-primary-pale"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex flex-1 items-start gap-4">
                 <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary-pale">
                   <HelpCircle className="size-5 text-ink-deep" />
                 </div>
@@ -89,6 +89,13 @@ const CourseQuizzesPage = ({ params }: Props) => {
                   </div>
                 </div>
               </div>
+              <Link
+                href={`/instructor/dashboard/courses/${courseId}/quizzes/${q.id}/edit`}
+                className="mt-4 mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary-deep"
+              >
+                <Pencil className="size-3.5" />
+                Edit quiz
+              </Link>
             </div>
           ))}
         </div>

@@ -281,6 +281,7 @@ const HomeHero = () => {
                       src={heroCourse.thumbnail}
                       alt={heroCourse.title}
                       fill
+                      priority
                       sizes="(max-width: 1024px) 0px, 28rem"
                       className="object-cover"
                     />

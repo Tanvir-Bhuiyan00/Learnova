@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ICourse } from "@/types/course.types";
 import { BookOpen, Users } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import CourseImage from "./CourseImage";
 import Rating from "./Rating";
 
 interface CourseCardProps {
@@ -44,7 +44,7 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
       {/* Thumbnail */}
       <div className="relative flex h-44 items-center justify-center overflow-hidden bg-canvas-soft">
         {course.thumbnail ? (
-          <Image
+          <CourseImage
             src={course.thumbnail}
             alt={`Course thumbnail for ${course.title}`}
             fill

@@ -10,7 +10,7 @@ import {
 import { getCourseById } from "@/services/course.services";
 import { ICourse } from "@/types/course.types";
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import PageContainer from "@/components/shared/PageContainer";
+import CourseImage from "@/components/shared/CourseImage";
 import CourseReviews from "./CourseReviews";
 
 const levelLabels: Record<string, string> = {
@@ -192,7 +193,7 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
           <div className="lg:sticky lg:top-28 lg:self-start">
             <div className="overflow-hidden rounded-3xl bg-card ring-1 ring-border">
               {course.thumbnail && (
-                <Image
+                <CourseImage
                   src={course.thumbnail}
                   alt={course.title}
                   width={600}

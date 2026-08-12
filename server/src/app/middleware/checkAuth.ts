@@ -32,74 +32,72 @@ export const checkAuth =
         );
       }
 
-      if (sessionToken) {
-        const sessionExists = await prisma.session.findFirst({
-          where: {
-            token: sessionToken,
-            expiresAt: {
-              gt: new Date(),
-            },
+      const sessionExists = await prisma.session.findFirst({
+        where: {
+          token: sessionToken,
+          expiresAt: {
+            gt: new Date(),
           },
-          include: {
-            user: true,
-          },
-        });
+        },
+        include: {
+          user: true,
+        },
+      });
 
-        if (sessionExists && sessionExists.user) {
-          const user = sessionExists.user;
-          sessionUser = user;
+      if (sessionExists && sessionExists.user) {
+        const user = sessionExists.user;
+        sessionUser = user;
 
-          const now = new Date();
-          const expiresAt = new Date(sessionExists.expiresAt);
-          const createdAt = new Date(sessionExists.createdAt);
+        const now = new Date();
+        const expiresAt = new Date(sessionExists.expiresAt);
+        const createdAt = new Date(sessionExists.createdAt);
 
-          const sessionLifeTime = expiresAt.getTime() - createdAt.getTime();
-          const timeRemaining = expiresAt.getTime() - now.getTime();
-          const percentRemaining = (timeRemaining / sessionLifeTime) * 100;
+        const sessionLifeTime = expiresAt.getTime() - createdAt.getTime();
+        const timeRemaining = expiresAt.getTime() - now.getTime();
+        const percentRemaining = (timeRemaining / sessionLifeTime) * 100;
 
-          if (percentRemaining < 20) {
-            res.setHeader("X-Session-Refresh", "true");
-            res.setHeader("X-Session-Expires-At", expiresAt.toISOString());
-            res.setHeader("X-Time-Remaining", timeRemaining.toString());
+        if (percentRemaining < 20) {
+          res.setHeader("X-Session-Refresh", "true");
+          res.setHeader("X-Session-Expires-At", expiresAt.toISOString());
+          res.setHeader("X-Time-Remaining", timeRemaining.toString());
 
-            console.log("Session Expiring Soon!!");
-          }
+          console.log("Session Expiring Soon!!");
+        }
 
-          if (
-            user.status === UserStatus.BLOCKED ||
-            user.status === UserStatus.DELETED
-          ) {
-            throw new AppError(
-              status.UNAUTHORIZED,
-              "Unauthorized access! User is not active.",
-            );
-          }
-
-          if (user.isDeleted) {
-            throw new AppError(
-              status.UNAUTHORIZED,
-              "Unauthorized access! User is deleted.",
-            );
-          }
-
-          if (authRoles.length > 0 && !authRoles.includes(user.role)) {
-            throw new AppError(
-              status.FORBIDDEN,
-              "Forbidden access! You do not have permission to access this resource.",
-            );
-          }
-
-          req.user = {
-            userId: user.id,
-            role: user.role,
-            email: user.email,
-          };
-        } else {
+        if (
+          user.status === UserStatus.BLOCKED ||
+          user.status === UserStatus.DELETED
+        ) {
           throw new AppError(
             status.UNAUTHORIZED,
-            "Unauthorized access! Invalid or expired session.",
+            "Unauthorized access! User is not active.",
           );
         }
+
+        if (user.isDeleted) {
+          throw new AppError(
+            status.UNAUTHORIZED,
+            "Unauthorized access! User is deleted.",
+          );
+        }
+
+        if (authRoles.length > 0 && !authRoles.includes(user.role)) {
+          throw new AppError(
+            status.FORBIDDEN,
+            "Forbidden access! You do not have permission to access this resource.",
+          );
+        }
+
+        req.user = {
+          userId: user.id,
+          role: user.role,
+          email: user.email,
+        };
+      } else {
+        throw new AppError(
+          status.UNAUTHORIZED,
+          "Unauthorized access! Invalid or expired session.",
+        );
       }
 
       //Access Token Verification

@@ -195,7 +195,7 @@ const getInstructorDashboardStats = async (
   user: IRequestUser,
 ): Promise<IInstructorDashboardStats> => {
   const instructor = await prisma.instructor.findUniqueOrThrow({
-    where: { email: user.email },
+    where: { userId: user.userId },
     include: {
       courses: {
         where: { isDeleted: false },
@@ -297,7 +297,7 @@ const getStudentDashboardStats = async (
   user: IRequestUser,
 ): Promise<IStudentDashboardStats> => {
   const student = await prisma.student.findUniqueOrThrow({
-    where: { email: user.email },
+    where: { userId: user.userId },
   });
 
   const [

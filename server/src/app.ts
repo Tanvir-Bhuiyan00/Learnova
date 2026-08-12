@@ -62,12 +62,10 @@ app.use(
 
 app.use("/api/auth", authRateLimiter, toNodeHandler(auth));
 
-// Enable URL-encoded form data parsing
-app.use(express.urlencoded({ extended: true }));
-
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(cookieParser());
+// Enable URL-encoded form data parsing
 app.use(express.urlencoded({ extended: true }));
 
 cron.schedule("*/25 * * * *", async () => {

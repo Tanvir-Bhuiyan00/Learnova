@@ -21,6 +21,31 @@ export interface ICourse {
   instructorId: string;
 }
 
+export interface IInstructorLite {
+  id: string;
+  name: string;
+  designation?: string | null;
+  qualification?: string | null;
+  bio?: string | null;
+  experience?: number;
+  averageRating: number;
+  profilePhoto?: string | null;
+  user?: { name?: string; email?: string };
+}
+
+export interface ICategoryLite {
+  id: string;
+  title: string;
+  description?: string | null;
+  icon?: string | null;
+}
+
+export interface ICourseDetail extends ICourse {
+  category?: ICategoryLite;
+  instructor?: IInstructorLite;
+  modules?: IModule[];
+}
+
 export interface ICreateCoursePayload {
   title: string;
   description?: string;

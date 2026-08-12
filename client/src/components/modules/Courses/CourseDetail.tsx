@@ -8,7 +8,7 @@ import {
   enrollNowAction,
 } from "@/app/_actions/enrollment.actions";
 import { getCourseById } from "@/services/course.services";
-import { ICourse } from "@/types/course.types";
+import { ICourseDetail } from "@/types/course.types";
 import { useQuery } from "@tanstack/react-query";
 
 import { useRouter } from "next/navigation";
@@ -18,9 +18,12 @@ import {
   ArrowLeft,
   BookOpen,
   Check,
+  ChevronDown,
   Clock,
   Globe,
+  Layers,
   MonitorPlay,
+  PlayCircle,
   Star,
   Users,
 } from "lucide-react";
@@ -28,6 +31,7 @@ import Link from "next/link";
 import PageContainer from "@/components/shared/PageContainer";
 import CourseImage from "@/components/shared/CourseImage";
 import CourseReviews from "./CourseReviews";
+import { motion } from "motion/react";
 
 const levelLabels: Record<string, string> = {
   BEGINNER: "Beginner",
@@ -67,7 +71,7 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
     };
   }, [courseId]);
 
-  const course: ICourse | undefined = data?.data;
+  const course: ICourseDetail | undefined = data?.data;
 
   if (isLoading) {
     return (
@@ -275,10 +279,220 @@ const CourseDetail = ({ courseId }: CourseDetailProps) => {
       </PageContainer>
 
       <PageContainer spacing="lg">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.4 }}
+        >
+          <CourseCurriculum course={course} />
+        </motion.div>
+
+        {course.instructor && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mt-16"
+          >
+            <CourseInstructorCard course={course} />
+          </motion.div>
+        )}
+      </PageContainer>
+
+      <PageContainer spacing="lg">
         <CourseReviews courseId={course.id} />
       </PageContainer>
     </div>
   );
 };
+
+function formatDuration(seconds?: number | null): string {
+  if (!seconds || seconds <= 0) return "";
+  const mins = Math.round(seconds / 60);
+  if (mins < 60) return `${mins} min`;
+  const hrs = Math.floor(mins / 60);
+  const rem = mins % 60;
+  return rem ? `${hrs} hr ${rem} min` : `${hrs} hr`;
+}
+
+function CourseCurriculum({ course }: { course: ICourseDetail }) {
+  const modules = course.modules ?? [];
+  const lessons = modules.flatMap((mod) => mod.lessons ?? []);
+  const [openModules, setOpenModules] = useState<Set<string>>(
+    () => new Set(modules.length > 0 ? [modules[0].id] : []),
+  );
+
+  const learnPoints = [
+    ...new Set(lessons.map((lesson) => lesson.title)),
+  ].slice(0, 6);
+
+  const toggleModule = (id: string) => {
+    setOpenModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  return (
+    <div className="space-y-12">
+      {learnPoints.length > 0 && (
+        <section>
+          <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink">
+            What you&apos;ll learn
+          </h2>
+          <div className="mt-6 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+            {learnPoints.map((point) => (
+              <div
+                key={point}
+                className="flex items-start gap-3 text-sm text-body-text"
+              >
+                <Check className="mt-0.5 size-4 shrink-0 text-positive" />
+                {point}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {modules.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink">
+              Course content
+            </h2>
+            <span className="flex items-center gap-1.5 text-sm text-mute-text">
+              <Layers className="size-4" />
+              {modules.length} modules · {lessons.length} lessons
+            </span>
+          </div>
+
+          <div className="mt-6 space-y-3">
+            {modules.map((module) => {
+              const isOpen = openModules.has(module.id);
+              const moduleLessons = module.lessons ?? [];
+              return (
+                <div
+                  key={module.id}
+                  className="overflow-hidden rounded-2xl border border-border bg-card"
+                >
+                  <button
+                    onClick={() => toggleModule(module.id)}
+                    className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-canvas-soft/60"
+                  >
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown className="size-4 text-mute-text" />
+                    </motion.span>
+                    <span className="flex-1 text-base font-bold text-ink">
+                      {module.title}
+                    </span>
+                    <span className="text-xs font-medium text-mute-text">
+                      {moduleLessons.length}{" "}
+                      {moduleLessons.length === 1 ? "lesson" : "lessons"}
+                    </span>
+                  </button>
+
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isOpen ? "auto" : 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden"
+                  >
+                    <ul className="divide-y divide-canvas-soft border-t border-canvas-soft">
+                      {moduleLessons.map((lesson) => (
+                        <li
+                          key={lesson.id}
+                          className="flex items-center gap-3 px-5 py-3.5"
+                        >
+                          <PlayCircle className="size-4 shrink-0 text-primary" />
+                          <span className="flex-1 text-sm text-body-text">
+                            {lesson.title}
+                          </span>
+                          {lesson.isFree && (
+                            <span className="rounded-full bg-positive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-positive">
+                              Free
+                            </span>
+                          )}
+                          {formatDuration(lesson.videoDuration) && (
+                            <span className="text-xs text-mute-text">
+                              {formatDuration(lesson.videoDuration)}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+function CourseInstructorCard({ course }: { course: ICourseDetail }) {
+  const instructor = course.instructor!;
+  return (
+    <section className="rounded-3xl bg-card p-8 ring-1 ring-border">
+      <h2 className="font-heading text-2xl font-extrabold tracking-tight text-ink">
+        Your instructor
+      </h2>
+      <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start">
+        {instructor.profilePhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={instructor.profilePhoto}
+            alt={instructor.name}
+            className="size-20 shrink-0 rounded-full object-cover ring-2 ring-primary/30"
+          />
+        ) : (
+          <span className="flex size-20 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-pale font-heading text-2xl font-extrabold text-white">
+            {instructor.name.charAt(0).toUpperCase()}
+          </span>
+        )}
+        <div>
+          <p className="font-heading text-xl font-bold text-ink">
+            {instructor.name}
+          </p>
+          {instructor.designation && (
+            <p className="mt-0.5 text-sm font-medium text-primary">
+              {instructor.designation}
+            </p>
+          )}
+          {instructor.qualification && (
+            <p className="mt-1 text-sm text-body-text">
+              {instructor.qualification}
+            </p>
+          )}
+          {instructor.bio && (
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-body-text">
+              {instructor.bio}
+            </p>
+          )}
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-body-text">
+            <span className="flex items-center gap-1.5">
+              <Star className="size-4 fill-amber-400 text-amber-400" />
+              {instructor.averageRating.toFixed(1)} instructor rating
+            </span>
+            {instructor.experience ? (
+              <span>{instructor.experience} years experience</span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default CourseDetail;

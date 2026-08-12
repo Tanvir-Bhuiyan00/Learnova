@@ -3,6 +3,7 @@
 import { httpClient } from "@/lib/axios/httpClient";
 import {
   ICourse,
+  ICourseDetail,
   ICreateCoursePayload,
   IUpdateCoursePayload,
   IModule,
@@ -28,7 +29,7 @@ export const getCourses = async (queryString?: string) => {
 
 export const getCourseById = async (id: string) => {
   try {
-    const course = await httpClient.get<ICourse>(`/courses/${id}`);
+    const course = await httpClient.get<ICourseDetail>(`/courses/${id}`);
     return course;
   } catch (error) {
     console.log("Error fetching course details:", error);

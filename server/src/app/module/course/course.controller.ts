@@ -143,6 +143,31 @@ const createLesson = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const uploadLessonVideo = catchAsync(async (req: Request, res: Response) => {
+  const { courseId } = req.params;
+  if (!req.file?.path) {
+    sendResponse(res, {
+      httpStatusCode: status.BAD_REQUEST,
+      success: false,
+      message: "No video file uploaded",
+      data: null,
+    });
+    return;
+  }
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Video uploaded successfully",
+    data: {
+      courseId,
+      url: req.file.path,
+      filename: req.file.filename,
+      size: req.file.size,
+    },
+  });
+});
+
 const getLessonsByModule = catchAsync(async (req: Request, res: Response) => {
   const { moduleId } = req.params;
 
@@ -227,6 +252,7 @@ export const CourseController = {
   updateModule,
   deleteModule,
   createLesson,
+  uploadLessonVideo,
   getLessonsByModule,
   updateLesson,
   deleteLesson,

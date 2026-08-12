@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { createLesson, createModule, deleteLesson, deleteModule, getLessonsByModule, getModulesByCourse, updateLesson, updateModule } from "@/services/course.services";
 import { ILesson, IModule } from "@/types/course.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Edit3, FileText, GripVertical, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, CheckCircle2, Edit3, FileText, GripVertical, Loader2, Plus, Trash2, UploadCloud } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { uploadLessonVideo } from "@/services/video.services";
 import { toast } from "sonner";
 
 interface Props { params: Promise<{ courseId: string }> }
@@ -37,12 +38,45 @@ function ModuleForm({ module, onSave, onCancel }: { module?: Partial<IModule>; o
   );
 }
 
-function LessonForm({ lesson, onSave, onCancel }: { lesson?: Partial<ILesson>; onSave: (data: { title: string; description?: string; videoUrl?: string; videoDuration?: number; content?: string; order: number }) => void; onCancel: () => void }) {
+function LessonForm({ lesson, courseId, onSave, onCancel }: { lesson?: Partial<ILesson>; courseId: string; onSave: (data: { title: string; description?: string; videoUrl?: string; videoDuration?: number; content?: string; order: number }) => void; onCancel: () => void }) {
   const [title, setTitle] = useState(lesson?.title || "");
   const [description, setDescription] = useState(lesson?.description || "");
   const [videoUrl, setVideoUrl] = useState(lesson?.videoUrl || "");
   const [videoDuration, setVideoDuration] = useState(lesson?.videoDuration || 0);
   const [content, setContent] = useState(lesson?.content || "");
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleVideoFile = async (file: File) => {
+    if (!courseId) return;
+    const MAX = 100 * 1024 * 1024;
+    if (file.size > MAX) {
+      toast.error("Video must be 100MB or smaller");
+      return;
+    }
+    if (
+      !["video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-matroska"].includes(file.type)
+    ) {
+      toast.error("Only mp4, webm, ogg, mov, and mkv videos are supported");
+      return;
+    }
+    setUploading(true);
+    setUploadProgress(0);
+    try {
+      const res = await uploadLessonVideo(courseId, file, setUploadProgress);
+      setVideoUrl(res.data.url);
+      toast.success("Video uploaded — save the lesson to finish");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Could not upload video",
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isDirectVideo = videoUrl.includes("res.cloudinary.com");
 
   return (
     <div className="space-y-3 py-2">
@@ -54,10 +88,71 @@ function LessonForm({ lesson, onSave, onCancel }: { lesson?: Partial<ILesson>; o
         <Label>Description</Label>
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
+
+      <div className="space-y-1.5 rounded-2xl border border-dashed border-primary/40 bg-primary-pale/30 p-4">
+        <Label>Lesson video</Label>
+        <div className="flex flex-wrap items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleVideoFile(file);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-full"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <UploadCloud className="size-3.5" />
+            )}
+            {uploading ? "Uploading..." : "Upload video file"}
+          </Button>
+          {uploading && (
+            <div className="flex min-w-40 flex-1 items-center gap-2">
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-primary-pale">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+              <span className="text-xs font-semibold text-primary">{uploadProgress}%</span>
+            </div>
+          )}
+          {videoUrl && !uploading && (
+            <span className="inline-flex max-w-56 items-center gap-1.5 truncate text-xs font-medium text-mute-text">
+              <CheckCircle2 className="size-3.5 shrink-0 text-positive" />
+              <span className="truncate">Video attached</span>
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-[11px] text-mute-text">
+          MP4, WebM, OGG, MOV or MKV — up to 100MB, hosted on Cloudinary. Or paste a video URL below.
+        </p>
+      </div>
+
       <div className="space-y-1">
         <Label>Video URL</Label>
-        <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/..." />
+        <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/... or Cloudinary URL" />
       </div>
+      {isDirectVideo && videoUrl && (
+        <video
+          src={videoUrl}
+          controls
+          preload="metadata"
+          className="aspect-video w-full rounded-2xl bg-black/5 ring-1 ring-border"
+        />
+      )}
       <div className="space-y-1">
         <Label>Duration (minutes)</Label>
         <Input type="number" min={0} value={videoDuration} onChange={(e) => setVideoDuration(parseInt(e.target.value) || 0)} />
@@ -68,7 +163,9 @@ function LessonForm({ lesson, onSave, onCancel }: { lesson?: Partial<ILesson>; o
       </div>
       <div className="flex gap-2 justify-end">
         <Button variant="outline" size="sm" onClick={onCancel}>Cancel</Button>
-        <Button size="sm" onClick={() => onSave({ title, description: description || undefined, videoUrl: videoUrl || undefined, videoDuration: videoDuration || undefined, content: content || undefined, order: lesson?.order ?? 0 })}>Save</Button>
+        <Button type="button" size="sm" disabled={uploading} onClick={() => onSave({ title, description: description || undefined, videoUrl: videoUrl || undefined, videoDuration: videoDuration || undefined, content: content || undefined, order: lesson?.order ?? 0 })}>
+          {uploading ? "Uploading..." : "Save"}
+        </Button>
       </div>
     </div>
   );
@@ -252,7 +349,7 @@ function ModuleSection({
               <div key={lesson.id}>
                 {editingLesson?.id === lesson.id ? (
                   <div className="rounded-2xl ring-1 ring-border p-3">
-                    <LessonForm lesson={lesson} onSave={(data) => onSaveEditLesson(lesson.id, data)} onCancel={onCancelEditLesson} />
+                    <LessonForm courseId={courseId} lesson={lesson} onSave={(data) => onSaveEditLesson(lesson.id, data)} onCancel={onCancelEditLesson} />
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 rounded-xl ring-1 ring-border px-3 py-2">
@@ -267,7 +364,7 @@ function ModuleSection({
             ))}
             {addingLesson && (
               <div className="rounded-2xl ring-1 ring-border p-3">
-                <LessonForm onSave={(data) => onSaveLesson({ ...data, order: lessons.length + 1 })} onCancel={onCancelAddLesson} />
+                <LessonForm courseId={courseId} onSave={(data) => onSaveLesson({ ...data, order: lessons.length + 1 })} onCancel={onCancelAddLesson} />
               </div>
             )}
             <Button variant="outline" size="sm" className="w-full mt-2 rounded-full" onClick={onStartAddLesson}>

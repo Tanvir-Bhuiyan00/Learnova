@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { UserRole } from "../../../generated/prisma/enums";
-import { multerUpload } from "../../config/multer.config";
+import { multerUpload, videoMulterUpload } from "../../config/multer.config";
 import { checkAuth } from "../../middleware/checkAuth";
 import { validateRequest } from "../../middleware/validateRequest";
 import { CourseController } from "./course.controller";
@@ -41,6 +41,12 @@ router.post(
   checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   validateRequest(createModuleZodSchema),
   CourseController.createModule,
+);
+router.post(
+  "/:courseId/videos",
+  checkAuth(UserRole.INSTRUCTOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  videoMulterUpload.single("video"),
+  CourseController.uploadLessonVideo,
 );
 router.get(
   "/:courseId/modules",

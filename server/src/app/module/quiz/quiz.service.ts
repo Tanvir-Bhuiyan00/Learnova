@@ -3,6 +3,7 @@ import { QuestionType } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
+import { assertPaidEnrollment } from "../../utils/enrollmentAccess";
 import {
   assertCourseOwnership,
   assertQuestionOwnership,
@@ -164,20 +165,7 @@ const getQuizForTaking = async (quizId: string, user: IRequestUser) => {
     throw new AppError(status.NOT_FOUND, "Student profile not found");
   }
 
-  const enrollment = await prisma.enrollment.findFirst({
-    where: {
-      studentId: student.id,
-      courseId: quiz.courseId,
-      isDeleted: false,
-    },
-  });
-
-  if (!enrollment) {
-    throw new AppError(
-      status.FORBIDDEN,
-      "You must be enrolled in the course to take this quiz",
-    );
-  }
+  const enrollment = await assertPaidEnrollment(student.id, quiz.courseId);
 
   const previousAttempts = await prisma.quizAttempt.findMany({
     where: {
@@ -398,20 +386,7 @@ const startAttempt = async (quizId: string, user: IRequestUser) => {
     throw new AppError(status.NOT_FOUND, "Student profile not found");
   }
 
-  const enrollment = await prisma.enrollment.findFirst({
-    where: {
-      studentId: student.id,
-      courseId: quiz.courseId,
-      isDeleted: false,
-    },
-  });
-
-  if (!enrollment) {
-    throw new AppError(
-      status.FORBIDDEN,
-      "You must be enrolled in the course to take this quiz",
-    );
-  }
+  const enrollment = await assertPaidEnrollment(student.id, quiz.courseId);
 
   const existingAttempts = await prisma.quizAttempt.count({
     where: {

@@ -1,4 +1,5 @@
 import httpStatus from "http-status";
+import { PaymentStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
@@ -18,8 +19,16 @@ const generateCertificate = async (
       course: {
         include: { instructor: true },
       },
+      payment: true,
     },
   });
+
+  if (enrollment.payment?.status !== PaymentStatus.SUCCEEDED) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Payment for this course has not been completed",
+    );
+  }
 
   if (!enrollment.isCompleted) {
     throw new AppError(

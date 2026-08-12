@@ -6,6 +6,7 @@ import { IQueryParams, IQueryResult } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { getCached, invalidateCacheByPrefix, setCached } from "../../utils/cache";
+import { assertPaidEnrollment } from "../../utils/enrollmentAccess";
 import { courseFilterableFields, courseSearchableFields } from "./course.constant";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import {
@@ -620,20 +621,7 @@ const markLessonComplete = async (
     throw new AppError(status.NOT_FOUND, "Student profile not found");
   }
 
-  const enrollment = await prisma.enrollment.findFirst({
-    where: {
-      studentId: student.id,
-      courseId,
-      isDeleted: false,
-    },
-  });
-
-  if (!enrollment) {
-    throw new AppError(
-      status.FORBIDDEN,
-      "You must be enrolled in the course to track progress",
-    );
-  }
+  const enrollment = await assertPaidEnrollment(student.id, courseId);
 
   const lesson = await prisma.lesson.findFirst({
     where: {

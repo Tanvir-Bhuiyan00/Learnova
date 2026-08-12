@@ -3,6 +3,7 @@ import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
+import { assertPaidEnrollment } from "../../utils/enrollmentAccess";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import {
   assertAssignmentOwnership,
@@ -112,9 +113,11 @@ const submitAssignment = async (
     where: { userId: user.userId },
   });
 
-  await prisma.assignment.findFirstOrThrow({
+  const assignment = await prisma.assignment.findFirstOrThrow({
     where: { id: assignmentId, isDeleted: false },
   });
+
+  await assertPaidEnrollment(student.id, assignment.courseId);
 
   const existing = await prisma.assignmentSubmission.findUnique({
     where: {

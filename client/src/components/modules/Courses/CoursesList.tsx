@@ -7,7 +7,15 @@ import { getCourses } from "@/services/course.services";
 import { ICategory } from "@/types/category.types";
 import { ICourse } from "@/types/course.types";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Check, RotateCcw, Search } from "lucide-react";
+import { motion } from "motion/react";
+import {
+  ArrowDownWideNarrow,
+  BookOpen,
+  Check,
+  RotateCcw,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import CourseCard from "@/components/shared/CourseCard";
@@ -24,12 +32,32 @@ const levelOptions = [
   { value: "ALL_LEVELS", label: "All Levels" },
 ];
 
+const sortOptions = [
+  { value: "newest", label: "Newest", sortBy: "createdAt", order: "desc" },
+  {
+    value: "mostPopular",
+    label: "Most popular",
+    sortBy: "totalStudents",
+    order: "desc",
+  },
+  {
+    value: "highestRated",
+    label: "Highest rated",
+    sortBy: "averageRating",
+    order: "desc",
+  },
+  { value: "priceLow", label: "Price: low to high", sortBy: "price", order: "asc" },
+  { value: "priceHigh", label: "Price: high to low", sortBy: "price", order: "desc" },
+];
+
 const CoursesList = () => {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [categoryId, setCategoryId] = useState("all");
   const [level, setLevel] = useState("all");
+  const [sort, setSort] = useState("newest");
+  const [freeOnly, setFreeOnly] = useState(false);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
@@ -50,7 +78,9 @@ const CoursesList = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, categoryId, level]);
+  }, [debouncedSearch, categoryId, level, sort, freeOnly]);
+
+  const activeSort = sortOptions.find((option) => option.value === sort);
 
   const buildQueryString = () => {
     const params = new URLSearchParams();
@@ -60,11 +90,24 @@ const CoursesList = () => {
     if (debouncedSearch.trim()) params.set("searchTerm", debouncedSearch.trim());
     if (categoryId !== "all") params.set("categoryId", categoryId);
     if (level !== "all") params.set("level", level);
+    if (activeSort) {
+      params.set("sortBy", activeSort.sortBy);
+      params.set("sortOrder", activeSort.order);
+    }
+    if (freeOnly) params.set("price", "0");
     return params.toString();
   };
 
   const { data: coursesData, isLoading: coursesLoading } = useQuery({
-    queryKey: ["courses", debouncedSearch, categoryId, level, page],
+    queryKey: [
+      "courses",
+      debouncedSearch,
+      categoryId,
+      level,
+      sort,
+      freeOnly,
+      page,
+    ],
     queryFn: () => getCourses(buildQueryString()),
   });
 
@@ -83,13 +126,17 @@ const CoursesList = () => {
   const paged = courses;
 
   const hasActiveFilters =
-    search.trim() !== "" || categoryId !== "all" || level !== "all";
+    search.trim() !== "" ||
+    categoryId !== "all" ||
+    level !== "all" ||
+    freeOnly;
 
   const clearFilters = () => {
     setSearch("");
     setDebouncedSearch("");
     setCategoryId("all");
     setLevel("all");
+    setFreeOnly(false);
   };
 
   if (coursesLoading) {
@@ -203,20 +250,54 @@ const CoursesList = () => {
                   ))}
                 </div>
               </div>
+
+              <div className="border-t border-canvas-soft pt-5">
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-mute-text">
+                  Price
+                </h3>
+                <button
+                  onClick={() => setFreeOnly(!freeOnly)}
+                  className={`flex w-full items-center gap-1.5 rounded-xl px-3.5 py-2 text-left text-sm font-semibold transition-colors ${
+                    freeOnly
+                      ? "bg-primary-pale text-ink-deep ring-1 ring-primary"
+                      : "bg-canvas-soft text-body-text hover:bg-primary-pale hover:text-ink-deep"
+                  }`}
+                >
+                  <Sparkles className="size-4" />
+                  Free courses only
+                  {freeOnly && <Check className="ml-auto size-4" />}
+                </button>
+              </div>
             </div>
           </aside>
 
           {/* Results */}
           <div>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-body-text">
                 Showing{" "}
                 <span className="font-semibold text-ink">{total}</span>{" "}
                 {total === 1 ? "course" : "courses"}
+                {hasActiveFilters && (
+                  <span className="ml-2 text-mute-text">· filters active</span>
+                )}
               </p>
-              {hasActiveFilters && (
-                <p className="text-sm text-mute-text">Filters active</p>
-              )}
+
+              <div className="flex items-center gap-2">
+                <ArrowDownWideNarrow className="size-4 text-mute-text" />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  aria-label="Sort courses"
+                  className="cursor-pointer rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-ink outline-none transition-colors focus-visible:border-primary"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {paged.length === 0 ? (
@@ -230,11 +311,32 @@ const CoursesList = () => {
                 }}
               />
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <motion.div
+                key={`${debouncedSearch}-${categoryId}-${level}-${sort}-${freeOnly}-${page}`}
+                initial="hidden"
+                animate="show"
+                variants={{
+                  hidden: {},
+                  show: { transition: { staggerChildren: 0.05 } },
+                }}
+                className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+              >
                 {paged.map((course) => (
-                  <CourseCard key={course.id} course={course} />
+                  <motion.div
+                    key={course.id}
+                    variants={{
+                      hidden: { opacity: 0, y: 16 },
+                      show: {
+                        opacity: 1,
+                        y: 0,
+                        transition: { duration: 0.3, ease: "easeOut" },
+                      },
+                    }}
+                  >
+                    <CourseCard course={course} />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
 
             {totalPages > 1 && (

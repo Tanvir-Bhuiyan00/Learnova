@@ -19,7 +19,7 @@ const CoursesPage = async ({ searchParams }: CoursesSearchParams) => {
   if (q.trim()) params.set("searchTerm", q.trim());
 
   await queryClient.prefetchQuery({
-    queryKey: ["courses", q, "all", "all", 1],
+    queryKey: ["courses", q, "all", "all", "newest", false, 1],
     queryFn: () => getCourses(params.toString()),
     staleTime: 60 * 1000,
   });

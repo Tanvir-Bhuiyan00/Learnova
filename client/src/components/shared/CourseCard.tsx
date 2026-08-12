@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ICourse } from "@/types/course.types";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, TrendingUp, Trophy, Users } from "lucide-react";
 import Link from "next/link";
 import CourseImage from "./CourseImage";
 import Rating from "./Rating";
@@ -33,6 +33,17 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
   const hasDiscount =
     course.discountPrice != null && course.discountPrice < course.price;
 
+  const badge =
+    course.totalStudents >= 10
+      ? { label: "Best Seller", icon: Trophy, className: "bg-amber-500 text-white" }
+      : course.averageRating >= 4.7 && course.totalStudents > 0
+        ? {
+            label: "Highest Rated",
+            icon: TrendingUp,
+            className: "bg-violet-600 text-white",
+          }
+        : null;
+
   return (
     <Link
       href={`/courses/${course.id}`}
@@ -60,6 +71,14 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
             className="absolute left-3 top-3 rounded-full border-0 bg-card/90 text-ink-deep backdrop-blur"
           >
             {levelLabels[course.level] ?? course.level.replace("_", " ")}
+          </Badge>
+        )}
+        {badge && (
+          <Badge
+            className={`absolute right-3 top-3 rounded-full border-0 shadow-sm ${badge.className}`}
+          >
+            <badge.icon className="size-3" />
+            {badge.label}
           </Badge>
         )}
       </div>

@@ -3,7 +3,15 @@ import { Inter, Manrope, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProviders from "@/providers/QueryProvider";
 import { Toaster } from "@/components/ui/sonner";
-import FloatingChatbot from "@/components/modules/Chatbot/FloatingChatbot";
+import dynamic from "next/dynamic";
+
+const FloatingChatbot = dynamic(
+  () =>
+    import("@/components/modules/Chatbot/FloatingChatbot").then(
+      (mod) => mod.default,
+    ),
+  { ssr: false },
+);
 
 const inter = Inter({
   variable: "--font-sans",
@@ -48,6 +56,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link
+          rel="preconnect"
+          href="https://res.cloudinary.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="preconnect" href="https://fastly.picsum.photos" />
+        <link rel="preconnect" href="https://picsum.photos" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">

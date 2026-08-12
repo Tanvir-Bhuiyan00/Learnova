@@ -31,6 +31,14 @@ const reindexCourseAsync = (courseId: string) => {
     .catch((error) => console.warn("[RAG] course reindex failed:", error));
 };
 
+const COURSE_LIST_CACHE_TTL = 60;
+const COURSE_DETAIL_CACHE_TTL = 60;
+
+const invalidateCourseCache = () => {
+  invalidateCourseCache();
+  invalidateCacheByPrefix("course:detail:");
+};
+
 const reindexCourseByLessonAsync = (lessonId: string) => {
   prisma.lesson
     .findUnique({
@@ -105,7 +113,7 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
     },
   });
 
-  invalidateCacheByPrefix("course:list:");
+  invalidateCourseCache();
 
   reindexCourseAsync(course.id);
 
@@ -183,13 +191,19 @@ const getAllCourses = async (query: IQueryParams) => {
     .execute();
 
   if (isCacheable) {
-    setCached(`course:list:${JSON.stringify(query)}`, result, 30);
+    setCached(`course:list:${JSON.stringify(query)}`, result, COURSE_LIST_CACHE_TTL);
   }
 
   return result;
 };
 
 const getCourseById = async (id: string) => {
+  const cacheKey = `course:detail:${id}`;
+  const cached = getCached<Course>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const course = await prisma.course.findUnique({
     where: { id, isDeleted: false },
     include: {
@@ -210,6 +224,10 @@ const getCourseById = async (id: string) => {
       },
     },
   });
+
+  if (course) {
+    setCached(cacheKey, course, COURSE_DETAIL_CACHE_TTL);
+  }
 
   return course;
 };
@@ -259,7 +277,7 @@ const updateCourse = async (
     },
   });
 
-  invalidateCacheByPrefix("course:list:");
+  invalidateCourseCache();
 
   reindexCourseAsync(id);
 
@@ -284,7 +302,7 @@ const deleteCourse = async (id: string) => {
     },
   });
 
-  invalidateCacheByPrefix("course:list:");
+  invalidateCourseCache();
 
   removeCourseSourceAsync(id);
 

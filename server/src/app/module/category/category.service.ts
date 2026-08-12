@@ -2,7 +2,15 @@ import status from "http-status";
 import { Category } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
+import {
+  getCached,
+  invalidateCacheByPrefix,
+  setCached,
+} from "../../utils/cache";
 import { ICreateCategoryPayload, IUpdateCategoryPayload } from "./category.interface";
+
+const CATEGORY_CACHE_KEY = "categories:all";
+const CATEGORY_CACHE_TTL = 60;
 
 const createCategory = async (payload: ICreateCategoryPayload): Promise<Category> => {
   const existingCategory = await prisma.category.findUnique({
@@ -17,14 +25,24 @@ const createCategory = async (payload: ICreateCategoryPayload): Promise<Category
     data: payload,
   });
 
+  invalidateCacheByPrefix("categories:");
+
   return category;
 };
 
 const getAllCategories = async (): Promise<Category[]> => {
+  const cached = getCached<Category[]>(CATEGORY_CACHE_KEY);
+  if (cached) {
+    return cached;
+  }
+
   const categories = await prisma.category.findMany({
     where: { isDeleted: false },
     orderBy: { createdAt: "desc" },
   });
+
+  setCached(CATEGORY_CACHE_KEY, categories, CATEGORY_CACHE_TTL);
+
   return categories;
 };
 
@@ -58,6 +76,8 @@ const updateCategory = async (id: string, payload: IUpdateCategoryPayload): Prom
     data: payload,
   });
 
+  invalidateCacheByPrefix("categories:");
+
   return category;
 };
 
@@ -77,6 +97,8 @@ const deleteCategory = async (id: string): Promise<Category> => {
       deletedAt: new Date(),
     },
   });
+
+  invalidateCacheByPrefix("categories:");
 
   return category;
 };

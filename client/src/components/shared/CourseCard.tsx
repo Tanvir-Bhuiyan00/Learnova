@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { ICourse } from "@/types/course.types";
 import { BookOpen, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import Rating from "./Rating";
 
@@ -43,10 +44,12 @@ const CourseCard = ({ course, className }: CourseCardProps) => {
       {/* Thumbnail */}
       <div className="relative flex h-44 items-center justify-center overflow-hidden bg-canvas-soft">
         {course.thumbnail ? (
-          <img
+          <Image
             src={course.thumbnail}
             alt={`Course thumbnail for ${course.title}`}
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <BookOpen className="size-14 text-mute-text" />

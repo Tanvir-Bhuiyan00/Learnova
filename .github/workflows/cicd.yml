@@ -182,6 +182,15 @@ jobs:
 
             docker compose -f docker-compose.prod.yaml pull
             docker compose -f docker-compose.prod.yaml up -d learnova-db
+
+            # Ensure the Postgres role password matches POSTGRES_PASSWORD. The
+            # data volume keeps whatever password it was initialized with, so a
+            # changed secret would otherwise make prisma fail with P1000 (auth
+            # failed) on every deploy. psql over the local socket uses trust
+            # auth, so this always succeeds and is idempotent.
+            ESCAPED_PW=$(printf '%s' "$POSTGRES_PASSWORD" | sed "s/'/''/g")
+            docker exec learnova-db psql -U learnova -d postgres -c "ALTER USER learnova WITH PASSWORD '$ESCAPED_PW';"
+
             docker compose -f docker-compose.prod.yaml run --rm learnova-server sh -lc "./node_modules/.bin/prisma migrate deploy --schema=prisma/schema && ./node_modules/.bin/prisma db push --schema=prisma/schema"
 
             if [ ! -f "$APP_DIR/.seeded" ]; then

@@ -8,7 +8,7 @@ import { QueryBuilder } from "../../utils/QueryBuilder";
 import { sanitizeHtmlContent } from "../../utils/html";
 import { getCached, invalidateCacheByPrefix, setCached } from "../../utils/cache";
 import { assertPaidEnrollment } from "../../utils/enrollmentAccess";
-import { courseFilterableFields, courseSearchableFields } from "./course.constant";
+import { courseFilterableFields, courseSearchableFields, courseSortableFields } from "./course.constant";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import {
   assertCourseOwnership,
@@ -155,6 +155,7 @@ const getAllCourses = async (query: IQueryParams) => {
   >(prisma.course, query, {
     searchableFields: courseSearchableFields,
     filterableFields: courseFilterableFields,
+    sortableFields: courseSortableFields,
   });
 
   const result = await queryBuilder

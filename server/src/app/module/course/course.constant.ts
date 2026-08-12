@@ -7,3 +7,12 @@ export const courseFilterableFields = [
   "categoryId",
   "instructorId",
 ];
+
+export const courseSortableFields = [
+  "createdAt",
+  "price",
+  "averageRating",
+  "totalStudents",
+  "title",
+  "totalLessons",
+];

@@ -247,8 +247,8 @@ export class QueryBuilder<
   }
 
   paginate(): this {
-    const page = Number(this.queryParams.page) || 1;
-    const limit = Number(this.queryParams.limit) || 10;
+    const page = Math.max(Number(this.queryParams.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(this.queryParams.limit) || 10, 1), 100);
 
     this.page = page;
     this.limit = limit;
@@ -261,8 +261,19 @@ export class QueryBuilder<
   }
 
   sort(): this {
-    const sortBy = this.queryParams.sortBy || "createdAt";
     const sortOrder = this.queryParams.sortOrder === "asc" ? "asc" : "desc";
+    let sortBy = this.queryParams.sortBy || "createdAt";
+
+    const { sortableFields } = this.config;
+    if (sortableFields && sortableFields.length > 0) {
+      // Allow sorting on the default createdAt plus any explicitly allowed
+      // fields. Rejecting unknown sort keys prevents Prisma validation
+      // errors (and error-message leakage) when a client passes arbitrary
+      // column names, and stops the request early instead of a 500.
+      if (!sortableFields.includes(sortBy)) {
+        sortBy = "createdAt";
+      }
+    }
 
     this.sortBy = sortBy;
     this.sortOrder = sortOrder;

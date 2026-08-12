@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Bell, BookOpen, CheckCircle, MessageSquare, UserPlus } from "lucide-react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMyNotifications,
@@ -169,6 +170,14 @@ const NotificationDropdown = () => {
           onClick={handleMarkAllAsRead}
         >
           Mark all as read
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          className="justify-center text-center font-semibold text-primary"
+          render={<Link href="/notifications" />}
+          onSelect={() => setOpen(false)}
+        >
+          View all notifications
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

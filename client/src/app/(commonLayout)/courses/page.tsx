@@ -8,18 +8,19 @@ import {
 } from "@tanstack/react-query";
 
 interface CoursesSearchParams {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; category?: string }>;
 }
 
 const CoursesPage = async ({ searchParams }: CoursesSearchParams) => {
-  const { q = "" } = await searchParams;
+  const { q = "", category = "" } = await searchParams;
   const queryClient = new QueryClient();
 
   const params = new URLSearchParams("page=1&limit=6&status=PUBLISHED");
   if (q.trim()) params.set("searchTerm", q.trim());
+  if (category.trim()) params.set("categoryId", category.trim());
 
   await queryClient.prefetchQuery({
-    queryKey: ["courses", q, "all", "all", "newest", false, 1],
+    queryKey: ["courses", q, category || "all", "all", "newest", false, 1],
     queryFn: () => getCourses(params.toString()),
     staleTime: 60 * 1000,
   });
@@ -32,7 +33,7 @@ const CoursesPage = async ({ searchParams }: CoursesSearchParams) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <CoursesList />
+      <CoursesList initialCategory={category || "all"} />
     </HydrationBoundary>
   );
 };

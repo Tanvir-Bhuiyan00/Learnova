@@ -2,21 +2,29 @@
 
 import { Button } from "@/components/ui/button";
 import { getCourses } from "@/services/course.services";
+import { getCategories } from "@/services/category.services";
 import { ICourse } from "@/types/course.types";
+import { ICategory } from "@/types/category.types";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "motion/react";
+import { fadeInUp, staggerContainer } from "@/lib/motion";
 import {
   ArrowRight,
   Award,
   BookOpen,
   Clock,
+  Code2,
   GraduationCap,
+  Palette,
   Play,
+  Server,
   Sparkles,
   Star,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import CourseCard from "@/components/shared/CourseCard";
+import { CountUp } from "@/components/shared/CountUp";
 import EmptyState from "@/components/shared/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageContainer from "@/components/shared/PageContainer";
@@ -102,11 +110,52 @@ const TESTIMONIAL_AVATAR_COLORS = [
   "bg-sky-100 text-sky-800",
 ];
 
+const SKILLS_MARQUEE = [
+  "React",
+  "Next.js",
+  "TypeScript",
+  "Node.js",
+  "Python",
+  "SQL",
+  "Data Science",
+  "UI/UX Design",
+  "Machine Learning",
+  "PostgreSQL",
+  "Express",
+  "Tailwind CSS",
+];
+
+const CATEGORY_ICONS: Record<string, typeof Code2> = {
+  "web development": Code2,
+  programming: Code2,
+  "data science": Server,
+  design: Palette,
+  "ui/ux": Palette,
+  business: Users,
+  "machine learning": Server,
+};
+
+const CATEGORY_GRADIENTS = [
+  "from-primary-pale to-primary/20",
+  "from-amber-100 to-amber-200",
+  "from-sky-100 to-sky-200",
+  "from-emerald-100 to-emerald-200",
+  "from-rose-100 to-rose-200",
+  "from-violet-100 to-violet-200",
+];
+
 const HomeHero = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["courses", "published"],
     queryFn: () => getCourses("status=PUBLISHED&limit=100"),
   });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ["categories"],
+    queryFn: () => getCategories(),
+  });
+
+  const categories: ICategory[] = categoriesData?.data ?? [];
 
   const courses: ICourse[] = (data?.data ?? []).filter(
     (c) => c.status === "PUBLISHED",
@@ -191,7 +240,7 @@ const HomeHero = () => {
                     Courses available
                   </dt>
                   <dd className="mt-1 font-heading text-3xl font-extrabold text-ink">
-                    {courses.length}+
+                    <CountUp value={courses.length} suffix="+" />
                   </dd>
                 </div>
                 <div>
@@ -199,7 +248,7 @@ const HomeHero = () => {
                     Active learners
                   </dt>
                   <dd className="mt-1 font-heading text-3xl font-extrabold text-ink">
-                    {totalLearners.toLocaleString()}+
+                    <CountUp value={totalLearners} suffix="+" />
                   </dd>
                 </div>
                 <div>
@@ -207,7 +256,7 @@ const HomeHero = () => {
                     Average rating
                   </dt>
                   <dd className="mt-1 flex items-center gap-1.5 font-heading text-3xl font-extrabold text-ink">
-                    {avgRating.toFixed(1)}
+                    <CountUp value={avgRating} decimals={1} />
                     <Star className="size-5 fill-amber-400 text-amber-400" />
                   </dd>
                 </div>
@@ -272,7 +321,7 @@ const HomeHero = () => {
 
               <div className="absolute -right-8 bottom-16 rounded-2xl bg-ink-solid px-5 py-4 text-white shadow-xl shadow-ink/20">
                 <p className="font-heading text-2xl font-extrabold">
-                  {totalLearners.toLocaleString()}+
+                  <CountUp value={totalLearners} suffix="+" />
                 </p>
                 <p className="text-xs text-white/60">active learners</p>
               </div>
@@ -281,25 +330,51 @@ const HomeHero = () => {
         </PageContainer>
       </section>
 
+      {/* Skills marquee */}
+      <section
+        aria-label="Topics you can learn"
+        className="overflow-hidden border-y border-border bg-card py-5"
+      >
+        <div className="flex w-max animate-[marquee_30s_linear_infinite] items-center gap-10">
+          {[...SKILLS_MARQUEE, ...SKILLS_MARQUEE].map((skill, index) => (
+            <span
+              key={`${skill}-${index}`}
+              className="flex shrink-0 items-center gap-2 text-base font-bold uppercase tracking-wider text-mute-text"
+            >
+              <span className="size-2 rounded-full bg-primary/60" />
+              {skill}
+            </span>
+          ))}
+        </div>
+      </section>
+
       {/* Featured courses */}
       <PageContainer spacing="lg">
-        <div className="mb-10 flex items-end justify-between gap-4">
-          <div>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          className="mb-10 flex items-end justify-between gap-4"
+        >
+          <motion.div variants={fadeInUp}>
             <p className="text-sm font-semibold uppercase tracking-widest text-mute-text">
               Hand-picked
             </p>
             <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
               Featured courses
             </h2>
-          </div>
-          <Link
-            href="/courses"
-            className="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-ink-deep transition-colors hover:text-primary-hover"
-          >
-            View all courses
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
+          </motion.div>
+          <motion.div variants={fadeInUp}>
+            <Link
+              href="/courses"
+              className="group inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-ink-deep transition-colors hover:text-primary-hover"
+            >
+              View all courses
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+        </motion.div>
 
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -308,11 +383,19 @@ const HomeHero = () => {
             ))}
           </div>
         ) : featured.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
             {featured.map((course) => (
-              <CourseCard key={course.id} course={course} />
+              <motion.div key={course.id} variants={fadeInUp}>
+                <CourseCard course={course} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <EmptyState
             icon={BookOpen}
@@ -325,23 +408,45 @@ const HomeHero = () => {
       {/* Why Learnova */}
       <section className="bg-card py-20 md:py-24">
         <PageContainer>
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-mute-text">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            className="mx-auto max-w-2xl text-center"
+          >
+            <motion.p
+              variants={fadeInUp}
+              className="text-sm font-semibold uppercase tracking-widest text-mute-text"
+            >
               Why Learnova
-            </p>
-            <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
+            </motion.p>
+            <motion.h2
+              variants={fadeInUp}
+              className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl"
+            >
               Everything you need to keep growing
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-body-text">
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="mt-4 text-lg leading-relaxed text-body-text"
+            >
               A simple, transparent learning experience designed around one
               thing: your progress.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          >
             {features.map((feature) => (
-              <div
+              <motion.div
                 key={feature.title}
+                variants={fadeInUp}
                 className="rounded-3xl bg-card p-6 ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
               >
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-primary-pale">
@@ -353,32 +458,113 @@ const HomeHero = () => {
                 <p className="mt-2 text-sm leading-relaxed text-body-text">
                   {feature.description}
                 </p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </PageContainer>
       </section>
+
+      {/* Browse by category */}
+      {categories.length > 0 && (
+        <PageContainer spacing="lg">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+            className="mb-10 text-center"
+          >
+            <motion.p
+              variants={fadeInUp}
+              className="text-sm font-semibold uppercase tracking-widest text-mute-text"
+            >
+              Find your path
+            </motion.p>
+            <motion.h2
+              variants={fadeInUp}
+              className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl"
+            >
+              Browse by category
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6"
+          >
+            {categories.slice(0, 6).map((category, index) => {
+              const Icon =
+                CATEGORY_ICONS[category.title.toLowerCase()] ?? BookOpen;
+              return (
+                <motion.div key={category.id} variants={fadeInUp}>
+                  <Link
+                    href={`/courses?category=${category.id}`}
+                    className="group flex h-full flex-col items-center gap-3 rounded-3xl bg-card p-6 text-center ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
+                  >
+                    <span
+                      className={cn(
+                        "flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br",
+                        CATEGORY_GRADIENTS[index % CATEGORY_GRADIENTS.length],
+                      )}
+                    >
+                      <Icon className="size-7 text-ink-deep" />
+                    </span>
+                    <span className="font-heading text-sm font-bold text-ink">
+                      {category.title}
+                    </span>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </PageContainer>
+      )}
 
       {/* Testimonials */}
       <section className="bg-canvas-soft/60 py-20 md:py-24">
         <PageContainer>
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-widest text-mute-text">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            className="mx-auto max-w-2xl text-center"
+          >
+            <motion.p
+              variants={fadeInUp}
+              className="text-sm font-semibold uppercase tracking-widest text-mute-text"
+            >
               Testimonials
-            </p>
-            <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
+            </motion.p>
+            <motion.h2
+              variants={fadeInUp}
+              className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-ink md:text-4xl"
+            >
               Loved by ambitious learners
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-body-text">
+            </motion.h2>
+            <motion.p
+              variants={fadeInUp}
+              className="mt-4 text-lg leading-relaxed text-body-text"
+            >
               Thousands of learners are growing with Learnova every day. Here is
               what some of them have to say.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.05 }}
+            className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+          >
             {TESTIMONIALS.map((testimonial, index) => (
-              <figure
+              <motion.figure
                 key={`${testimonial.name}-${index}`}
+                variants={fadeInUp}
                 className="flex flex-col rounded-3xl bg-card p-6 shadow-sm ring-1 ring-border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-pale hover:ring-primary/50"
               >
                 <div className="flex items-center gap-1">
@@ -415,9 +601,9 @@ const HomeHero = () => {
                     </p>
                   </div>
                 </figcaption>
-              </figure>
+              </motion.figure>
             ))}
-          </div>
+          </motion.div>
         </PageContainer>
       </section>
 

@@ -50,11 +50,11 @@ const sortOptions = [
   { value: "priceHigh", label: "Price: high to low", sortBy: "price", order: "desc" },
 ];
 
-const CoursesList = () => {
+const CoursesList = ({ initialCategory = "all" }: { initialCategory?: string }) => {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [debouncedSearch, setDebouncedSearch] = useState(search);
-  const [categoryId, setCategoryId] = useState("all");
+  const [categoryId, setCategoryId] = useState(initialCategory);
   const [level, setLevel] = useState("all");
   const [sort, setSort] = useState("newest");
   const [freeOnly, setFreeOnly] = useState(false);
@@ -65,6 +65,11 @@ const CoursesList = () => {
     if (q) {
       setSearch(q);
       setDebouncedSearch(q);
+      setPage(1);
+    }
+    const category = searchParams.get("category");
+    if (category) {
+      setCategoryId(category);
       setPage(1);
     }
   }, [searchParams]);

@@ -85,11 +85,16 @@ export const useServerManagedDataTable = ({
   const [optimisticPaginationState, setOptimisticPaginationState] =
     useState<PaginationState>(paginationStateFromUrl);
 
+  // Sync optimistic state back when URL changes (e.g. browser back/forward).
+  // setState in useEffect is intentional here — we're syncing from an external
+  // system (the URL/History API), which is exactly what effects are for.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOptimisticSortingState(sortingStateFromUrl);
   }, [sortingStateFromUrl]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOptimisticPaginationState(paginationStateFromUrl);
   }, [paginationStateFromUrl]);
 

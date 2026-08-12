@@ -7,7 +7,10 @@ import { useEffect, useState } from "react";
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
 
+  // Read the initial theme from the DOM on mount (no external system subscription,
+  // just a one-time DOM read — the empty-dep pattern is intentional here).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
 

@@ -46,9 +46,11 @@ const EditCoursePage = ({ params }: EditCoursePageProps) => {
     enabled: !!courseId,
   });
 
+  // Populate the form once the course data arrives from the server.
   useEffect(() => {
     const course = data?.data;
     if (course) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         title: course.title,
         description: course.description || "",

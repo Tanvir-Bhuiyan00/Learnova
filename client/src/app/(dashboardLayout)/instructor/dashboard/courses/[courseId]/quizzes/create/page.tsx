@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { addQuestion, createQuiz } from "@/services/quiz.services";
 import { IAddQuestionPayload, ICreateQuizPayload } from "@/types/quiz.types";
 import { createQuizZodSchema } from "@/zod/quiz.validation";
-import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Check,
@@ -71,6 +70,7 @@ const CreateQuizPage = () => {
 
   useEffect(() => {
     if (editingIndex !== null && questions[editingIndex]) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrent({ ...questions[editingIndex] });
     }
   }, [editingIndex, questions]);

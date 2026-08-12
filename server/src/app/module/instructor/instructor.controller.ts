@@ -8,7 +8,10 @@ import { InstructorService } from "./instructor.service";
 const getAllInstructors = catchAsync(async (req: Request, res: Response) => {
   const query = req.query;
 
-  const result = await InstructorService.getAllInstructors(query as IQueryParams);
+  const result = await InstructorService.getAllInstructors(
+    query as IQueryParams,
+    req.user,
+  );
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -22,7 +25,10 @@ const getAllInstructors = catchAsync(async (req: Request, res: Response) => {
 const getInstructorById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  const instructor = await InstructorService.getInstructorById(id as string);
+  const instructor = await InstructorService.getInstructorById(
+    id as string,
+    req.user,
+  );
 
   sendResponse(res, {
     httpStatusCode: status.OK,

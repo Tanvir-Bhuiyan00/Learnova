@@ -73,8 +73,9 @@ const deleteDiscussion = catchAsync(async (req: Request, res: Response) => {
 });
 
 const togglePinDiscussion = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
   const id = req.params.id as string;
-  const result = await DiscussionService.togglePinDiscussion(id);
+  const result = await DiscussionService.togglePinDiscussion(user, id);
 
   sendResponse(res, {
     httpStatusCode: httpStatus.OK,

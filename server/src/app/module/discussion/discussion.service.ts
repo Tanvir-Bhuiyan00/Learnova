@@ -1,4 +1,5 @@
 import httpStatus from "http-status";
+import { PaymentStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { IQueryParams } from "../../interfaces/query.interface";
@@ -21,6 +22,24 @@ const createDiscussion = async (
   await prisma.course.findUniqueOrThrow({
     where: { id: payload.courseId },
   });
+
+  // Only enrolled students may post in a course's discussion board.
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      studentId: student.id,
+      courseId: payload.courseId,
+      isDeleted: false,
+      payment: { status: PaymentStatus.SUCCEEDED },
+    },
+    select: { id: true },
+  });
+
+  if (!enrollment) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You must be enrolled in the course to post in its discussion",
+    );
+  }
 
   const result = await prisma.discussion.create({
     data: {
@@ -47,7 +66,13 @@ const getAllDiscussions = async (
       ...(courseId ? { courseId } : {}),
     } as any)
     .include({
-      student: true,
+      student: {
+        select: {
+          id: true,
+          name: true,
+          profilePhoto: true,
+        },
+      },
       _count: { select: { replies: { where: { isDeleted: false } } } },
     } as any)
     .paginate()
@@ -64,17 +89,47 @@ const getDiscussionById = async (discussionId: string) => {
   const discussion = await prisma.discussion.findFirstOrThrow({
     where: { id: discussionId, isDeleted: false },
     include: {
-      student: true,
+      student: {
+        select: {
+          id: true,
+          name: true,
+          profilePhoto: true,
+        },
+      },
       replies: {
         where: { isDeleted: false },
         include: {
-          student: true,
-          instructor: true,
+          student: {
+            select: {
+              id: true,
+              name: true,
+              profilePhoto: true,
+            },
+          },
+          instructor: {
+            select: {
+              id: true,
+              name: true,
+              profilePhoto: true,
+            },
+          },
           replies: {
             where: { isDeleted: false },
             include: {
-              student: true,
-              instructor: true,
+              student: {
+                select: {
+                  id: true,
+                  name: true,
+                  profilePhoto: true,
+                },
+              },
+              instructor: {
+                select: {
+                  id: true,
+                  name: true,
+                  profilePhoto: true,
+                },
+              },
             },
             orderBy: { createdAt: "asc" },
           },
@@ -133,10 +188,36 @@ const deleteDiscussion = async (user: IRequestUser, discussionId: string) => {
   return result;
 };
 
-const togglePinDiscussion = async (discussionId: string) => {
+const togglePinDiscussion = async (
+  user: IRequestUser,
+  discussionId: string,
+) => {
   const discussion = await prisma.discussion.findUniqueOrThrow({
     where: { id: discussionId },
+    select: { id: true, courseId: true, isPinned: true },
   });
+
+  // Only the owning instructor (or an admin) may pin a discussion.
+  const instructor = await prisma.instructor.findUnique({
+    where: { userId: user.userId },
+    select: { id: true },
+  });
+
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+
+  if (!isAdmin) {
+    const course = await prisma.course.findUnique({
+      where: { id: discussion.courseId },
+      select: { instructorId: true },
+    });
+
+    if (!instructor || course?.instructorId !== instructor.id) {
+      throw new AppError(
+        httpStatus.FORBIDDEN,
+        "Only the course instructor can pin discussions",
+      );
+    }
+  }
 
   const result = await prisma.discussion.update({
     where: { id: discussionId },
@@ -163,12 +244,22 @@ const toggleResolveDiscussion = async (
   });
 
   const isOwner = student && discussion.studentId === student.id;
-  const isInstructor = !!instructor;
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
-  if (!isOwner && !isInstructor) {
+  // Instructors may only resolve discussions in their own courses.
+  const isCourseInstructor = instructor
+    ? (
+        await prisma.course.findUnique({
+          where: { id: discussion.courseId },
+          select: { instructorId: true },
+        })
+      )?.instructorId === instructor.id
+    : false;
+
+  if (!isOwner && !isAdmin && !isCourseInstructor) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      "Only the discussion owner or an instructor can resolve this",
+      "Only the discussion owner, the course instructor, or an admin can resolve this",
     );
   }
 

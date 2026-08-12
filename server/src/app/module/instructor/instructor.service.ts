@@ -1,6 +1,6 @@
 import status from "http-status";
 import { Instructor, Prisma } from "../../../generated/prisma/client";
-import { UserStatus } from "../../../generated/prisma/enums";
+import { UserRole, UserStatus } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IQueryParams } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
@@ -13,7 +13,10 @@ import { IUpdateInstructorPayload } from "./instructor.interface";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { assertInstructorSelf } from "../../utils/ownership";
 
-const getAllInstructors = async (query: IQueryParams) => {
+const getAllInstructors = async (
+  query: IQueryParams,
+  user?: IRequestUser,
+) => {
   const queryBuilder = new QueryBuilder<
     Instructor,
     Prisma.InstructorWhereInput,
@@ -23,6 +26,10 @@ const getAllInstructors = async (query: IQueryParams) => {
     filterableFields: instructorFilterableFields,
   });
 
+  // Only admins see the linked user account (email, status); the public
+  // profile pages must not expose contact/PII.
+  const isAdmin = user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
+
   const result = await queryBuilder
     .search()
     .filter()
@@ -30,7 +37,17 @@ const getAllInstructors = async (query: IQueryParams) => {
       isDeleted: false,
     })
     .include({
-      user: true,
+      ...(isAdmin
+        ? { user: true }
+        : {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                role: true,
+              },
+            },
+          }),
     })
     .dynamicInclude({})
     .paginate()
@@ -41,14 +58,24 @@ const getAllInstructors = async (query: IQueryParams) => {
   return result;
 };
 
-const getInstructorById = async (id: string) => {
+const getInstructorById = async (id: string, user?: IRequestUser) => {
+  const isAdmin = user?.role === UserRole.ADMIN || user?.role === UserRole.SUPER_ADMIN;
+
   const instructor = await prisma.instructor.findUnique({
     where: {
       id,
       isDeleted: false,
     },
     include: {
-      user: true,
+      user: isAdmin
+        ? true
+        : {
+            select: {
+              id: true,
+              name: true,
+              role: true,
+            },
+          },
       courses: true,
       reviews: true,
     },

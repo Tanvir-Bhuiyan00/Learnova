@@ -131,9 +131,29 @@ const getAllReviews = async (query: IQueryParams) => {
     .where({ isDeleted: false } as any)
     .filter()
     .include({
-      student: true,
-      course: true,
-      instructor: true,
+      // Public endpoint: only expose display fields, never student emails
+      // or instructor contact details.
+      student: {
+        select: {
+          id: true,
+          name: true,
+          profilePhoto: true,
+        },
+      },
+      course: {
+        select: {
+          id: true,
+          title: true,
+          thumbnail: true,
+        },
+      },
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          profilePhoto: true,
+        },
+      },
     } as any)
     .paginate()
     .sort()

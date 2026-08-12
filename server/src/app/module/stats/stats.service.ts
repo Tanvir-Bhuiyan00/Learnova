@@ -343,13 +343,13 @@ const getStudentDashboardStats = async (
     totalCertificates,
     totalSpent: totalSpentAgg._sum.amount || 0,
     averageProgress: Number(
-      ((progressAgg._avg.progress || 0) * 100).toFixed(2),
+      (progressAgg._avg.progress || 0).toFixed(2),
     ),
     recentEnrollments: recentEnrollments.map((e) => ({
       id: e.id,
       courseTitle: e.course.title,
       courseThumbnail: e.course.thumbnail,
-      progress: Number((e.progress * 100).toFixed(2)),
+      progress: Number(e.progress.toFixed(2)),
       isCompleted: e.isCompleted,
       createdAt: e.createdAt,
     })),

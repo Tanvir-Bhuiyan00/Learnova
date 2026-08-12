@@ -11,8 +11,6 @@ import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PaginationMeta } from "@/types/api.types";
 
-const PAGE_SIZE = 10;
-
 interface Column<T> {
   key: string;
   label: string;
@@ -40,12 +38,10 @@ export function AdminListPage<T>({
     queryFn: () => queryFn(page),
   });
   const allItems: T[] = data?.data ?? [];
-  const totalPages = Math.max(
-    1,
-    data?.meta?.totalPages ?? Math.ceil(allItems.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, data?.meta?.totalPages ?? 1);
   const safePage = Math.min(page, totalPages);
-  const items = allItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  // Items come pre-paginated from the server; the client only tracks the page.
+  const items = allItems;
 
   return (
     <div className="space-y-6">

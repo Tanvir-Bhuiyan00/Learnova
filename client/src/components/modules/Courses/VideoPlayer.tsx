@@ -39,10 +39,20 @@ const VideoPlayer = ({ url, title }: VideoPlayerProps) => {
     );
   }
 
+  const extension = url.split("?")[0].split(".").pop()?.toLowerCase();
+  const mimeType =
+    extension === "webm"
+      ? "video/webm"
+      : extension === "ogg"
+        ? "video/ogg"
+        : extension === "mov"
+          ? "video/quicktime"
+          : "video/mp4";
+
   return (
     <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-canvas-soft">
-      <video controls className="size-full" poster="">
-        <source src={url} type="video/mp4" />
+      <video controls className="size-full">
+        <source src={url} type={mimeType} />
         Your browser does not support the video tag.
       </video>
     </div>

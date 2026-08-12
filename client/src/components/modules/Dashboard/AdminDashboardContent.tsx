@@ -1,7 +1,6 @@
 "use client";
 
-import EnrollmentBarChart from "@/components/shared/EnrollmentBarChart";
-import EnrollmentPieChart from "@/components/shared/EnrollmentPieChart";
+import dynamic from "next/dynamic";
 import StatsCard from "@/components/shared/StatsCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,6 +11,19 @@ import { ISuperAdminDashboardStats } from "@/types/dashboard.types";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { motion } from "motion/react";
+
+// recharts is heavy — load it only when the admin dashboard is opened.
+const EnrollmentBarChart = dynamic(
+  () =>
+    import("@/components/shared/EnrollmentBarChart").then((mod) => mod.default),
+  { ssr: false },
+);
+
+const EnrollmentPieChart = dynamic(
+  () =>
+    import("@/components/shared/EnrollmentPieChart").then((mod) => mod.default),
+  { ssr: false },
+);
 
 const AdminDashboardContent = () => {
   const {

@@ -60,8 +60,24 @@ describe("checkAuth", () => {
     );
     verifyTokenMock.mockImplementation((token: string, _secret: string) =>
       token === "valid-access-token"
-        ? { success: true, data: { role: UserRole.STUDENT } }
-        : { success: false },
+        ? {
+            success: true,
+            data: {
+              userId: "user-1",
+              email: validSession.user.email,
+              role: UserRole.STUDENT,
+            },
+          }
+        : token === "foreign-access-token"
+          ? {
+              success: true,
+              data: {
+                userId: "other-user",
+                email: "other@learnova.test",
+                role: UserRole.STUDENT,
+              },
+            }
+          : { success: false },
     );
   });
 
@@ -118,6 +134,17 @@ describe("checkAuth", () => {
   it("rejects invalid access tokens", async () => {
     req.cookies["better-auth.session_token"] = "session-1";
     req.cookies.accessToken = "expired-access-token";
+    sessionFindManyMock.mockResolvedValue(validSession);
+
+    await checkAuth(UserRole.STUDENT)(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(makeAppError(next.mock.calls[0][0]).statusCode).toBe(401);
+  });
+
+  it("rejects when access token belongs to a different user than the session", async () => {
+    req.cookies["better-auth.session_token"] = "session-1";
+    req.cookies.accessToken = "foreign-access-token";
     sessionFindManyMock.mockResolvedValue(validSession);
 
     await checkAuth(UserRole.STUDENT)(req, res, next);

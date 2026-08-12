@@ -62,6 +62,10 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
         run: pnpm build
 
+      - name: Test server
+        working-directory: ./server
+        run: pnpm test
+
       - name: Install client deps
         working-directory: ./client
         run: pnpm install --frozen-lockfile

@@ -24,9 +24,10 @@ import { useState } from "react";
 
 interface LoginFormProps {
   redirectPath?: string;
+  registered?: boolean;
 }
 
-const LoginForm = ({ redirectPath }: LoginFormProps) => {
+const LoginForm = ({ redirectPath, registered }: LoginFormProps) => {
   // const queryClient = useQueryClient();
 
   const [serverError, setServerError] = useState<string | null>(null);
@@ -74,6 +75,15 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
 
       <motion.div variants={fadeInUp}>
       <CardContent>
+        {registered && (
+          <Alert variant="default" className="mb-4 border-primary bg-primary-pale text-ink-deep">
+            <AlertDescription>
+              Account created successfully! Please check your email to verify
+              your account, then log in.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <form
           method="POST"
           action="#"

@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import CourseCard from "@/components/shared/CourseCard";
 import EmptyState from "@/components/shared/EmptyState";
+import { Skeleton } from "@/components/ui/skeleton";
 import PageContainer from "@/components/shared/PageContainer";
 import { cn } from "@/lib/utils";
 
@@ -102,7 +103,7 @@ const TESTIMONIAL_AVATAR_COLORS = [
 ];
 
 const HomeHero = () => {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["courses", "published"],
     queryFn: () => getCourses("status=PUBLISHED&limit=100"),
   });
@@ -300,7 +301,13 @@ const HomeHero = () => {
           </Link>
         </div>
 
-        {featured.length > 0 ? (
+        {isLoading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-80 w-full rounded-3xl" />
+            ))}
+          </div>
+        ) : featured.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featured.map((course) => (
               <CourseCard key={course.id} course={course} />

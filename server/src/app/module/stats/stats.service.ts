@@ -1,5 +1,6 @@
 import status from "http-status";
 import { PaymentStatus, UserRole } from "../../../generated/prisma/enums";
+import { Prisma } from "../../../generated/prisma/client";
 import AppError from "../../errorHelpers/AppError";
 import { IRequestUser } from "../../interfaces/requestUser.interface";
 import { prisma } from "../../lib/prisma";
@@ -359,37 +360,29 @@ const getStudentDashboardStats = async (
 const getRevenueByMonth = async (
   courseIds?: string[],
 ): Promise<IRevenueDataPoint[]> => {
-  const conditions: string[] = [
-    "p.status = 'SUCCEEDED'",
-    'p."isDeleted" = false',
+  const conditions: Prisma.Sql[] = [
+    Prisma.sql`p.status = 'SUCCEEDED'`,
+    Prisma.sql`p."isDeleted" = false`,
   ];
 
   if (courseIds && courseIds.length > 0) {
-    const ids = courseIds.map((id) => `'${id}'`).join(",");
-    conditions.push(`e."courseId" IN (${ids})`);
+    conditions.push(Prisma.sql`e."courseId" IN (${Prisma.join(courseIds)})`);
   }
-
-  const joinClause = courseIds && courseIds.length > 0
-    ? 'LEFT JOIN enrollments e ON e.id = p."enrollmentId"'
-    : 'LEFT JOIN enrollments e ON e.id = p."enrollmentId"';
 
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-  const rows: { month: Date; revenue: number }[] = await prisma.$queryRawUnsafe(
-    `
+  const rows: { month: Date; revenue: number }[] = await prisma.$queryRaw`
     SELECT
       DATE_TRUNC('month', p."createdAt") AS month,
       COALESCE(SUM(p.amount), 0) AS revenue
     FROM payments p
-    ${joinClause}
-    WHERE ${conditions.join(" AND ")}
-      AND p."createdAt" >= $1
+    LEFT JOIN enrollments e ON e.id = p."enrollmentId"
+    WHERE ${Prisma.join(conditions, " AND ")}
+      AND p."createdAt" >= ${twelveMonthsAgo}
     GROUP BY month
     ORDER BY month ASC
-    `,
-    twelveMonthsAgo.toISOString(),
-  );
+  `;
 
   const monthMap = new Map<string, number>();
   for (const r of rows) {
@@ -406,29 +399,25 @@ const getRevenueByMonth = async (
 const getEnrollmentTrend = async (
   courseIds?: string[],
 ): Promise<IEnrollmentTrendPoint[]> => {
-  const conditions: string[] = ['e."isDeleted" = false'];
+  const conditions: Prisma.Sql[] = [Prisma.sql`e."isDeleted" = false`];
 
   if (courseIds && courseIds.length > 0) {
-    const ids = courseIds.map((id) => `'${id}'`).join(",");
-    conditions.push(`e."courseId" IN (${ids})`);
+    conditions.push(Prisma.sql`e."courseId" IN (${Prisma.join(courseIds)})`);
   }
 
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-  const rows: { month: Date; count: number }[] = await prisma.$queryRawUnsafe(
-    `
+  const rows: { month: Date; count: number }[] = await prisma.$queryRaw`
     SELECT
       DATE_TRUNC('month', e."createdAt") AS month,
       CAST(COUNT(*) AS INTEGER) AS count
     FROM enrollments e
-    WHERE ${conditions.join(" AND ")}
-      AND e."createdAt" >= $1
+    WHERE ${Prisma.join(conditions, " AND ")}
+      AND e."createdAt" >= ${twelveMonthsAgo}
     GROUP BY month
     ORDER BY month ASC
-    `,
-    twelveMonthsAgo.toISOString(),
-  );
+  `;
 
   const monthMap = new Map<string, number>();
   for (const r of rows) {
@@ -446,19 +435,16 @@ const getUserSignupTrend = async (): Promise<IUserSignupTrendPoint[]> => {
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-  const rows: { month: Date; count: number }[] = await prisma.$queryRawUnsafe(
-    `
+  const rows: { month: Date; count: number }[] = await prisma.$queryRaw`
     SELECT
       DATE_TRUNC('month', "createdAt") AS month,
       CAST(COUNT(*) AS INTEGER) AS count
     FROM users
     WHERE "isDeleted" = false
-      AND "createdAt" >= $1
+      AND "createdAt" >= ${twelveMonthsAgo}
     GROUP BY month
     ORDER BY month ASC
-    `,
-    twelveMonthsAgo.toISOString(),
-  );
+  `;
 
   const monthMap = new Map<string, number>();
   for (const r of rows) {

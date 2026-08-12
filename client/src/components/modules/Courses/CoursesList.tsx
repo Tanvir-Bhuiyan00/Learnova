@@ -77,12 +77,10 @@ const CoursesList = () => {
   const total = coursesData?.meta?.total ?? courses.length;
   const categories: ICategory[] = categoriesData?.data ?? [];
 
-  const totalPages = Math.max(
-    1,
-    coursesData?.meta?.totalPages ?? Math.ceil(courses.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, coursesData?.meta?.totalPages ?? 1);
   const safePage = Math.min(page, totalPages);
-  const paged = courses.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  // The server already paginates; items are the current page's data.
+  const paged = courses;
 
   const hasActiveFilters =
     search.trim() !== "" || categoryId !== "all" || level !== "all";

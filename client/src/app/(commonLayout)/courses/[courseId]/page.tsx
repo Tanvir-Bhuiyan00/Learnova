@@ -1,4 +1,10 @@
 import CourseDetail from "@/components/modules/Courses/CourseDetail";
+import { getCourseById } from "@/services/course.services";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
 
 interface CourseDetailParams {
   params: Promise<{ courseId: string }>;
@@ -6,7 +12,19 @@ interface CourseDetailParams {
 
 const CourseDetailPage = async ({ params }: CourseDetailParams) => {
   const { courseId } = await params;
-  return <CourseDetail courseId={courseId} />;
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ["course", courseId],
+    queryFn: () => getCourseById(courseId),
+    staleTime: 60 * 1000,
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <CourseDetail courseId={courseId} />
+    </HydrationBoundary>
+  );
 };
 
 export default CourseDetailPage;

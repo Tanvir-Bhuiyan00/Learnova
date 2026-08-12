@@ -34,6 +34,14 @@ jobs:
         with:
           version: 11.17.0
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('server/pnpm-lock.yaml', 'client/pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
       - name: Install server deps
         working-directory: ./server
         run: pnpm install --frozen-lockfile
@@ -61,6 +69,10 @@ jobs:
       - name: Lint client
         working-directory: ./client
         run: pnpm lint
+
+      - name: Test client
+        working-directory: ./client
+        run: pnpm test:run
 
       - name: Build client
         working-directory: ./client

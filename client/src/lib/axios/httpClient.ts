@@ -49,11 +49,16 @@ const axiosInstance = async () => {
     await tryRefreshToken(accessToken, refreshToken);
   }
 
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
+  // Only forward the auth cookies the API needs — not every framework or
+  // app cookie stored on the request.
+  const cookieNames = ["accessToken", "refreshToken", "better-auth.session_token"];
+  const cookieHeader = cookieNames
+    .map((name) => {
+      const value = cookieStore.get(name)?.value;
+      return value ? `${name}=${value}` : "";
+    })
+    .filter(Boolean)
     .join("; ");
-  // eg Cookie: "accessToken=abc123; refreshToken=def456"
 
   const instance = axios.create({
     baseURL: API_BASE_URL,

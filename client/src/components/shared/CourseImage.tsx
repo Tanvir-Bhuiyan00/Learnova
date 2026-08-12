@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image, { ImageProps } from "next/image";
 
 const PLACEHOLDER = "/images/placeholder-course.svg";
@@ -15,6 +15,12 @@ interface CourseImageProps extends Omit<ImageProps, "onError"> {
  */
 const CourseImage = ({ src, alt, fallbackSrc = PLACEHOLDER, ...props }: CourseImageProps) => {
   const [currentSrc, setCurrentSrc] = useState<string | typeof src>(src);
+
+  // Re-sync when the src prop changes (the same component instance can be
+  // reused across courses, e.g. in carousels and paginated lists).
+  useEffect(() => {
+    setCurrentSrc(src);
+  }, [src]);
 
   return (
     <Image

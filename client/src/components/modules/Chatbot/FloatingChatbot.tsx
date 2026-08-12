@@ -162,6 +162,9 @@ export default function FloatingChatbot() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messageIdRef = useRef(0);
+
+  const nextMessageId = () => `msg-${++messageIdRef.current}`;
 
   const fetchRole = async () => {
     const role = await getUserRoleAction();
@@ -187,7 +190,7 @@ export default function FloatingChatbot() {
     if (!text || isQuerying) return;
 
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: nextMessageId(),
       role: "user",
       content: text,
     };
@@ -199,7 +202,7 @@ export default function FloatingChatbot() {
       const result = await queryRagAction(text);
 
       const botMessage: Message = {
-        id: `bot-${Date.now()}`,
+        id: nextMessageId(),
         role: "bot",
         content: result.success
           ? result.answer!

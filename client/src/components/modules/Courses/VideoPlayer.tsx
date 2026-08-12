@@ -8,6 +8,14 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer = ({ url, title }: VideoPlayerProps) => {
+  if (!url) {
+    return (
+      <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-canvas-soft">
+        <p className="text-sm text-mute-text">No video available yet.</p>
+      </div>
+    );
+  }
+
   const youtubeId = getYoutubeId(url);
 
   if (youtubeId) {

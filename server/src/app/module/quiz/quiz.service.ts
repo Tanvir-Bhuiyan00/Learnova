@@ -507,6 +507,23 @@ const submitAttempt = async (
     );
   }
 
+  // Enforce the time limit server-side: a student who pauses the tab or
+  // crafts a manual request must not be able to submit after the window.
+  const timeLimitMinutes = attempt.quiz.timeLimit;
+  if (timeLimitMinutes && timeLimitMinutes > 0) {
+    const elapsedMs = Date.now() - attempt.startedAt.getTime();
+    if (elapsedMs > timeLimitMinutes * 60 * 1000) {
+      await prisma.quizAttempt.update({
+        where: { id: attempt.id },
+        data: { score: 0, isPassed: false, completedAt: new Date() },
+      });
+      throw new AppError(
+        status.BAD_REQUEST,
+        "Time limit exceeded. This attempt was auto-submitted.",
+      );
+    }
+  }
+
   const questions = attempt.quiz.questions;
   const totalQuestions = questions.length;
 
@@ -597,7 +614,6 @@ const submitAttempt = async (
       question: a.question.question,
       questionType: a.question.questionType,
       selectedAnswer: a.selectedAnswer,
-      correctAnswer: a.question.correctAnswer,
       isCorrect: a.isCorrect,
     })),
   };
@@ -700,7 +716,6 @@ const getAttemptDetail = async (attemptId: string, user: IRequestUser) => {
       questionType: a.question.questionType,
       options: a.question.options,
       selectedAnswer: a.selectedAnswer,
-      correctAnswer: a.question.correctAnswer,
       isCorrect: a.isCorrect,
     })),
   };

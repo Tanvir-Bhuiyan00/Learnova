@@ -65,17 +65,16 @@ const CoursesList = ({ initialCategory = "all" }: { initialCategory?: string }) 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const q = searchParams.get("q");
-    if (q) {
-      setSearch(q);
-      setDebouncedSearch(q);
-      setPage(1);
-    }
+    // Always sync from the URL (including empty) so browser-back clears
+    // filters instead of leaving stale local state.
+    setSearch(q ?? "");
+    setDebouncedSearch(q ?? "");
+
     const category = searchParams.get("category");
-    if (category) {
-      setCategoryId(category);
-      setPage(1);
-    }
-  }, [searchParams]);
+    setCategoryId(category ?? initialCategory);
+
+    setPage(1);
+  }, [searchParams, initialCategory]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {

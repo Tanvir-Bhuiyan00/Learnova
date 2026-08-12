@@ -89,7 +89,9 @@ const EditAssignmentPage = () => {
     const payload = {
       ...form,
       totalMarks: Number(form.totalMarks),
-      dueDate: form.dueDate ? new Date(form.dueDate).toISOString() : undefined,
+      dueDate: form.dueDate
+        ? new Date(`${form.dueDate}T00:00:00`).toISOString()
+        : undefined,
     };
 
     const result = createAssignmentZodSchema.safeParse(payload);

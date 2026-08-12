@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PaginationMeta } from "@/types/api.types";
 
 interface Column<T> {
@@ -42,6 +42,15 @@ export function AdminListPage<T>({
   const safePage = Math.min(page, totalPages);
   // Items come pre-paginated from the server; the client only tracks the page.
   const items = allItems;
+
+  // If the current page is beyond the last page (e.g. rows were deleted),
+  // snap back to the last valid page so the table refetches instead of
+  // showing an empty "no items" state for a page that no longer exists.
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(Math.max(1, totalPages));
+    }
+  }, [page, totalPages]);
 
   return (
     <div className="space-y-6">

@@ -109,11 +109,12 @@ export const useServerManagedDataTable = ({
 
       const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
 
-      // Update URL immediately for optimistic UX, then refresh server components.
-      window.history.pushState(null, "", nextUrl);
-
+      // Use router.replace (not history.pushState): pushState silently
+      // changes the URL without notifying the Next.js router, so
+      // useSearchParams keeps returning the old query and server-managed
+      // tables never refetch after sort/filter/page changes.
       startRouteRefreshTransition(() => {
-        router.refresh();
+        router.replace(nextUrl, { scroll: false });
       });
     },
     [pathname, router, startRouteRefreshTransition],

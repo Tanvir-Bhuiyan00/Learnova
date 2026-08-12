@@ -1,7 +1,6 @@
 import { IQueryParams } from "../../interfaces/query.interface";
 import AppError from "../../errorHelpers/AppError";
 import { prisma } from "../../lib/prisma";
-import { sendResponse } from "../../shared/sendResponse";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { ICreateNotificationPayload, IUserContext } from "./notification.interface";
 

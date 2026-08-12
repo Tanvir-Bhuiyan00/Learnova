@@ -1,6 +1,19 @@
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import status from "http-status";
+import AppError from "../errorHelpers/AppError";
 import { cloudinaryUpload } from "./cloudinary.config";
+
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+]);
+
+const MAX_FILE_SIZE_MB = 10;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinaryUpload,
@@ -34,4 +47,19 @@ const storage = new CloudinaryStorage({
   },
 });
 
-export const multerUpload = multer({ storage });
+export const multerUpload = multer({
+  storage,
+  limits: { fileSize: MAX_FILE_SIZE_BYTES },
+  fileFilter: (_req, file, cb) => {
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      return cb(
+        new AppError(
+          status.UNSUPPORTED_MEDIA_TYPE,
+          `Unsupported file type "${file.mimetype}". Allowed: images (jpeg, png, webp, gif) and PDF.`,
+        ),
+      );
+    }
+
+    cb(null, true);
+  },
+});

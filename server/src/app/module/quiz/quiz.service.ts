@@ -165,7 +165,7 @@ const getQuizForTaking = async (quizId: string, user: IRequestUser) => {
     throw new AppError(status.NOT_FOUND, "Student profile not found");
   }
 
-  const enrollment = await assertPaidEnrollment(student.id, quiz.courseId);
+  await assertPaidEnrollment(student.id, quiz.courseId);
 
   const previousAttempts = await prisma.quizAttempt.findMany({
     where: {
@@ -386,7 +386,7 @@ const startAttempt = async (quizId: string, user: IRequestUser) => {
     throw new AppError(status.NOT_FOUND, "Student profile not found");
   }
 
-  const enrollment = await assertPaidEnrollment(student.id, quiz.courseId);
+  await assertPaidEnrollment(student.id, quiz.courseId);
 
   const existingAttempts = await prisma.quizAttempt.count({
     where: {

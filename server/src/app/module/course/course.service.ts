@@ -1,6 +1,6 @@
 import status from "http-status";
 import { Course, Prisma } from "../../../generated/prisma/client";
-import { CourseStatus } from "../../../generated/prisma/enums";
+import { CourseStatus, UserRole } from "../../../generated/prisma/enums";
 import AppError from "../../errorHelpers/AppError";
 import { IQueryParams, IQueryResult } from "../../interfaces/query.interface";
 import { prisma } from "../../lib/prisma";
@@ -239,9 +239,18 @@ const updateCourse = async (
     }
   }
 
+  // Only admins may change a course's publication status. Strip it for
+  // instructors even if a crafted payload bypasses the schema.
+  const data =
+    user.role === UserRole.INSTRUCTOR
+      ? Object.fromEntries(
+          Object.entries(payload).filter(([key]) => key !== "status"),
+        )
+      : payload;
+
   const course = await prisma.course.update({
     where: { id },
-    data: payload,
+    data,
     include: {
       category: true,
       instructor: {

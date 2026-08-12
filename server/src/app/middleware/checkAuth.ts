@@ -17,6 +17,14 @@ export const checkAuth =
         "better-auth.session_token",
       );
 
+      let sessionUser: {
+        id: string;
+        role: UserRole;
+        email: string;
+        status: string;
+        isDeleted: boolean;
+      } | null = null;
+
       if (!sessionToken) {
         throw new AppError(
           status.UNAUTHORIZED,
@@ -39,6 +47,7 @@ export const checkAuth =
 
         if (sessionExists && sessionExists.user) {
           const user = sessionExists.user;
+          sessionUser = user;
 
           const now = new Date();
           const expiresAt = new Date(sessionExists.expiresAt);
@@ -115,9 +124,33 @@ export const checkAuth =
         );
       }
 
+      const tokenData = verifiedToken.data!;
+
+      // Bind the access token's identity to the session's identity: both must
+      // resolve to the same user, otherwise the token is stale or forged and
+      // must not be trusted for authorization.
+      if (sessionUser && sessionUser.id !== tokenData.userId) {
+        throw new AppError(
+          status.UNAUTHORIZED,
+          "Unauthorized access! Session and access token do not match.",
+        );
+      }
+
+      req.user = sessionUser
+        ? {
+            userId: sessionUser.id,
+            role: sessionUser.role,
+            email: sessionUser.email,
+          }
+        : {
+            userId: tokenData.userId as string,
+            role: tokenData.role as UserRole,
+            email: tokenData.email as string,
+          };
+
       if (
         authRoles.length > 0 &&
-        !authRoles.includes(verifiedToken.data!.role as UserRole)
+        !authRoles.includes(tokenData.role as UserRole)
       ) {
         throw new AppError(
           status.FORBIDDEN,

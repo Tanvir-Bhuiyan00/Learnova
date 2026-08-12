@@ -61,6 +61,10 @@ export const RAGService = {
         metadata: true,
         embedding: true,
       },
+      // Bounded scan: pre-filter by sourceType (callers pass it) so the
+      // in-memory cosine pass never loads the entire table. Increase this
+      // ceiling (or move to pgvector) if the corpus outgrows it.
+      take: sourceType ? 1000 : 2000,
     });
 
     const scored = documents.map((doc) => ({

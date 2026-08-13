@@ -138,14 +138,9 @@ export const studentNavItems: NavSection[] = [
     title: "Learning",
     items: [
       {
-        title: "My Learning",
+        title: "My Courses",
         href: "/dashboard/my-learning",
         icon: "BookOpen",
-      },
-      {
-        title: "My Courses",
-        href: "/dashboard/courses",
-        icon: "Library",
       },
       {
         title: "My Certificates",
@@ -156,6 +151,11 @@ export const studentNavItems: NavSection[] = [
         title: "My Reviews",
         href: "/dashboard/my-reviews",
         icon: "Star",
+      },
+      {
+        title: "Notifications",
+        href: "/notifications",
+        icon: "Bell",
       },
     ],
   },
@@ -173,7 +173,7 @@ export const studentNavItems: NavSection[] = [
         icon: "ShoppingCart",
       },
       {
-        title: "Payment History",
+        title: "Payments",
         href: "/dashboard/payment-history",
         icon: "CreditCard",
       },

@@ -2,7 +2,7 @@
 
 import { httpClient } from "@/lib/axios/httpClient";
 import { setTokenInCookies } from "@/lib/tokenUtils";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { UserInfo } from "@/types/user.types";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -10,6 +10,28 @@ const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!BASE_API_URL) {
   throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
 }
+
+// These headers let the API's per-IP rate limiter key on the real visitor
+// instead of the Next.js container's shared IP. The secret proves the request
+// comes from this trusted internal client.
+const internalHeaders = async (): Promise<Record<string, string>> => {
+  try {
+    const requestHeaders = await headers();
+    const forwardedFor = requestHeaders.get("x-forwarded-for");
+    const lastIp = forwardedFor?.split(",").pop()?.trim();
+    const internalSecret = process.env.JWT_ACCESS_SECRET;
+
+    if (lastIp && internalSecret) {
+      return {
+        "X-Client-IP": lastIp,
+        "X-Internal-Secret": internalSecret,
+      };
+    }
+  } catch {
+    // Headers unavailable (e.g. background job) — fall back to req.ip.
+  }
+  return {};
+};
 
 export async function fetchNewTokens(
   refreshToken: string,
@@ -31,6 +53,7 @@ export async function fetchNewTokens(
       headers: {
         "Content-Type": "application/json",
         Cookie: cookieParts.join("; "),
+        ...(await internalHeaders()),
       },
     });
 
@@ -124,6 +147,7 @@ export async function changePassword(payload: {
       headers: {
         "Content-Type": "application/json",
         Cookie: `accessToken=${accessToken}`,
+        ...(await internalHeaders()),
       },
       body: JSON.stringify(payload),
     });

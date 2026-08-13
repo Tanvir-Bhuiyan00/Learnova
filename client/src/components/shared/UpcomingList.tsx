@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { formatUtcMonthDay } from "@/lib/dateFormat";
 import { CalendarDays } from "lucide-react";
 
 export type UpcomingItemType = "assignment" | "test" | "lesson" | "event";
@@ -73,7 +73,7 @@ export function UpcomingList({
               </div>
               <span className="flex items-center gap-1 text-xs font-medium text-mute-text">
                 <CalendarDays className="size-3.5" />
-                {format(new Date(item.date), "MMM d")}
+                {formatUtcMonthDay(item.date)}
               </span>
             </li>
           ))}

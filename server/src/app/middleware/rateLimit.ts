@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
+import { envVars } from "../config/env";
 
 interface RateLimitWindow {
   windowMs: number;
@@ -48,6 +49,32 @@ const check = (
   return { allowed: true, retryAfterSeconds: 0 };
 };
 
+// All API traffic arrives through the trusted Next.js client, which forwards
+// the real visitor address in X-Client-IP and proves it is the internal
+// client by presenting the shared ACCESS_TOKEN_SECRET (the same value the
+// client container uses to verify JWTs). Without this, every user would be
+// bucketed under the client container's single IP and the shared allowance
+// would be exhausted — blanking dashboards for everyone once /auth/me starts
+// returning 429. External callers do not know the secret, so they cannot
+// spoof a different rate-limit key.
+const getClientKeyIp = (req: Request): string => {
+  const internalSecret = req.get("X-Internal-Secret");
+
+  if (
+    internalSecret &&
+    internalSecret.trim().length > 0 &&
+    envVars.ACCESS_TOKEN_SECRET &&
+    internalSecret.trim() === envVars.ACCESS_TOKEN_SECRET
+  ) {
+    const clientIp = req.get("X-Client-IP");
+    if (clientIp && clientIp.trim().length > 0) {
+      return clientIp.trim();
+    }
+  }
+
+  return req.ip ?? req.socket.remoteAddress ?? "unknown";
+};
+
 export const rateLimit = ({
   windowMs,
   max,
@@ -55,7 +82,7 @@ export const rateLimit = ({
   message = "Too many requests, please try again later.",
 }: RateLimitWindow) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const key = `${keyPrefix}:${req.ip ?? "unknown"}`;
+    const key = `${keyPrefix}:${getClientKeyIp(req)}`;
     const result = check(key, windowMs, max);
 
     if (!result.allowed) {

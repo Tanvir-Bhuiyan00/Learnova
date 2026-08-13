@@ -60,12 +60,41 @@ const axiosInstance = async () => {
     .filter(Boolean)
     .join("; ");
 
+  // Forward the real visitor IP to the API in a dedicated header. Every
+  // server-side axios call originates from this Next.js container, so the API
+  // would otherwise see one shared IP and its per-IP rate limiter would bucket
+  // all users together — exhausting the allowance and returning 429 on
+  // /auth/me, which blanks every dashboard. The API only trusts these headers
+  // when X-Internal-Secret matches ACCESS_TOKEN_SECRET (the same value this
+  // container already uses to verify JWTs), so external callers can't spoof.
+  let clientIpHeader: Record<string, string> = {};
+  try {
+    const requestHeaders = await headers();
+    const forwardedFor = requestHeaders.get("x-forwarded-for");
+    // Rightmost entry is the one nginx appended with the browser's real
+    // address (client-supplied values sit further left), so this can't be
+    // spoofed into a different rate-limit bucket.
+    const lastIp = forwardedFor?.split(",").pop()?.trim();
+    const internalSecret = process.env.JWT_ACCESS_SECRET;
+
+    if (lastIp && internalSecret) {
+      clientIpHeader = {
+        "X-Client-IP": lastIp,
+        "X-Internal-Secret": internalSecret,
+      };
+    }
+  } catch {
+    // Headers are unavailable (e.g. a background job) — the API falls back
+    // to req.ip, which is harmless for the rate limiter's purposes.
+  }
+
   const instance = axios.create({
     baseURL: API_BASE_URL,
     timeout: 30000,
     headers: {
       "Content-Type": "application/json",
       Cookie: cookieHeader,
+      ...clientIpHeader,
     },
   });
 

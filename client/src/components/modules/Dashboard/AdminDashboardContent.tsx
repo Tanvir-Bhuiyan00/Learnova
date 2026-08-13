@@ -10,6 +10,7 @@ import { UpcomingList, UpcomingItem } from "@/components/shared/UpcomingList";
 import { getDashboardData } from "@/services/dashboard.services";
 import { ApiResponse } from "@/types/api.types";
 import { ISuperAdminDashboardStats } from "@/types/dashboard.types";
+import { formatUtcMonthDay } from "@/lib/dateFormat";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -223,10 +224,7 @@ const AdminDashboardContent = () => {
                       {a.amount != null ? `৳${a.amount.toLocaleString()}` : a.detail}
                     </td>
                     <td className="py-3 pr-3 text-xs text-mute-text">
-                      {new Date(a.createdAt).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatUtcMonthDay(a.createdAt)}
                     </td>
                     <td className="py-3">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">

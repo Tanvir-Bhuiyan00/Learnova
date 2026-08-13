@@ -18,16 +18,6 @@ const cosineSimilarity = (a: number[], b: number[]): number => {
   return magnitude === 0 ? 0 : dot / magnitude;
 };
 
-/**
- * Minimum cosine similarity for a document to be considered relevant to the
- * query. Matches below this bar are noise (e.g. weak review hits) and must not
- * be sent to the LLM. Tune as the embedding model changes.
- */
-const SIMILARITY_THRESHOLD = 0.3;
-
-const FALLBACK_ANSWER =
-  "I couldn't find reliable information about that yet. I can help with questions about Learnova courses, instructors, pricing, enrollment, quizzes, assignments and certificates. Try asking something like “What courses do you offer?” or “How do I earn my certificate?”";
-
 export const RAGService = {
   async ingestLearnovaData() {
     return IndexingService.indexLearnovaData();

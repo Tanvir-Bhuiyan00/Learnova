@@ -65,7 +65,23 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
     where: { userId },
   });
 
-  if (!instructor) {
+  let instructorId: string;
+
+  if (instructor) {
+    instructorId = instructor.id;
+  } else if (payload.instructorId) {
+    // Admins/super-admins have no instructor profile, so they create a
+    // course on behalf of an existing instructor.
+    const assignedInstructor = await prisma.instructor.findUnique({
+      where: { id: payload.instructorId, isDeleted: false },
+    });
+
+    if (!assignedInstructor) {
+      throw new AppError(status.NOT_FOUND, "Assigned instructor not found");
+    }
+
+    instructorId = assignedInstructor.id;
+  } else {
     throw new AppError(status.NOT_FOUND, "Instructor profile not found");
   }
 
@@ -80,7 +96,7 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
   const existingCourse = await prisma.course.findFirst({
     where: {
       title: payload.title,
-      instructorId: instructor.id,
+      instructorId,
       isDeleted: false,
     },
   });
@@ -103,7 +119,7 @@ const createCourse = async (payload: ICreateCoursePayload, userId: string) => {
       level: payload.level,
       language: payload.language ?? "English",
       categoryId: payload.categoryId,
-      instructorId: instructor.id,
+      instructorId,
     },
     include: {
       category: true,

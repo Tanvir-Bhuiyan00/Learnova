@@ -31,6 +31,9 @@ export const createCourseZodSchema = z.object({
     .default("English")
     .optional(),
   categoryId: z.string("Category ID is required"),
+  // Admins (who have no instructor profile) can create a course on behalf of
+  // an existing instructor by passing their instructor id.
+  instructorId: z.string("Instructor ID must be a string").optional(),
 });
 
 export const updateCourseZodSchema = z.object({
@@ -60,6 +63,7 @@ export const updateCourseZodSchema = z.object({
     .optional(),
   categoryId: z.string("Category ID must be a string").optional(),
   status: z.enum(courseStatusValues).optional(),
+  instructorId: z.string("Instructor ID must be a string").optional(),
 });
 
 export const createModuleZodSchema = z.object({

@@ -56,6 +56,8 @@ export interface ICreateCoursePayload {
   language?: string;
   categoryId: string;
   thumbnail?: string;
+  /** Assign the course to a specific instructor (used by admins). */
+  instructorId?: string;
 }
 
 export interface IUpdateCoursePayload {
@@ -69,6 +71,7 @@ export interface IUpdateCoursePayload {
   language?: string;
   categoryId?: string;
   status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  instructorId?: string;
 }
 
 export interface IModule {

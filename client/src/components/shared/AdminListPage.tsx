@@ -11,11 +11,20 @@ import { Inbox, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { PaginationMeta } from "@/types/api.types";
+import { LucideIcon } from "lucide-react";
 
 interface Column<T> {
   key: string;
   label: string;
   render: (item: T) => React.ReactNode;
+}
+
+interface RowAction<T> {
+  icon: LucideIcon;
+  label: string;
+  onClick: (item: T) => void;
+  variant?: "ghost" | "destructive";
+  className?: string;
 }
 
 interface AdminListPageProps<T> {
@@ -28,10 +37,15 @@ interface AdminListPageProps<T> {
   columns: Column<T>[];
   onDelete?: (id: string) => void;
   idKey?: keyof T;
+  /** Extra per-row action buttons (e.g. edit). Rendered before delete. */
+  actions?: RowAction<T>[];
+  /** Optional element rendered at the end of the page header (e.g. an Add button). */
+  headerAction?: React.ReactNode;
 }
 
 export function AdminListPage<T>({
   title, description, queryKey, queryFn, columns, onDelete, idKey = "id" as keyof T,
+  actions = [], headerAction,
 }: AdminListPageProps<T>) {
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
@@ -60,11 +74,14 @@ export function AdminListPage<T>({
           </h1>
           {description && <p className="mt-1 text-sm text-mute-text">{description}</p>}
         </div>
-        {total != null && !isLoading && (
-          <span className="rounded-full bg-canvas-soft px-3 py-1.5 text-xs font-bold text-body-text">
-            {total} total
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {total != null && !isLoading && (
+            <span className="rounded-full bg-canvas-soft px-3 py-1.5 text-xs font-bold text-body-text">
+              {total} total
+            </span>
+          )}
+          {headerAction}
+        </div>
       </div>
 
       {isLoading ? (
@@ -106,7 +123,7 @@ export function AdminListPage<T>({
                     {col.label}
                   </TableHead>
                 ))}
-                {onDelete && <TableHead className="w-16">Actions</TableHead>}
+                {(actions.length > 0 || onDelete) && <TableHead className="w-24">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,16 +138,39 @@ export function AdminListPage<T>({
                   {columns.map((col) => (
                     <TableCell key={col.key}>{col.render(item)}</TableCell>
                   ))}
-                  {onDelete && (
+                  {(actions.length > 0 || onDelete) && (
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-mute-text transition-colors hover:bg-negative/10 hover:text-negative"
-                        onClick={() => onDelete(String(item[idKey]))}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        {actions.map((action) => {
+                          const Icon = action.icon;
+                          return (
+                            <Button
+                              key={action.label}
+                              variant={action.variant ?? "ghost"}
+                              size="icon"
+                              className={
+                                action.className ??
+                                "text-mute-text transition-colors hover:bg-canvas-soft hover:text-ink"
+                              }
+                              onClick={() => action.onClick(item)}
+                              aria-label={action.label}
+                            >
+                              <Icon className="size-4" />
+                            </Button>
+                          );
+                        })}
+                        {onDelete && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-mute-text transition-colors hover:bg-negative/10 hover:text-negative"
+                            onClick={() => onDelete(String(item[idKey]))}
+                            aria-label="Delete"
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   )}
                 </motion.tr>

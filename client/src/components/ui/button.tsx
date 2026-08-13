@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-ink hover:bg-primary-hover border border-transparent",
+        default: "bg-primary text-primary-foreground hover:bg-primary-hover border border-transparent",
         outline:
           "border-2 border-ink bg-transparent text-ink hover:bg-canvas-soft",
         secondary:

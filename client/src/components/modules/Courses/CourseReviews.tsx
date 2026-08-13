@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 const AVATAR_COLORS = [
   "bg-primary-pale text-ink-deep",
   "bg-ink-solid text-white",
-  "bg-primary text-ink",
+  "bg-primary text-primary-foreground",
   "bg-amber-100 text-amber-800",
   "bg-sky-100 text-sky-800",
 ];

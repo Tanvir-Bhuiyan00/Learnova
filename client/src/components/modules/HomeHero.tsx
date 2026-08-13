@@ -106,7 +106,7 @@ const TESTIMONIALS = [
 const TESTIMONIAL_AVATAR_COLORS = [
   "bg-primary-pale text-ink-deep",
   "bg-ink-solid text-primary",
-  "bg-primary text-ink",
+  "bg-primary text-primary-foreground",
   "bg-amber-100 text-amber-800",
   "bg-sky-100 text-sky-800",
 ];
@@ -633,7 +633,7 @@ const HomeHero = () => {
             <Link href="/register">
               <Button
                 size="lg"
-                className="gap-2 rounded-full bg-primary text-ink shadow-lg shadow-primary/20 hover:bg-primary-hover"
+                className="gap-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary-hover"
               >
                 Become an instructor
                 <ArrowRight className="size-4" />

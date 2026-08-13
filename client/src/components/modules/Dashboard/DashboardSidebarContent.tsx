@@ -64,11 +64,11 @@ const DashboardSidebarContent = ({
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                         isActive
-                          ? "bg-primary text-ink shadow-sm shadow-primary-pale"
+                          ? "bg-primary text-primary-foreground shadow-sm shadow-primary-pale"
                           : "text-body-text hover:bg-canvas-soft hover:text-ink",
                       )}
                     >
-                      <Icon className={cn("size-4 shrink-0", isActive && "text-ink-deep")} />
+                      <Icon className={cn("size-4 shrink-0", isActive && "text-primary-foreground")} />
                       <span>{item.title}</span>
                     </Link>
                   );

@@ -8,7 +8,7 @@ const RootDashboardLayout = async ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="flex h-dvh overflow-hidden bg-canvas-soft/40">
+    <div className="flex h-screen overflow-hidden bg-canvas-soft/40 supports-[height:100dvh]:h-dvh">
       {/* Dashboard Sidebar */}
       <DashboardSidebar />
 

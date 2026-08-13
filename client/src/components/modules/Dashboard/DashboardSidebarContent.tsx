@@ -36,7 +36,7 @@ const DashboardSidebarContent = ({
   return (
     <div
       className={cn(
-        "hidden h-full flex-col border-r border-canvas-soft bg-card transition-[width] duration-300 md:flex",
+        "hidden h-full flex-col border-r border-canvas-soft bg-card transition-[width] duration-300 sm:flex",
         collapsed ? "w-[4.5rem]" : "w-64",
       )}
     >

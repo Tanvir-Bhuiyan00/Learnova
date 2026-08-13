@@ -32,7 +32,7 @@ const DashboardNavbarContent = ({
     <div className="flex w-full items-center gap-4 border-b border-canvas-soft bg-card px-4 py-3 md:px-6">
       {/* Mobile Menu Toggle Button And Menu */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild className="md:hidden">
+        <SheetTrigger asChild className="sm:hidden">
           <Button
             variant="outline"
             size="icon"

@@ -17,7 +17,6 @@ import {
   BookOpen,
   ClipboardList,
   Play,
-  Trophy,
 } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -78,43 +77,21 @@ const StudentDashboardContent = () => {
   const completedCourses = enrollments.filter((e) => e.isCompleted);
   const continueCourse = activeCourses[0];
 
-  const totalLessons = enrollments.reduce(
-    (sum, e) => sum + (e.lessonProgress?.length ?? 0),
-    0,
-  );
-  const completedLessons = enrollments.reduce(
-    (sum, e) => sum + (e.lessonProgress?.filter((p) => p.isCompleted).length ?? 0),
-    0,
-  );
+  // Real numbers from the stats API (lessons/assignments/tests across the
+  // student's enrolled courses)
+  const totalLessons = stats?.totalLessons ?? 0;
+  const completedLessons = stats?.lessonsCompleted ?? 0;
+  const submittedAssignments = stats?.assignmentsSubmitted ?? 0;
+  const totalAssignments = stats?.totalAssignments ?? 0;
+  const completedQuizzes = stats?.quizzesTaken ?? 0;
+  const totalQuizzes = stats?.totalQuizzes ?? 0;
 
-  // Assignment / quiz counters (best-effort from enrollments + demo defaults)
-  const submittedAssignments = Math.min(
-    enrollments.length,
-    Math.max(0, Math.round(activeCourses.length * 0.8)),
-  );
-  const totalAssignments = Math.max(enrollments.length, 1);
-  const completedQuizzes = completedCourses.length + Math.floor(activeCourses.length / 2);
-
-  const upcoming: UpcomingItem[] = [
-    ...enrollments.flatMap((e) =>
-      e.course
-        ? [
-            {
-              id: `lesson-${e.id}`,
-              type: "lesson" as const,
-              title: `Continue: ${e.course.title}`,
-              date: "2026-08-18T00:00:00.000Z",
-            },
-          ]
-        : [],
-    ),
-    {
-      id: "quiz-1",
-      type: "test",
-      title: "JavaScript Quiz",
-      date: "2026-08-20T00:00:00.000Z",
-    },
-  ];
+  const upcoming: UpcomingItem[] = (stats?.upcoming ?? []).map((u) => ({
+    id: u.id,
+    type: u.type,
+    title: u.title,
+    date: u.date,
+  }));
 
   const filtered = tab === "active" ? activeCourses : completedCourses;
 
@@ -200,8 +177,8 @@ const StudentDashboardContent = () => {
             title="Tests"
             value={completedQuizzes}
             iconName="Trophy"
-            description="Quizzes completed"
-            progress={Math.min(100, completedQuizzes * 25)}
+            description={`of ${totalQuizzes} completed`}
+            progress={totalQuizzes > 0 ? (completedQuizzes / totalQuizzes) * 100 : 0}
             accent="green"
           />
         </motion.div>

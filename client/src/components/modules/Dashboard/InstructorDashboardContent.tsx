@@ -13,8 +13,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
   BookOpen,
-  CheckCircle2,
-  Clock,
   Plus,
   Star,
   Users,
@@ -65,14 +63,10 @@ const InstructorDashboardContent = () => {
 
   const recentReviews = stats?.recentReviews?.slice(0, 5) ?? [];
 
-  // Grading queue — newest ungraded assignment submissions (derived from
-  // course students). Each item links to the submissions view.
-  const gradingQueue = courses.slice(0, 4).map((c, i) => ({
-    id: `gq-${c.id}`,
-    student: ["Rahim Uddin", "Nusrat Jahan", "Tanvir Ahmed", "Farhana Islam"][i % 4],
-    course: c.title,
-    date: "Aug 13, 2026",
-  }));
+  // Real data from the stats API: pending submissions + grading queue
+  const pendingCount = stats?.pendingSubmissions ?? 0;
+  const gradingQueue = stats?.gradingQueue ?? [];
+  const courseList = stats?.courseList ?? [];
 
   return (
     <div className="space-y-5">
@@ -96,10 +90,10 @@ const InstructorDashboardContent = () => {
         <motion.div variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}>
           <StatsCard
             title="Pending Submissions"
-            value={recentReviews.length}
+            value={pendingCount}
             iconName="Clock"
             description="Awaiting your attention"
-            progress={Math.min(100, recentReviews.length * 20)}
+            progress={Math.min(100, pendingCount * 20)}
             accent="pink"
           />
         </motion.div>
@@ -131,7 +125,7 @@ const InstructorDashboardContent = () => {
       {/* My Courses Table */}
       <div className="rounded-2xl bg-card p-5 shadow-sm ring-1 ring-border">
         <h3 className="mb-4 font-heading text-lg font-extrabold text-ink">My Courses</h3>
-        {courses.length === 0 ? (
+        {courseList.length === 0 ? (
           <div className="py-10 text-center">
             <p className="text-sm text-mute-text">No courses yet</p>
             <Link href="/instructor/dashboard/courses/create" className="mt-2 inline-block text-sm font-semibold text-indigo-600 hover:underline">
@@ -152,7 +146,7 @@ const InstructorDashboardContent = () => {
                 </tr>
               </thead>
               <tbody>
-                {courses.slice(0, 6).map((c) => (
+                {courseList.slice(0, 6).map((c) => (
                   <tr key={c.id} className="border-b border-canvas-soft/60 last:border-0">
                     <td className="py-3 pr-3">
                       <Link href={`/instructor/dashboard/courses/${c.id}/edit`} className="flex items-center gap-3">
@@ -169,14 +163,14 @@ const InstructorDashboardContent = () => {
                     </td>
                     <td className="py-3 pr-3">
                       <span className="flex items-center gap-1 text-sm text-body-text">
-                        <Users className="size-3.5 text-mute-text" /> {c.totalStudents}
+                        <Users className="size-3.5 text-mute-text" /> {c.studentCount}
                       </span>
                     </td>
                     <td className="py-3 pr-3 text-sm font-semibold text-ink">{c.averageRating.toFixed(1)}</td>
                     <td className="w-32 py-3 pr-3">
                       <div className="flex items-center gap-2">
-                        <ProgressBar value={Math.min(100, c.totalStudents * 8)} color="indigo" className="flex-1" />
-                        <span className="text-xs font-bold text-ink">{Math.min(100, c.totalStudents * 8)}%</span>
+                        <ProgressBar value={c.completionRate} color="indigo" className="flex-1" />
+                        <span className="text-xs font-bold text-ink">{c.completionRate}%</span>
                       </div>
                     </td>
                     <td className="py-3">
@@ -217,15 +211,21 @@ const InstructorDashboardContent = () => {
                 className="flex items-center gap-3 rounded-xl border border-canvas-soft p-3 transition-colors hover:bg-canvas-soft/50"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fdeaf3] text-xs font-bold text-[#c2416b]">
-                  {item.student.charAt(0).toUpperCase()}
+                  {item.studentName.charAt(0).toUpperCase()}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-ink">{item.student}</p>
+                  <p className="truncate text-sm font-semibold text-ink">{item.studentName}</p>
                   <p className="truncate text-xs text-mute-text">
-                    {item.course} · {item.date}
+                    {item.assignmentTitle} · {item.courseTitle}
                   </p>
                 </div>
-                <Button size="sm" className="rounded-full bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
+                <Button
+                  size="sm"
+                  className="rounded-full bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700"
+                  onClick={() => {
+                    window.location.href = `/instructor/dashboard/assignments/${item.id}/submissions`;
+                  }}
+                >
                   Grade
                 </Button>
               </li>

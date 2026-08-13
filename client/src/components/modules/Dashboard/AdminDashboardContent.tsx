@@ -14,7 +14,6 @@ import {
   BookOpen,
   CreditCard,
   GraduationCap,
-  PlusCircle,
   RefreshCw,
   TrendingUp,
   Users,
@@ -75,15 +74,8 @@ const AdminDashboardContent = () => {
   const topCourses = data?.topCourses?.slice(0, 5) ?? [];
   const maxEnrollments = Math.max(1, ...topCourses.map((c) => c.enrollmentCount));
 
-  // Recent activity — latest enrollments & payments (from dashboard stats)
-  const recentActivity = (data?.topCourses ?? []).slice(0, 5).map((c, i) => ({
-    id: `act-${c.id}`,
-    user: ["Rahim Uddin", "Nusrat Jahan", "Tanvir Ahmed", "Farhana Islam", "Minhaj Karim"][i % 5],
-    action: i % 2 === 0 ? "Enrolled in" : "Purchased",
-    detail: c.title,
-    time: "2h ago",
-    status: "Completed",
-  }));
+  // Recent activity — real latest enrollments, payments, and user signups
+  const recentActivity = (data?.recentActivity ?? []).slice(0, 6);
 
   return (
     <div className="space-y-5">
@@ -193,14 +185,23 @@ const AdminDashboardContent = () => {
                     <td className="py-3 pr-3">
                       <span className="flex items-center gap-2">
                         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-bold text-ink-deep">
-                          {a.user.charAt(0).toUpperCase()}
+                          {a.userName.charAt(0).toUpperCase()}
                         </span>
-                        <span className="text-sm font-semibold text-ink">{a.user}</span>
+                        <span className="text-sm font-semibold text-ink">{a.userName}</span>
                       </span>
                     </td>
-                    <td className="py-3 pr-3 text-sm text-body-text">{a.action}</td>
-                    <td className="py-3 pr-3 text-sm font-medium text-ink">{a.detail}</td>
-                    <td className="py-3 pr-3 text-xs text-mute-text">{a.time}</td>
+                    <td className="py-3 pr-3 text-sm text-body-text">
+                      {a.type === "payment" ? "Purchased" : a.type === "signup" ? "Signed up" : "Enrolled in"}
+                    </td>
+                    <td className="py-3 pr-3 text-sm font-medium text-ink">
+                      {a.amount != null ? `৳${a.amount.toLocaleString()}` : a.detail}
+                    </td>
+                    <td className="py-3 pr-3 text-xs text-mute-text">
+                      {new Date(a.createdAt).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
                     <td className="py-3">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
                         <span className="size-1.5 rounded-full bg-emerald-500" />

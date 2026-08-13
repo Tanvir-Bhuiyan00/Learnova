@@ -114,11 +114,12 @@ const getAdminDashboardStats = async (): Promise<ISuperAdminDashboardStats> => {
     }),
   ]);
 
-  const [revenueByMonth, enrollmentTrend, userSignupTrend] =
+  const [revenueByMonth, enrollmentTrend, userSignupTrend, recentActivity] =
     await Promise.all([
       getRevenueByMonth(),
       getEnrollmentTrend(),
       getUserSignupTrend(),
+      buildRecentActivity(),
     ]);
 
   const topCourseIds = topCoursesRaw.map((course) => course.id);
@@ -188,6 +189,7 @@ const getAdminDashboardStats = async (): Promise<ISuperAdminDashboardStats> => {
       label: item.categoryId,
       value: item._count.id,
     })),
+    recentActivity,
   };
 };
 
@@ -202,6 +204,9 @@ const getInstructorDashboardStats = async (
         select: {
           id: true,
           title: true,
+          thumbnail: true,
+          status: true,
+          averageRating: true,
           _count: { select: { enrollments: true } },
           reviews: {
             where: { isDeleted: false },
@@ -227,6 +232,9 @@ const getInstructorDashboardStats = async (
     totalRevenueAgg,
     averageRatingAgg,
     totalReviewsAgg,
+    pendingSubmissions,
+    gradingQueue,
+    courseCompletions,
   ] = await Promise.all([
     courseIds.length > 0
       ? prisma.enrollment.groupBy({
@@ -255,6 +263,41 @@ const getInstructorDashboardStats = async (
           where: { courseId: { in: courseIds }, isDeleted: false },
         })
       : Promise.resolve(0),
+    courseIds.length > 0
+      ? prisma.assignmentSubmission.count({
+          where: {
+            isDeleted: false,
+            gradedAt: null,
+            assignment: { courseId: { in: courseIds }, isDeleted: false },
+          },
+        })
+      : Promise.resolve(0),
+    courseIds.length > 0
+      ? prisma.assignmentSubmission.findMany({
+          where: {
+            isDeleted: false,
+            gradedAt: null,
+            assignment: { courseId: { in: courseIds }, isDeleted: false },
+          },
+          select: {
+            id: true,
+            submittedAt: true,
+            student: { select: { name: true } },
+            assignment: { select: { title: true, course: { select: { title: true } } } },
+          },
+          orderBy: { submittedAt: "desc" },
+          take: 8,
+        })
+      : Promise.resolve([]),
+    courseIds.length > 0
+      ? prisma.enrollment.findMany({
+          where: { courseId: { in: courseIds }, isDeleted: false },
+          select: {
+            courseId: true,
+            isCompleted: true,
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   const recentReviews = instructor.courses
@@ -276,6 +319,32 @@ const getInstructorDashboardStats = async (
     0,
   );
 
+  // Per-course completion rate: completed enrollments / total enrollments
+  const completionByCourse = new Map<string, { total: number; done: number }>();
+  for (const e of courseCompletions) {
+    const entry = completionByCourse.get(e.courseId) ?? { total: 0, done: 0 };
+    entry.total += 1;
+    if (e.isCompleted) entry.done += 1;
+    completionByCourse.set(e.courseId, entry);
+  }
+
+  const courseList = instructor.courses.map((c) => {
+    const comp = completionByCourse.get(c.id);
+    const completionRate =
+      comp && comp.total > 0 ? Number(((comp.done / comp.total) * 100).toFixed(0)) : 0;
+    const students =
+      totalStudents.find((g) => g.courseId === c.id)?._count.studentId ?? 0;
+    return {
+      id: c.id,
+      title: c.title,
+      thumbnail: c.thumbnail,
+      studentCount: students,
+      averageRating: c.averageRating,
+      completionRate,
+      status: c.status,
+    };
+  });
+
   const [revenueByMonth, enrollmentTrend] = await Promise.all([
     getRevenueByMonth(courseIds),
     getEnrollmentTrend(courseIds),
@@ -287,6 +356,15 @@ const getInstructorDashboardStats = async (
     averageRating: Number((averageRatingAgg._avg.rating || 0).toFixed(2)),
     totalRevenue: totalRevenueAgg._sum.amount || 0,
     totalReviews: totalReviewsAgg,
+    pendingSubmissions,
+    gradingQueue: gradingQueue.map((g) => ({
+      id: g.id,
+      studentName: g.student.name,
+      courseTitle: g.assignment.course.title,
+      assignmentTitle: g.assignment.title,
+      submittedAt: g.submittedAt,
+    })),
+    courseList,
     recentReviews,
     revenueByMonth,
     enrollmentTrend,
@@ -307,6 +385,12 @@ const getStudentDashboardStats = async (
     totalSpentAgg,
     progressAgg,
     recentEnrollments,
+    lessonProgressAgg,
+    totalLessons,
+    assignmentCountAgg,
+    submissionCountAgg,
+    quizCountAgg,
+    attemptCountAgg,
   ] = await Promise.all([
     prisma.enrollment.count({
       where: { studentId: student.id, isDeleted: false },
@@ -335,7 +419,76 @@ const getStudentDashboardStats = async (
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
+    prisma.lessonProgress.count({
+      where: {
+        enrollment: { studentId: student.id, isDeleted: false },
+        isCompleted: true,
+      },
+    }),
+    prisma.lesson.count({
+      where: {
+        isDeleted: false,
+        module: { isDeleted: false, course: { enrollments: { some: { studentId: student.id, isDeleted: false } } } },
+      },
+    }),
+    prisma.assignment.count({
+      where: {
+        isDeleted: false,
+        course: { isDeleted: false, enrollments: { some: { studentId: student.id, isDeleted: false } } },
+      },
+    }),
+    prisma.assignmentSubmission.count({
+      where: { studentId: student.id, isDeleted: false },
+    }),
+    prisma.quiz.count({
+      where: {
+        isDeleted: false,
+        course: { isDeleted: false, enrollments: { some: { studentId: student.id, isDeleted: false } } },
+      },
+    }),
+    prisma.quizAttempt.count({
+      where: { studentId: student.id, isDeleted: false, completedAt: { not: null } },
+    }),
   ]);
+
+  // Upcoming deadlines: enrolled courses' assignments/quizzes due in the future
+  const [upcomingAssignments, upcomingQuizzes] = await Promise.all([
+    prisma.assignment.findMany({
+      where: {
+        isDeleted: false,
+        dueDate: { gt: new Date() },
+        course: { enrollments: { some: { studentId: student.id, isDeleted: false } } },
+      },
+      select: { id: true, title: true, dueDate: true },
+      orderBy: { dueDate: "asc" },
+      take: 5,
+    }),
+    prisma.quiz.findMany({
+      where: {
+        isDeleted: false,
+        course: { enrollments: { some: { studentId: student.id, isDeleted: false } } },
+      },
+      select: { id: true, title: true },
+      take: 5,
+    }),
+  ]);
+
+  const upcoming = [
+    ...upcomingAssignments.map((a) => ({
+      id: `assignment-${a.id}`,
+      type: "assignment" as const,
+      title: a.title,
+      date: a.dueDate!,
+    })),
+    ...upcomingQuizzes.map((q) => ({
+      id: `quiz-${q.id}`,
+      type: "test" as const,
+      title: q.title,
+      date: new Date(),
+    })),
+  ]
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .slice(0, 6);
 
   return {
     totalEnrollments,
@@ -346,6 +499,13 @@ const getStudentDashboardStats = async (
     averageProgress: Number(
       (progressAgg._avg.progress || 0).toFixed(2),
     ),
+    lessonsCompleted: lessonProgressAgg,
+    totalLessons,
+    assignmentsSubmitted: submissionCountAgg,
+    totalAssignments: assignmentCountAgg,
+    quizzesTaken: attemptCountAgg,
+    totalQuizzes: quizCountAgg,
+    upcoming,
     recentEnrollments: recentEnrollments.map((e) => ({
       id: e.id,
       courseTitle: e.course.title,
@@ -355,6 +515,73 @@ const getStudentDashboardStats = async (
       createdAt: e.createdAt,
     })),
   };
+};
+
+const buildRecentActivity = async () => {
+  const [recentEnrollments, recentPayments, recentUsers] = await Promise.all([
+    prisma.enrollment.findMany({
+      where: { isDeleted: false },
+      select: {
+        id: true,
+        createdAt: true,
+        student: { select: { name: true } },
+        course: { select: { title: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    }),
+    prisma.payment.findMany({
+      where: { status: PaymentStatus.SUCCEEDED, isDeleted: false },
+      select: {
+        id: true,
+        amount: true,
+        createdAt: true,
+        student: { select: { name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    }),
+    prisma.user.findMany({
+      where: { isDeleted: false },
+      select: { id: true, name: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    }),
+  ]);
+
+  const activity = [
+    ...recentEnrollments.map((e) => ({
+      id: `enrollment-${e.id}`,
+      type: "enrollment" as const,
+      userName: e.student.name,
+      detail: e.course.title,
+      amount: undefined,
+      createdAt: e.createdAt,
+      status: "Enrolled",
+    })),
+    ...recentPayments.map((p) => ({
+      id: `payment-${p.id}`,
+      type: "payment" as const,
+      userName: p.student.name,
+      detail: "Course purchase",
+      amount: p.amount,
+      createdAt: p.createdAt,
+      status: "Paid",
+    })),
+    ...recentUsers.map((u) => ({
+      id: `signup-${u.id}`,
+      type: "signup" as const,
+      userName: u.name,
+      detail: "New account",
+      amount: undefined,
+      createdAt: u.createdAt,
+      status: "Active",
+    })),
+  ]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 10);
+
+  return activity;
 };
 
 const getRevenueByMonth = async (

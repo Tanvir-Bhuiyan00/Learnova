@@ -1,8 +1,6 @@
 "use client";
 
 import { SheetTitle } from "@/components/ui/sheet";
-import { getDefaultDashboardRoute } from "@/lib/authUtils";
-import { logoutAction } from "@/lib/authActions";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
 import Link from "next/link";

@@ -52,6 +52,15 @@ export interface ISuperAdminDashboardStats {
   userSignupTrend: IUserSignupTrendPoint[];
   topCourses: ITopCourse[];
   courseCategoryDistribution: IChartDataPoint[];
+  recentActivity: {
+    id: string;
+    type: "enrollment" | "payment" | "signup";
+    userName: string;
+    detail: string;
+    amount?: number;
+    createdAt: Date;
+    status: string;
+  }[];
 }
 
 export interface IInstructorDashboardStats {
@@ -60,6 +69,23 @@ export interface IInstructorDashboardStats {
   averageRating: number;
   totalRevenue: number;
   totalReviews: number;
+  pendingSubmissions: number;
+  gradingQueue: {
+    id: string;
+    studentName: string;
+    courseTitle: string;
+    submittedAt: Date;
+    assignmentTitle: string;
+  }[];
+  courseList: {
+    id: string;
+    title: string;
+    thumbnail: string | null;
+    studentCount: number;
+    averageRating: number;
+    completionRate: number;
+    status: string;
+  }[];
   recentReviews: {
     id: string;
     rating: number;
@@ -79,6 +105,18 @@ export interface IStudentDashboardStats {
   totalCertificates: number;
   totalSpent: number;
   averageProgress: number;
+  lessonsCompleted: number;
+  totalLessons: number;
+  assignmentsSubmitted: number;
+  totalAssignments: number;
+  quizzesTaken: number;
+  totalQuizzes: number;
+  upcoming: {
+    id: string;
+    type: "assignment" | "test";
+    title: string;
+    date: Date;
+  }[];
   recentEnrollments: {
     id: string;
     courseTitle: string;

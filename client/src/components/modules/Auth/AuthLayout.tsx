@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import Link from "next/link";
+import Logo from "@/components/shared/Logo";
 import { ReactNode } from "react";
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
@@ -16,12 +16,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
           className="absolute -bottom-24 -left-24 size-96 rounded-full bg-primary-pale blur-3xl"
         />
         <div className="relative flex h-full flex-col justify-between p-12">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <span className="size-3 rounded-full bg-primary" />
-            <span className="font-heading text-2xl font-extrabold tracking-tight text-ink">
-              Learnova
-            </span>
-          </Link>
+          <Logo />
 
           <div>
             <h2 className="font-heading text-4xl font-black leading-[0.95] tracking-tight text-ink">

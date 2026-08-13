@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Logo from "@/components/shared/Logo";
+import NewsletterForm from "@/components/modules/NewsletterForm";
 
 type SocialIconProps = { className?: string };
 
@@ -53,42 +55,49 @@ const footerColumns = [
       { href: "/instructors", label: "Become an Instructor" },
     ],
   },
+  {
+    title: "Support",
+    links: [
+      { href: "/faq", label: "FAQ" },
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
+      { href: "/about", label: "Contact Us" },
+    ],
+  },
 ];
 
 const socials = [
-  { href: "#", label: "Facebook", Icon: FacebookIcon },
-  { href: "#", label: "X", Icon: XIcon },
-  { href: "#", label: "Instagram", Icon: InstagramIcon },
-  { href: "#", label: "LinkedIn", Icon: LinkedinIcon },
-  { href: "#", label: "YouTube", Icon: YoutubeIcon },
+  { href: "https://facebook.com", label: "Facebook", Icon: FacebookIcon },
+  { href: "https://x.com", label: "X", Icon: XIcon },
+  { href: "https://instagram.com", label: "Instagram", Icon: InstagramIcon },
+  { href: "https://linkedin.com", label: "LinkedIn", Icon: LinkedinIcon },
+  { href: "https://youtube.com", label: "YouTube", Icon: YoutubeIcon },
 ];
 
 const PublicFooter = () => {
   return (
     <footer className="relative overflow-hidden bg-ink-solid text-white">
       <div className="container mx-auto px-4 py-16 md:px-6">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
-          <div className="lg:col-span-3 lg:max-w-md">
-            <Link href="/" className="inline-flex items-center gap-2">
-              <span className="size-3 rounded-full bg-primary" />
-              <span className="font-heading text-2xl font-extrabold tracking-tight">
-                Learnova
-              </span>
-            </Link>
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
+          <div className="lg:col-span-2 lg:max-w-md">
+            <Logo light />
             <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/65">
               Expert-led online courses designed to help you master new skills
               and grow without limits. Simple, transparent learning for
               ambitious people.
             </p>
             <div className="mt-7 flex items-center gap-3">
-              {socials.map(({ label, Icon }) => (
-                <span
+              {socials.map(({ href, label, Icon }) => (
+                <a
                   key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="flex size-10 items-center justify-center rounded-full bg-card/10 text-white/80 transition-colors hover:bg-primary hover:text-ink"
                 >
                   <Icon className="size-4" />
-                </span>
+                </a>
               ))}
             </div>
           </div>
@@ -112,6 +121,17 @@ const PublicFooter = () => {
               </ul>
             </div>
           ))}
+
+          <div>
+            <h4 className="font-heading text-sm font-bold uppercase tracking-wider text-white/45">
+              Stay in the loop
+            </h4>
+            <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/65">
+              Get the latest courses and learning tips straight to your inbox.
+              No spam, ever.
+            </p>
+            <NewsletterForm />
+          </div>
         </div>
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row">
@@ -125,6 +145,9 @@ const PublicFooter = () => {
             <Link href="/terms" className="transition-colors hover:text-white">
               Terms of Service
             </Link>
+            <Link href="/faq" className="transition-colors hover:text-white">
+              FAQ
+            </Link>
           </div>
         </div>
       </div>
@@ -133,3 +156,4 @@ const PublicFooter = () => {
 };
 
 export default PublicFooter;
+

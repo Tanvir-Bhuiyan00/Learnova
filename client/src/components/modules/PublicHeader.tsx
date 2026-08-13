@@ -3,11 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import Logo from "@/components/shared/Logo";
 import UserDropdown from "@/components/modules/Dashboard/UserDropdown";
 import { UserInfo } from "@/types/user.types";
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const navLinks = [
@@ -22,10 +23,12 @@ const PublicHeader = () => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [userLoaded, setUserLoaded] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   // The public layout is statically rendered, so the header resolves the
   // logged-in user client-side via the same-origin /api/me route (httpOnly
-  // cookies never leave the server).
+  // cookies never leave the server). Re-resolve on every navigation so the
+  // auth state stays in sync (e.g. right after login or logout).
   useEffect(() => {
     let cancelled = false;
     fetch("/api/me", { cache: "no-store" })
@@ -42,7 +45,7 @@ const PublicHeader = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +58,7 @@ const PublicHeader = () => {
   const authArea = !userLoaded ? (
     <div className="h-9 w-24 animate-pulse rounded-full bg-canvas-soft" />
   ) : userInfo ? (
-    <UserDropdown userInfo={userInfo} />
+    <UserDropdown userInfo={userInfo} showName />
   ) : (
     <>
       <Link href="/login">
@@ -72,12 +75,7 @@ const PublicHeader = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-canvas-soft bg-card/90 backdrop-blur-xl supports-[backdrop-filter]:bg-card/75">
       <div className="container mx-auto flex h-20 items-center justify-between gap-4 px-4 md:px-6">
-        <Link href="/" className="group flex items-center gap-2">
-          <span className="size-3 rounded-full bg-primary transition-transform group-hover:scale-125" />
-          <span className="font-heading text-2xl font-extrabold tracking-tight text-ink">
-            Learnova
-          </span>
-        </Link>
+        <Logo className="group" compact />
 
         <nav className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (
@@ -158,7 +156,7 @@ const PublicHeader = () => {
               {!userLoaded ? (
                 <div className="h-9 w-full animate-pulse rounded-full bg-canvas-soft" />
               ) : userInfo ? (
-                <UserDropdown userInfo={userInfo} />
+                <UserDropdown userInfo={userInfo} showName />
               ) : (
                 <>
                   <Link href="/login" className="flex-1">

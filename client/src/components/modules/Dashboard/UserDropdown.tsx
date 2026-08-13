@@ -24,6 +24,8 @@ import { motion } from "motion/react";
 
 interface UserDropdownProps {
   userInfo: UserInfo;
+  /** Show the user's name beside the avatar (e.g. in the public header). */
+  showName?: boolean;
 }
 
 const roleStyles: Record<string, string> = {
@@ -33,7 +35,7 @@ const roleStyles: Record<string, string> = {
   STUDENT: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300",
 };
 
-const UserDropdown = ({ userInfo }: UserDropdownProps) => {
+const UserDropdown = ({ userInfo, showName = false }: UserDropdownProps) => {
   const initials = userInfo.name
     .split(" ")
     .map((part) => part.charAt(0))
@@ -49,20 +51,24 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
         <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.94 }}>
           <Button
             variant="ghost"
-            size="icon"
-            className="size-10 rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary-pale p-0 shadow-sm ring-2 ring-white/40 transition-shadow hover:shadow-md dark:ring-black/30"
+            className="gap-2 rounded-full p-1.5 pl-1.5 hover:bg-canvas-soft"
             aria-label="Account menu"
           >
-            {userInfo.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={userInfo.image}
-                alt={userInfo.name}
-                className="size-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-sm font-extrabold tracking-wide text-white">
-                {initials}
+            <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary-pale text-xs font-extrabold tracking-wide text-white shadow-sm ring-2 ring-white/40 dark:ring-black/30">
+              {userInfo.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={userInfo.image}
+                  alt={userInfo.name}
+                  className="size-full rounded-full object-cover"
+                />
+              ) : (
+                initials
+              )}
+            </span>
+            {showName && (
+              <span className="hidden pr-1.5 text-sm font-semibold text-ink sm:block">
+                {userInfo.name.split(" ")[0]}
               </span>
             )}
           </Button>

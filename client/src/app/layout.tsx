@@ -45,6 +45,21 @@ export const metadata: Metadata = {
     "certificates",
     "Learnova",
   ],
+  manifest: "/manifest.webmanifest",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0f" },
+  ],
+  appleWebApp: {
+    capable: true,
+    title: "Learnova",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/favicon.ico" }],
+  },
   openGraph: {
     type: "website",
     locale: "en_US",

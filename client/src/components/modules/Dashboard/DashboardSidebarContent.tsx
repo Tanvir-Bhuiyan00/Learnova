@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import Logo from "@/components/shared/Logo";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
-import Link from "next/link";
 import { useState } from "react";
 import SidebarNav from "./SidebarNav";
 
@@ -42,19 +42,12 @@ const DashboardSidebarContent = ({
           collapsed ? "justify-center px-2" : "px-6",
         )}
       >
-        <Link
+        <Logo
           href={dashboardHome}
-          className={cn("flex items-center gap-2", collapsed && "justify-center")}
-        >
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white">
-            L
-          </span>
-          {!collapsed && (
-            <span className="font-heading text-lg font-extrabold tracking-tight text-ink">
-              Learnova
-            </span>
-          )}
-        </Link>
+          showWordmark={!collapsed}
+          compact
+          className={cn(collapsed && "justify-center")}
+        />
       </div>
 
       {/* Navigation */}

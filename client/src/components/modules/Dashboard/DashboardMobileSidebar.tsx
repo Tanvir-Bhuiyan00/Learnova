@@ -1,9 +1,9 @@
 "use client";
 
 import { SheetTitle } from "@/components/ui/sheet";
+import Logo from "@/components/shared/Logo";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
-import Link from "next/link";
 import SidebarNav from "./SidebarNav";
 
 interface DashboardMobileSidebarProps {
@@ -21,14 +21,7 @@ const DashboardMobileSidebar = ({
     <div className="flex h-full flex-col overflow-y-auto bg-card">
       {/* Logo / Brand */}
       <div className="flex h-16 shrink-0 items-center justify-between px-6">
-        <Link href={dashboardHome} className="flex items-center gap-2">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white">
-            L
-          </span>
-          <span className="font-heading text-lg font-extrabold tracking-tight text-ink">
-            Learnova
-          </span>
-        </Link>
+        <Logo href={dashboardHome} compact />
       </div>
 
       <SheetTitle className="sr-only">Navigation Menu</SheetTitle>

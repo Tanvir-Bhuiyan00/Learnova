@@ -6,8 +6,10 @@ import { getIconComponent } from "@/lib/iconMapper";
 import { cn } from "@/lib/utils";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface DashboardSidebarContentProps {
   userInfo: UserInfo;
@@ -29,15 +31,32 @@ const DashboardSidebarContent = ({
   userInfo,
 }: DashboardSidebarContentProps) => {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
-    <div className="hidden h-full w-64 flex-col border-r border-canvas-soft bg-card md:flex">
+    <div
+      className={cn(
+        "hidden h-full flex-col border-r border-canvas-soft bg-card transition-[width] duration-300 md:flex",
+        collapsed ? "w-[4.5rem]" : "w-64",
+      )}
+    >
       {/* Logo / Brand */}
-      <div className="flex h-16 shrink-0 items-center px-6">
-        <Link href={dashboardHome} className="flex items-center gap-2">
-          <span className="size-3 rounded-full bg-primary" />
-          <span className="font-heading text-xl font-extrabold tracking-tight text-ink">
-            Learnova
-          </span>
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center",
+          collapsed ? "justify-center px-2" : "px-6",
+        )}
+      >
+        <Link
+          href={dashboardHome}
+          className={cn("flex items-center gap-2", collapsed && "justify-center")}
+        >
+          <span className="size-3 shrink-0 rounded-full bg-primary" />
+          {!collapsed && (
+            <span className="font-heading text-xl font-extrabold tracking-tight text-ink">
+              Learnova
+            </span>
+          )}
         </Link>
       </div>
 
@@ -46,7 +65,7 @@ const DashboardSidebarContent = ({
         <nav className="space-y-6">
           {navItems.map((section, sectionId) => (
             <div key={sectionId}>
-              {section.title && (
+              {section.title && !collapsed && (
                 <h4 className="mb-2 px-3 text-[0.6875rem] font-bold uppercase tracking-widest text-mute-text">
                   {section.title}
                 </h4>
@@ -54,22 +73,36 @@ const DashboardSidebarContent = ({
 
               <div className="space-y-1">
                 {section.items.map((item, id) => {
-                  const isActive = pathname === item.href;
+                  const isActive =
+                    pathname === item.href ||
+                    (item.href !== "/" &&
+                      item.href !== "/admin/dashboard" &&
+                      item.href !== "/instructor/dashboard" &&
+                      pathname.startsWith(item.href));
                   const Icon = getIconComponent(item.icon);
 
                   return (
                     <Link
                       href={item.href}
                       key={id}
+                      title={collapsed ? item.title : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                        "flex items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                        collapsed
+                          ? "justify-center"
+                          : "gap-3",
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm shadow-primary-pale"
                           : "text-body-text hover:bg-canvas-soft hover:text-ink",
                       )}
                     >
-                      <Icon className={cn("size-4 shrink-0", isActive && "text-primary-foreground")} />
-                      <span>{item.title}</span>
+                      <Icon
+                        className={cn(
+                          "size-4 shrink-0",
+                          isActive && "text-primary-foreground",
+                        )}
+                      />
+                      {!collapsed && <span className="truncate">{item.title}</span>}
                     </Link>
                   );
                 })}
@@ -85,21 +118,48 @@ const DashboardSidebarContent = ({
 
       {/* User Info At Bottom */}
       <div className="border-t border-canvas-soft p-4">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-extrabold text-ink-deep">
-            {getInitials(userInfo.name) ||
-              userInfo.name.charAt(0).toUpperCase()}
+        {collapsed ? (
+          <div className="flex justify-center">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-extrabold text-ink-deep">
+              {getInitials(userInfo.name) ||
+                userInfo.name.charAt(0).toUpperCase()}
+            </div>
           </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-extrabold text-ink-deep">
+              {getInitials(userInfo.name) ||
+                userInfo.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-ink">
+                {userInfo.name}
+              </p>
+              <p className="truncate text-xs capitalize text-mute-text">
+                {userInfo.role.toLowerCase().replace("_", " ")}
+              </p>
+            </div>
+          </div>
+        )}
 
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-ink">
-              {userInfo.name}
-            </p>
-            <p className="truncate text-xs capitalize text-mute-text">
-              {userInfo.role.toLowerCase().replace("_", " ")}
-            </p>
-          </div>
-        </div>
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          className={cn(
+            "mt-4 flex w-full items-center rounded-xl px-3 py-2 text-sm font-medium text-body-text transition-colors hover:bg-canvas-soft hover:text-ink",
+            collapsed && "justify-center px-0",
+          )}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-4" />
+          ) : (
+            <>
+              <PanelLeftClose className="mr-3 size-4" />
+              Collapse
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

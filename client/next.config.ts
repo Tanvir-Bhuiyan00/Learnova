@@ -2,7 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   images: {
+    // Cache optimized images longer (they're content-addressed by URL)
+    minimumCacheTTL: 31536000,
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

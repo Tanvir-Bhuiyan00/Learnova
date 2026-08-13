@@ -42,7 +42,7 @@ const getDashboardStatsData = async (
       throw new AppError(status.BAD_REQUEST, "Invalid user role");
   }
 
-  setCached(cacheKey, result, 30);
+  setCached(cacheKey, result, 60);
 
   return result;
 };

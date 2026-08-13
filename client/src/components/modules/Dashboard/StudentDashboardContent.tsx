@@ -125,6 +125,8 @@ const StudentDashboardContent = () => {
               <img
                 src={continueCourse.course.thumbnail}
                 alt={continueCourse.course.title}
+                loading="lazy"
+                decoding="async"
                 className="size-full object-cover"
               />
             ) : (
@@ -246,7 +248,7 @@ const StudentDashboardContent = () => {
                         <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-canvas-soft">
                           {e.course?.thumbnail ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={e.course.thumbnail} alt={e.course?.title ?? ""} className="size-full object-cover" />
+                            <img src={e.course.thumbnail} alt={e.course?.title ?? ""} loading="lazy" decoding="async" className="size-full object-cover" />
                           ) : (
                             <BookOpen className="size-4 text-mute-text" />
                           )}

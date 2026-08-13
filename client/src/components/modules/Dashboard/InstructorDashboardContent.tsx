@@ -150,7 +150,7 @@ const InstructorDashboardContent = () => {
                         <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-canvas-soft">
                           {c.thumbnail ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={c.thumbnail} alt={c.title} className="size-full object-cover" />
+                            <img src={c.thumbnail} alt={c.title} loading="lazy" decoding="async" className="size-full object-cover" />
                           ) : (
                             <BookOpen className="size-4 text-mute-text" />
                           )}

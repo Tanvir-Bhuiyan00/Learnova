@@ -43,7 +43,6 @@ const AdminDashboardContent = () => {
   const { data: adminDashboardData, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin-dashboard-data"],
     queryFn: getDashboardData,
-    refetchOnWindowFocus: "always",
   });
 
   const { data } = adminDashboardData as ApiResponse<ISuperAdminDashboardStats>;
@@ -173,7 +172,7 @@ const AdminDashboardContent = () => {
                 <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-canvas-soft">
                   {c.thumbnail ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.thumbnail} alt={c.title} className="size-full object-cover" />
+                    <img src={c.thumbnail} alt={c.title} loading="lazy" decoding="async" className="size-full object-cover" />
                   ) : (
                     <BookOpen className="size-4 text-mute-text" />
                   )}

@@ -5,6 +5,8 @@ import StatsCard from "@/components/shared/StatsCard";
 import { ProgressBar } from "@/components/shared/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MiniCalendar } from "@/components/shared/MiniCalendar";
+import { UpcomingList, UpcomingItem } from "@/components/shared/UpcomingList";
 import { getDashboardData } from "@/services/dashboard.services";
 import { ApiResponse } from "@/types/api.types";
 import { ISuperAdminDashboardStats } from "@/types/dashboard.types";
@@ -77,8 +79,32 @@ const AdminDashboardContent = () => {
   // Recent activity — real latest enrollments, payments, and user signups
   const recentActivity = (data?.recentActivity ?? []).slice(0, 6);
 
+  // Needs-attention feed: surfaced from the latest platform activity
+  const attentionItems: UpcomingItem[] = recentActivity.map((a) => ({
+    id: a.id,
+    type: a.type === "payment" ? "event" : "test",
+    title:
+      a.type === "payment"
+        ? `Payment · ${a.userName}`
+        : a.type === "signup"
+          ? `New signup · ${a.userName}`
+          : `Enrollment · ${a.userName}`,
+    date: a.createdAt,
+  }));
+
+  const rightPanel = (
+    <div className="space-y-4">
+      <MiniCalendar />
+      <UpcomingList
+        items={attentionItems}
+        emptyText="Nothing needs attention"
+      />
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
+      <div className="min-w-0 space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -249,6 +275,12 @@ const AdminDashboardContent = () => {
           </ul>
         )}
       </div>
+      </div>
+
+      {/* Right panel on wide screens */}
+      <aside className="hidden min-w-0 xl:block">
+        <div className="sticky top-0 space-y-4">{rightPanel}</div>
+      </aside>
     </div>
   );
 };

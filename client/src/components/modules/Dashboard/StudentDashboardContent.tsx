@@ -95,8 +95,16 @@ const StudentDashboardContent = () => {
 
   const filtered = tab === "active" ? activeCourses : completedCourses;
 
+  const rightPanel = (
+    <div className="space-y-4">
+      <MiniCalendar />
+      <UpcomingList items={upcoming} />
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
+      <div className="min-w-0 space-y-5">
       {/* Continue Learning Banner */}
       {continueCourse?.course && (
         <motion.div
@@ -275,6 +283,12 @@ const StudentDashboardContent = () => {
         <MiniCalendar />
         <UpcomingList items={upcoming} />
       </div>
+      </div>
+
+      {/* Right panel on wide screens */}
+      <aside className="hidden min-w-0 xl:block">
+        <div className="sticky top-0 space-y-4">{rightPanel}</div>
+      </aside>
     </div>
   );
 };

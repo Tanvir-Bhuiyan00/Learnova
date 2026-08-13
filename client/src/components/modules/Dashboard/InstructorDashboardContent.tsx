@@ -5,6 +5,8 @@ import StatsCard from "@/components/shared/StatsCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { MiniCalendar } from "@/components/shared/MiniCalendar";
+import { UpcomingList, UpcomingItem } from "@/components/shared/UpcomingList";
 import { getDashboardData } from "@/services/dashboard.services";
 import { getCourses } from "@/services/course.services";
 import { IInstructorDashboardStats } from "@/types/dashboard.types";
@@ -68,8 +70,27 @@ const InstructorDashboardContent = () => {
   const gradingQueue = stats?.gradingQueue ?? [];
   const courseList = stats?.courseList ?? [];
 
+  // Upcoming from the instructor's own grading queue (submissions awaiting review)
+  const upcoming: UpcomingItem[] = gradingQueue.slice(0, 6).map((g) => ({
+    id: g.id,
+    type: "assignment" as const,
+    title: g.assignmentTitle,
+    date: g.submittedAt,
+  }));
+
+  const rightPanel = (
+    <div className="space-y-4">
+      <MiniCalendar />
+      <UpcomingList
+        items={upcoming}
+        emptyText="No submissions awaiting grading"
+      />
+    </div>
+  );
+
   return (
-    <div className="space-y-5">
+    <div className="grid gap-6 xl:grid-cols-[1fr_20rem]">
+      <div className="min-w-0 space-y-5">
       {/* Status Row */}
       <motion.div
         initial="hidden"
@@ -258,6 +279,12 @@ const InstructorDashboardContent = () => {
           </ul>
         )}
       </div>
+      </div>
+
+      {/* Right panel on wide screens */}
+      <aside className="hidden min-w-0 xl:block">
+        <div className="sticky top-0 space-y-4">{rightPanel}</div>
+      </aside>
     </div>
   );
 };

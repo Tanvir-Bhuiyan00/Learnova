@@ -1,6 +1,5 @@
 import { UserRole } from "@/lib/authUtils";
-
-export type UserStatus = "ACTIVE" | "BLOCKED" | "DELETED";
+import { UserStatus } from "@/types/instructor.types";
 
 export interface IAdmin {
   id: string;

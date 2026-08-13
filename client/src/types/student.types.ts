@@ -10,6 +10,15 @@ export interface IStudent {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  user?: {
+    id: string;
+    email?: string;
+    role?: string;
+    status?: string;
+    image?: string | null;
+    isDeleted?: boolean;
+    createdAt?: string;
+  };
 }
 
 export interface IUpdateStudentPayload {

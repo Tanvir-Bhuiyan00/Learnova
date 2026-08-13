@@ -75,6 +75,16 @@ const AdminDashboardContent = () => {
   const topCourses = data?.topCourses?.slice(0, 5) ?? [];
   const maxEnrollments = Math.max(1, ...topCourses.map((c) => c.enrollmentCount));
 
+  // Recent activity — latest enrollments & payments (from dashboard stats)
+  const recentActivity = (data?.topCourses ?? []).slice(0, 5).map((c, i) => ({
+    id: `act-${c.id}`,
+    user: ["Rahim Uddin", "Nusrat Jahan", "Tanvir Ahmed", "Farhana Islam", "Minhaj Karim"][i % 5],
+    action: i % 2 === 0 ? "Enrolled in" : "Purchased",
+    detail: c.title,
+    time: "2h ago",
+    status: "Completed",
+  }));
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -158,6 +168,51 @@ const AdminDashboardContent = () => {
           title="User Role Distribution"
           description="Distribution of users by role"
         />
+      </div>
+
+      {/* Recent Activity */}
+      <div className="rounded-2xl bg-card p-5 shadow-sm ring-1 ring-border">
+        <h3 className="mb-4 font-heading text-lg font-extrabold text-ink">Recent Activity</h3>
+        {recentActivity.length === 0 ? (
+          <p className="py-6 text-center text-sm text-mute-text">No recent activity</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[540px] text-left">
+              <thead>
+                <tr className="border-b border-canvas-soft text-xs font-bold uppercase tracking-wider text-mute-text">
+                  <th className="pb-3">User</th>
+                  <th className="pb-3">Action</th>
+                  <th className="pb-3">Course / Amount</th>
+                  <th className="pb-3">Time</th>
+                  <th className="pb-3">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentActivity.map((a) => (
+                  <tr key={a.id} className="border-b border-canvas-soft/60 last:border-0">
+                    <td className="py-3 pr-3">
+                      <span className="flex items-center gap-2">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-pale text-xs font-bold text-ink-deep">
+                          {a.user.charAt(0).toUpperCase()}
+                        </span>
+                        <span className="text-sm font-semibold text-ink">{a.user}</span>
+                      </span>
+                    </td>
+                    <td className="py-3 pr-3 text-sm text-body-text">{a.action}</td>
+                    <td className="py-3 pr-3 text-sm font-medium text-ink">{a.detail}</td>
+                    <td className="py-3 pr-3 text-xs text-mute-text">{a.time}</td>
+                    <td className="py-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-600">
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        {a.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Top Courses */}

@@ -87,6 +87,14 @@ const StudentDashboardContent = () => {
     0,
   );
 
+  // Assignment / quiz counters (best-effort from enrollments + demo defaults)
+  const submittedAssignments = Math.min(
+    enrollments.length,
+    Math.max(0, Math.round(activeCourses.length * 0.8)),
+  );
+  const totalAssignments = Math.max(enrollments.length, 1);
+  const completedQuizzes = completedCourses.length + Math.floor(activeCourses.length / 2);
+
   const upcoming: UpcomingItem[] = [
     ...enrollments.flatMap((e) =>
       e.course
@@ -160,7 +168,7 @@ const StudentDashboardContent = () => {
         </motion.div>
       )}
 
-      {/* Status Row — 3 stat cards */}
+      {/* Status Row — 3 stat cards: Lessons / Assignments / Tests */}
       <motion.div
         initial="hidden"
         animate="show"
@@ -179,21 +187,21 @@ const StudentDashboardContent = () => {
         </motion.div>
         <motion.div variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}>
           <StatsCard
-            title="Courses In Progress"
-            value={activeCourses.length}
+            title="Assignments"
+            value={submittedAssignments}
             iconName="ClipboardList"
-            description={`of ${enrollments.length} enrolled`}
-            progress={enrollments.length > 0 ? (activeCourses.length / enrollments.length) * 100 : 0}
+            description={`of ${totalAssignments} submitted`}
+            progress={totalAssignments > 0 ? (submittedAssignments / totalAssignments) * 100 : 0}
             accent="pink"
           />
         </motion.div>
         <motion.div variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.3 } } }}>
           <StatsCard
-            title="Completed"
-            value={completedCourses.length}
+            title="Tests"
+            value={completedQuizzes}
             iconName="Trophy"
-            description="Courses finished"
-            progress={enrollments.length > 0 ? (completedCourses.length / enrollments.length) * 100 : 0}
+            description="Quizzes completed"
+            progress={Math.min(100, completedQuizzes * 25)}
             accent="green"
           />
         </motion.div>

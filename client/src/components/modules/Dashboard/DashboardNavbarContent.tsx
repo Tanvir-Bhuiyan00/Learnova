@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavSection } from "@/types/dashboard.types";
 import { UserInfo } from "@/types/user.types";
-import { Menu, Search } from "lucide-react";
+import { Menu, MessageCircle, Search } from "lucide-react";
 import { useState } from "react";
 import DashboardMobileSidebar from "./DashboardMobileSidebar";
 import NotificationDropdown from "./NotificationDropdown";
@@ -69,6 +69,15 @@ const DashboardNavbarContent = ({
 
       {/* Right Side Actions */}
       <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="relative size-9 rounded-full"
+          aria-label="Messages"
+        >
+          <MessageCircle className="size-4" />
+          <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-indigo-500 ring-2 ring-card" />
+        </Button>
         <div className="relative md:hidden">
           <Search className="size-4 text-mute-text" />
         </div>

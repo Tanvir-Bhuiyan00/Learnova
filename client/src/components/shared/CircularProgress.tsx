@@ -12,9 +12,9 @@ interface CircularProgressProps {
 }
 
 const ringColorMap = {
-  orange: "#ffc091",
-  pink: "#f9a8d4",
-  green: "#38c8ff",
+  orange: "var(--accent-orange)",
+  pink: "var(--accent-pink)",
+  green: "var(--accent-green)",
   indigo: "#6366f1",
 };
 

@@ -22,6 +22,8 @@
   --color-warning-deep: var(--warning-deep);
   --color-negative: var(--negative);
   --color-accent-orange: var(--accent-orange);
+  --color-accent-pink: var(--accent-pink);
+  --color-accent-green: var(--accent-green);
   --color-accent-cyan: var(--accent-cyan);
   
   --font-sans: var(--font-sans);
@@ -93,6 +95,8 @@
   --negative: #d03238;
   
   --accent-orange: #ffc091;
+  --accent-pink: #f9a8d4;
+  --accent-green: #4ade80;
   --accent-cyan: #38c8ff;
   
   --card: #ffffff;
@@ -152,6 +156,8 @@
   --negative: #ff6b70;
 
   --accent-orange: #ffc091;
+  --accent-pink: #f9a8d4;
+  --accent-green: #4ade80;
   --accent-cyan: #38c8ff;
 
   --card: #11140f;

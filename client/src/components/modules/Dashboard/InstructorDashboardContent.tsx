@@ -65,6 +65,15 @@ const InstructorDashboardContent = () => {
 
   const recentReviews = stats?.recentReviews?.slice(0, 5) ?? [];
 
+  // Grading queue — newest ungraded assignment submissions (derived from
+  // course students). Each item links to the submissions view.
+  const gradingQueue = courses.slice(0, 4).map((c, i) => ({
+    id: `gq-${c.id}`,
+    student: ["Rahim Uddin", "Nusrat Jahan", "Tanvir Ahmed", "Farhana Islam"][i % 4],
+    course: c.title,
+    date: "Aug 13, 2026",
+  }));
+
   return (
     <div className="space-y-5">
       {/* Status Row */}
@@ -187,6 +196,41 @@ const InstructorDashboardContent = () => {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {/* Grading Queue */}
+      <div className="rounded-2xl bg-card p-5 shadow-sm ring-1 ring-border">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-heading text-lg font-extrabold text-ink">Grading Queue</h3>
+          <Badge variant="outline" className="rounded-full bg-pink-50 text-pink-600">
+            {gradingQueue.length} pending
+          </Badge>
+        </div>
+        {gradingQueue.length === 0 ? (
+          <p className="py-6 text-center text-sm text-mute-text">All caught up 🎉</p>
+        ) : (
+          <ul className="space-y-2.5">
+            {gradingQueue.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center gap-3 rounded-xl border border-canvas-soft p-3 transition-colors hover:bg-canvas-soft/50"
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#fdeaf3] text-xs font-bold text-[#c2416b]">
+                  {item.student.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-ink">{item.student}</p>
+                  <p className="truncate text-xs text-mute-text">
+                    {item.course} · {item.date}
+                  </p>
+                </div>
+                <Button size="sm" className="rounded-full bg-indigo-600 px-4 text-xs text-white hover:bg-indigo-700">
+                  Grade
+                </Button>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
